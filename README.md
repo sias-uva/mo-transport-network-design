@@ -7,5 +7,5 @@ Install the mo-tndp environment:
 ```
 git submodule update --init --recursive
 cd envs/mo-tndp
-pip install .
+pip install -e .
 ```
