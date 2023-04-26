@@ -14,7 +14,7 @@ gamma = 0.1
 epsilon = 1
 max_epsilon = 1
 min_epsilon = 0.00
-decay = 0.003
+decay = 0.001
 train_episodes = 1200
 
 test_episodes = 1
