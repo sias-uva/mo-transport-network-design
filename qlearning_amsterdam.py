@@ -9,25 +9,44 @@ import gymnasium
 import matplotlib.pyplot as plt
 import envs
 
-alpha = 0.1 # learning rate
-gamma = 0.2
+alpha = 0.2 # learning rate
+gamma = 0.1
 epsilon = 1
 max_epsilon = 1
 min_epsilon = 0.00
-decay = 0.005
+decay = 0.003
+train_episodes = 1200
 
-train_episodes = 800
 test_episodes = 1
 nr_stations = 20
 seed = 42
+starting_loc = (11, 15)
 
 # follow pre-determined policy
 policy = None
-# Best policy
-# policy = [0, 0, 0, 0, 2, 2, 2, 2]
-# policy = [0, 1, 1, 0, 2, 2, 4, 6]
 
 if __name__ == '__main__':
+    def gen_line_plot_grid(lines):
+        """Generates a grid_x_max * grid_y_max grid where each grid is valued by the frequency it appears in the generated lines.
+        Essentially creates a grid of the given line to plot later on.
+
+        Args:
+            line (list): list of generated lines of the model
+            grid_x_max (int): nr of lines in the grid
+            grid_y_mask (int): nr of columns in the grid
+        """
+        data = np.zeros((city.grid_x_size, city.grid_y_size))
+
+        for line in lines:
+            # line_g = city.vector_to_grid(line)
+
+            for station in line:
+                data[station[0], station[1]] += 1
+        
+        data = data/len(lines)
+
+        return data
+    
     city = City(
         Path(f"./envs/mo-tndp/cities/amsterdam"), 
         groups_file="price_groups_5.txt",
@@ -44,7 +63,7 @@ if __name__ == '__main__':
     best_episode_reward = 0
     best_episode_segment = []
     for episode in range(train_episodes):
-        state, info = env.reset(seed=seed, loc=(11, 10))
+        state, info = env.reset(seed=seed, loc=starting_loc)
         episode_reward = 0
         episode_step = 0
         while True:            
@@ -75,7 +94,6 @@ if __name__ == '__main__':
 
             training_step += 1
             episode_step += 1
-            print(f'step {training_step}, episode: {episode}, episode_step: {episode_step}, state: {state}, action: {action}, reward: {reward} new_state: {new_state}')
 
             state = new_state
 
@@ -94,15 +112,21 @@ if __name__ == '__main__':
         avg_rewards.append(np.average(rewards[-10:]))
         epsilons.append(epsilon)
 
+        print(f'episode: {episode}, reward: {episode_reward} average rewards of last 10 episodes: {avg_rewards[-1]}')
+
     #Visualizing results and total reward over all episodes
     x = range(train_episodes)
     fig, ax = plt.subplots(figsize=(10, 5))
     ax.plot(x, rewards, label='rewards', color='lightgray')
-    ax.plot(x, epsilons, label='epsilon', color='orange')
     ax.plot(x, avg_rewards, label='average reward', color='blue')
     ax.set_xlabel('Episode')
     ax.set_ylabel('Training total reward')
-    ax.set_ylim(0, 0.2)
+    ax.set_ylim(0, None)
+
+    ax2 = ax.twinx()
+    ax2.plot(x, epsilons, label='epsilon', color='orange')
+    ax2.set_ylabel('Epsilon')
+    # ax.plot(x, epsilons, label='epsilon', color='orange')
     fig.suptitle('Average reward over all episodes in training')
     ax.set_title(f'Best episode reward: {np.round(best_episode_reward, 5)}, avg. reward last 10 episodes: {np.round(avg_rewards[-1], 5)}')
     fig.legend()
@@ -110,13 +134,14 @@ if __name__ == '__main__':
 
     # Testing the agent
     total_rewards = 0
+    generated_lines = []
     for episode in range(test_episodes):
-        state, info = env.reset(seed=seed, loc=(11, 10))
+        state, info = env.reset(seed=seed, loc=starting_loc)
         episode_reward = 0
         locations = []
         while True:
             state_index = city.grid_to_vector(state['location'][None, :]).item()
-            locations.append(state['location'])
+            locations.append(state['location'].tolist())
             action = np.argmax(Q[state_index,:] * info['action_mask'])
             new_state, reward, done, _, info = env.step(action)
             reward = reward.sum()
@@ -125,5 +150,12 @@ if __name__ == '__main__':
             if done:
                 break
         total_rewards += episode_reward
+        generated_lines.append(locations)
+
+    plot_grid = gen_line_plot_grid(np.array(generated_lines))
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ax.imshow(plot_grid)
+    fig.suptitle(f'Average Generated line \n from')
+    fig.savefig(Path('./average_generated_line.png'))
 
     print('Line Segments: ', locations)
