@@ -4,13 +4,11 @@ from motndp.city import City
 import numpy as np
 from mo_gymnasium.utils import MORecordEpisodeStatistics
 import envs
+import argparse
 
 from morl_baselines.multi_policy.pcn.pcn_tndp import PCNTNDP
 
-# todo add to config
-nr_stations = 20
-
-def main():
+def main(args):
     def make_env():
         city = City(
             Path(f"./envs/mo-tndp/cities/amsterdam"), 
@@ -18,7 +16,9 @@ def main():
             ignore_existing_lines=True
         )
         
-        env = mo_gym.make('motndp_amsterdam-v0', city = city, nr_stations = nr_stations)
+        env = mo_gym.make('motndp_amsterdam-v0', 
+                        city=city, 
+                        nr_stations=args.nr_stations)
 
         # env = MORecordEpisodeStatistics(env, gamma=1.0)
         return env
@@ -32,12 +32,12 @@ def main():
         batch_size=256,
         project_name="MORL-TNDP",
         experiment_name="PCN-Amsterdam",
-        log=True,
+        log=not args.no_log,
     )
 
     agent.train(
         eval_env=make_env(),
-        total_timesteps=int(1e7),
+        total_timesteps=int(10000),
         ref_point=np.array([0, 0, 0, 0, 0]),
         num_er_episodes=20,
         max_buffer_size=50,
@@ -49,4 +49,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="MO PCN - TNDP")
+    parser.add_argument('--no_log', action='store_true', default=False)
+    # Episode horizon -- used as a proxy of both the budget and the number of stations (stations are not really costed)
+    parser.add_argument('--nr_stations', default=20, type=int)
+
+    args = parser.parse_args()
+    main(args)
