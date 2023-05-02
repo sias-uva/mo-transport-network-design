@@ -9,7 +9,7 @@ import gymnasium
 import matplotlib.pyplot as plt
 import envs
 
-alpha = 0.2 # learning rate
+alpha = 0.15 # learning rate
 gamma = 0.1
 epsilon = 1
 max_epsilon = 1
@@ -130,7 +130,7 @@ if __name__ == '__main__':
     fig.suptitle('Average reward over all episodes in training')
     ax.set_title(f'Best episode reward: {np.round(best_episode_reward, 5)}, avg. reward last 10 episodes: {np.round(avg_rewards[-1], 5)}')
     fig.legend()
-    fig.savefig(f'{Path("./qlearning_results_ams.png")}')
+    fig.savefig(Path(f'./results/qlearning_ams_a{alpha}_g{gamma}_d{decay}.png'))
 
     # Testing the agent
     total_rewards = 0
@@ -156,6 +156,6 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(figsize=(5, 5))
     ax.imshow(plot_grid)
     fig.suptitle(f'Average Generated line \n from')
-    fig.savefig(Path('./average_generated_line.png'))
+    fig.savefig(Path(f'./results/qlearning_ams_line_a{alpha}_g{gamma}_d{decay}.png'))
 
     print('Line Segments: ', locations)
