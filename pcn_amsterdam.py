@@ -28,8 +28,8 @@ def main(args):
     agent = PCNTNDP(
         env,
         scaling_factor=np.array([1, 1, 1, 1, 1, 0.1]),
-        learning_rate=1e-3,
-        batch_size=256,
+        learning_rate=args.lr,
+        batch_size=args.batch_size,
         project_name="MORL-TNDP",
         experiment_name="PCN-Amsterdam",
         log=not args.no_log,
@@ -37,7 +37,7 @@ def main(args):
 
     agent.train(
         eval_env=make_env(),
-        total_timesteps=int(10000),
+        total_timesteps=args.timesteps,
         ref_point=np.array([0, 0, 0, 0, 0]),
         num_er_episodes=20,
         max_buffer_size=50,
@@ -53,6 +53,9 @@ if __name__ == "__main__":
     parser.add_argument('--no_log', action='store_true', default=False)
     # Episode horizon -- used as a proxy of both the budget and the number of stations (stations are not really costed)
     parser.add_argument('--nr_stations', default=20, type=int)
+    parser.add_argument('--lr', default=1e-2, type=float)
+    parser.add_argument('--batch_size', default=256, type=int)
+    parser.add_argument('--timesteps', default=30000, type=int)
 
     args = parser.parse_args()
     main(args)
