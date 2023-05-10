@@ -4,18 +4,19 @@
 from pathlib import Path
 import random
 from motndp.city import City
+from motndp.constraints import MetroConstraints
 import numpy as np
 import gymnasium
 import matplotlib.pyplot as plt
 import envs
 
-alpha = 0.15 # learning rate
+alpha = 0.2 # learning rate
 gamma = 0.1
 epsilon = 1
 max_epsilon = 1
 min_epsilon = 0.00
 decay = 0.001
-train_episodes = 1200
+train_episodes = 5000
 
 test_episodes = 1
 nr_stations = 20
@@ -53,7 +54,7 @@ if __name__ == '__main__':
         ignore_existing_lines=True
     )
     
-    env = gymnasium.make('motndp_amsterdam-v0', city = city, nr_stations = nr_stations)
+    env = gymnasium.make('motndp_amsterdam-v0', city = city, constraints=MetroConstraints(city), nr_stations = nr_stations)
 
     Q = np.zeros((env.observation_space.n, env.action_space.n))
     rewards = []
@@ -126,11 +127,12 @@ if __name__ == '__main__':
     ax2 = ax.twinx()
     ax2.plot(x, epsilons, label='epsilon', color='orange')
     ax2.set_ylabel('Epsilon')
+    ax2.set_ylim(0, 1)
     # ax.plot(x, epsilons, label='epsilon', color='orange')
     fig.suptitle('Average reward over all episodes in training')
     ax.set_title(f'Best episode reward: {np.round(best_episode_reward, 5)}, avg. reward last 10 episodes: {np.round(avg_rewards[-1], 5)}')
     fig.legend()
-    fig.savefig(Path(f'./results/qlearning_ams_a{alpha}_g{gamma}_d{decay}.png'))
+    fig.savefig(Path(f'./results/qlearning_ams_a{alpha}_g{gamma}_d{decay}_epis{train_episodes}.png'))
 
     # Testing the agent
     total_rewards = 0
@@ -156,6 +158,6 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(figsize=(5, 5))
     ax.imshow(plot_grid)
     fig.suptitle(f'Average Generated line \n from')
-    fig.savefig(Path(f'./results/qlearning_ams_line_a{alpha}_g{gamma}_d{decay}.png'))
+    fig.savefig(Path(f'./results/qlearning_ams_line_a{alpha}_g{gamma}_d{decay}_epis{train_episodes}.png'))
 
     print('Line Segments: ', locations)
