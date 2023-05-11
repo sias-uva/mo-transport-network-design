@@ -16,12 +16,12 @@ epsilon = 1
 max_epsilon = 1
 min_epsilon = 0.00
 decay = 0.001
-train_episodes = 5000
+train_episodes = 1000
 
 test_episodes = 1
 nr_stations = 20
 seed = 42
-starting_loc = (11, 15)
+starting_loc = (11, 14)
 
 # follow pre-determined policy
 policy = None
