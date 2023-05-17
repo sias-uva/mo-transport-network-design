@@ -1,6 +1,7 @@
 # This is a simple demo of how to use Q-learning to solve the TNDP, using the gymnasium framework.
 # Here we assume a single reward function, which is the sum of the rewards of all groups.
 # Thus, one can say the utility function is the (equal weighted) sum of the utilities of all groups.
+import datetime
 from pathlib import Path
 import random
 from motndp.city import City
@@ -10,13 +11,13 @@ import gymnasium
 import matplotlib.pyplot as plt
 import envs
 
-alpha = 0.1 # learning rate
-gamma = 0.1
+alpha = [0.1, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8] # learning rate
+gamma = [0.1, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
 epsilon = 1
 max_epsilon = 1
 min_epsilon = 0.00
-e_decay = 0.01
-train_episodes = 5
+e_decay = 0.05
+train_episodes = 130
 
 test_episodes = 1
 nr_stations = 20
@@ -117,66 +118,94 @@ if __name__ == '__main__':
     )
     
     env = gymnasium.make('motndp_amsterdam-v0', city = city, constraints=MetroConstraints(city), nr_stations = nr_stations)
-
-    Q, rewards, avg_rewards, epsilons, best_episode_reward, best_episode_segment = train(env, city, alpha, gamma, epsilon, e_decay, train_episodes, seed, starting_loc)
-
-    #Visualizing results and total reward over all episodes
-    x = range(train_episodes)
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(x, rewards, label='rewards', color='lightgray')
-    ax.plot(x, avg_rewards, label='average reward', color='blue')
-    ax.set_xlabel('Episode')
-    ax.set_ylabel('Training total reward')
-    ax.set_ylim(0, None)
-
-    ax2 = ax.twinx()
-    ax2.plot(x, epsilons, label='epsilon', color='orange')
-    ax2.set_ylabel('Epsilon')
-    ax2.set_ylim(0, 1)
-    # ax.plot(x, epsilons, label='epsilon', color='orange')
-    fig.suptitle('Average reward over all episodes in training')
-    ax.set_title(f'Best episode reward: {np.round(best_episode_reward, 5)}, avg. reward last 10 episodes: {np.round(avg_rewards[-1], 5)}')
-    fig.legend()
-    fig.savefig(Path(f'./results/qlearning_ams_a{alpha}_g{gamma}_d{e_decay}_epis{train_episodes}.png'))
-
-    # Print the Q table
-    fig, ax = plt.subplots(figsize=(10, 5))
-    Q_actions = Q.argmax(axis=1).reshape(city.grid_x_size, city.grid_y_size)
-    Q_values = Q.max(axis=1).reshape(city.grid_x_size, city.grid_y_size)
-    im = ax.imshow(Q_values, label='Q values', cmap='Blues', alpha=0.5)
-    markers = ['\\uparrow', '\\nearrow', '\\rightarrow', '\\searrow', '\\downarrow', '\\swarrow', '\\leftarrow', '\\nwarrow']
-    for a in range(8):
-        cells = np.nonzero((Q_actions == a) & (Q_values > 0))
-        ax.scatter(cells[1], cells[0], c='red', marker=rf"${markers[a]}$", s=10,)
     
-    cbar = fig.colorbar(im)
-    fig.suptitle('Q values and best actions')
-    fig.savefig(Path(f'./results/qlearning_ams_qtable_a{alpha}_g{gamma}_d{e_decay}_epis{train_episodes}.png'))
+    if (type(alpha) == list) & (type(gamma) == list):
+        # Plot hypeparameter search results
+        rewards = []
+        avg_rewards = []
+        labels = []
+        for a in alpha:
+            for g in gamma:
+                Q, rwds, avg_rwrds, epsilons, best_episode_reward, best_episode_segment = train(env, city, a, g, epsilon, e_decay, train_episodes, seed, starting_loc)
+                rewards.append(rwds)
+                avg_rewards.append(avg_rwrds)
+                labels.append(f'a={a}, g={g}')
 
-    # Testing the agent
-    total_rewards = 0
-    generated_lines = []
-    for episode in range(test_episodes):
-        state, info = env.reset(seed=seed, loc=starting_loc)
-        episode_reward = 0
-        locations = []
-        while True:
-            state_index = city.grid_to_vector(state['location'][None, :]).item()
-            locations.append(state['location'].tolist())
-            action = np.argmax(Q[state_index,:] * info['action_mask'])
-            new_state, reward, done, _, info = env.step(action)
-            reward = reward.sum()
-            episode_reward += reward      
-            state = new_state    
-            if done:
-                break
-        total_rewards += episode_reward
-        generated_lines.append(locations)
+        #Visualizing results and total reward over all episodes
+        fig, ax = plt.subplots(figsize=(10, 5))
+        # ax.plot(rewards, label='rewards', color='lightgray')
+        for i, avg_rwrds in enumerate(avg_rewards):
+            ax.plot(avg_rwrds, label=labels[i])
+        ax.set_xlabel('Episode')
+        ax.set_ylabel('Training total reward')
+        ax.set_ylim(0, None)
 
-    plot_grid = gen_line_plot_grid(np.array(generated_lines))
-    fig, ax = plt.subplots(figsize=(5, 5))
-    ax.imshow(plot_grid)
-    fig.suptitle(f'Average Generated line \n reward: {episode_reward}')
-    fig.savefig(Path(f'./results/qlearning_ams_line_a{alpha}_g{gamma}_d{e_decay}_epis{train_episodes}.png'))
+        ax2 = ax.twinx()
+        ax2.plot(epsilons, label='epsilon', color='orange')
+        ax2.set_ylabel('Epsilon')
+        ax2.set_ylim(0, 1)
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15), ncol=6)
+        fig.savefig(Path(f"./results/hyperparameter_search_d{e_decay}_{datetime.datetime.today().strftime('%Y%m%d_%H_%M_%S.%f')}.png"))
+    elif type(alpha) == float:
+        Q, rewards, avg_rewards, epsilons, best_episode_reward, best_episode_segment = train(env, city, alpha, gamma, epsilon, e_decay, train_episodes, seed, starting_loc)
 
-    print('Line Segments: ', locations)
+        #Visualizing results and total reward over all episodes
+        x = range(train_episodes)
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.plot(x, rewards, label='rewards', color='lightgray')
+        ax.plot(x, avg_rewards, label='average reward', color='blue')
+        ax.set_xlabel('Episode')
+        ax.set_ylabel('Training total reward')
+        ax.set_ylim(0, None)
+
+        ax2 = ax.twinx()
+        ax2.plot(x, epsilons, label='epsilon', color='orange')
+        ax2.set_ylabel('Epsilon')
+        ax2.set_ylim(0, 1)
+        # ax.plot(x, epsilons, label='epsilon', color='orange')
+        fig.suptitle('Average reward over all episodes in training')
+        ax.set_title(f'Best episode reward: {np.round(best_episode_reward, 5)}, avg. reward last 10 episodes: {np.round(avg_rewards[-1], 5)}')
+        fig.legend()
+        fig.savefig(Path(f'./results/qlearning_ams_a{alpha}_g{gamma}_d{e_decay}_epis{train_episodes}.png'))
+
+        # Print the Q table
+        fig, ax = plt.subplots(figsize=(10, 5))
+        Q_actions = Q.argmax(axis=1).reshape(city.grid_x_size, city.grid_y_size)
+        Q_values = Q.max(axis=1).reshape(city.grid_x_size, city.grid_y_size)
+        im = ax.imshow(Q_values, label='Q values', cmap='Blues', alpha=0.5)
+        markers = ['\\uparrow', '\\nearrow', '\\rightarrow', '\\searrow', '\\downarrow', '\\swarrow', '\\leftarrow', '\\nwarrow']
+        for a in range(8):
+            cells = np.nonzero((Q_actions == a) & (Q_values > 0))
+            ax.scatter(cells[1], cells[0], c='red', marker=rf"${markers[a]}$", s=10,)
+        
+        cbar = fig.colorbar(im)
+        fig.suptitle('Q values and best actions')
+        fig.savefig(Path(f'./results/qlearning_ams_qtable_a{alpha}_g{gamma}_d{e_decay}_epis{train_episodes}.png'))
+
+        # Testing the agent
+        total_rewards = 0
+        generated_lines = []
+        for episode in range(test_episodes):
+            state, info = env.reset(seed=seed, loc=starting_loc)
+            episode_reward = 0
+            locations = []
+            while True:
+                state_index = city.grid_to_vector(state['location'][None, :]).item()
+                locations.append(state['location'].tolist())
+                action = np.argmax(Q[state_index,:] * info['action_mask'])
+                new_state, reward, done, _, info = env.step(action)
+                reward = reward.sum()
+                episode_reward += reward      
+                state = new_state    
+                if done:
+                    break
+            total_rewards += episode_reward
+            generated_lines.append(locations)
+
+        plot_grid = gen_line_plot_grid(np.array(generated_lines))
+        fig, ax = plt.subplots(figsize=(5, 5))
+        ax.imshow(plot_grid)
+        fig.suptitle(f'Average Generated line \n reward: {episode_reward}')
+        fig.savefig(Path(f'./results/qlearning_ams_line_a{alpha}_g{gamma}_d{e_decay}_epis{train_episodes}.png'))
+
+        print('Line Segments: ', locations)
