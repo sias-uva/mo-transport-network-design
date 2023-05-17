@@ -10,13 +10,13 @@ import gymnasium
 import matplotlib.pyplot as plt
 import envs
 
-alpha = 0.2 # learning rate
+alpha = 0.1 # learning rate
 gamma = 0.1
 epsilon = 1
 max_epsilon = 1
 min_epsilon = 0.00
-decay = 0.001
-train_episodes = 1000
+e_decay = 0.01
+train_episodes = 5
 
 test_episodes = 1
 nr_stations = 20
@@ -26,36 +26,7 @@ starting_loc = (11, 14)
 # follow pre-determined policy
 policy = None
 
-if __name__ == '__main__':
-    def gen_line_plot_grid(lines):
-        """Generates a grid_x_max * grid_y_max grid where each grid is valued by the frequency it appears in the generated lines.
-        Essentially creates a grid of the given line to plot later on.
-
-        Args:
-            line (list): list of generated lines of the model
-            grid_x_max (int): nr of lines in the grid
-            grid_y_mask (int): nr of columns in the grid
-        """
-        data = np.zeros((city.grid_x_size, city.grid_y_size))
-
-        for line in lines:
-            # line_g = city.vector_to_grid(line)
-
-            for station in line:
-                data[station[0], station[1]] += 1
-        
-        data = data/len(lines)
-
-        return data
-    
-    city = City(
-        Path(f"./envs/mo-tndp/cities/amsterdam"), 
-        groups_file="price_groups_5.txt",
-        ignore_existing_lines=True
-    )
-    
-    env = gymnasium.make('motndp_amsterdam-v0', city = city, constraints=MetroConstraints(city), nr_stations = nr_stations)
-
+def train(env: gymnasium.Env, city: City, alpha: float, gamma: float, epsilon: float, e_decay: float, train_episodes: int, seed: int, starting_loc: tuple):
     Q = np.zeros((env.observation_space.n, env.action_space.n))
     rewards = []
     avg_rewards = []
@@ -101,7 +72,7 @@ if __name__ == '__main__':
             if done:
                 break
         #Cutting down on exploration by reducing the epsilon 
-        epsilon = min_epsilon + (max_epsilon - min_epsilon) * np.exp(-decay * episode)
+        epsilon = min_epsilon + (max_epsilon - min_epsilon) * np.exp(-e_decay * episode)
 
         if episode_reward > best_episode_reward:
             best_episode_reward = episode_reward
@@ -114,6 +85,40 @@ if __name__ == '__main__':
         epsilons.append(epsilon)
 
         print(f'episode: {episode}, reward: {episode_reward} average rewards of last 10 episodes: {avg_rewards[-1]}')
+
+    return Q, rewards, avg_rewards, epsilons, best_episode_reward, best_episode_segment
+
+if __name__ == '__main__':
+    def gen_line_plot_grid(lines):
+        """Generates a grid_x_max * grid_y_max grid where each grid is valued by the frequency it appears in the generated lines.
+        Essentially creates a grid of the given line to plot later on.
+
+        Args:
+            line (list): list of generated lines of the model
+            grid_x_max (int): nr of lines in the grid
+            grid_y_mask (int): nr of columns in the grid
+        """
+        data = np.zeros((city.grid_x_size, city.grid_y_size))
+
+        for line in lines:
+            # line_g = city.vector_to_grid(line)
+
+            for station in line:
+                data[station[0], station[1]] += 1
+        
+        data = data/len(lines)
+
+        return data
+    
+    city = City(
+        Path(f"./envs/mo-tndp/cities/amsterdam"), 
+        groups_file="price_groups_5.txt",
+        ignore_existing_lines=True
+    )
+    
+    env = gymnasium.make('motndp_amsterdam-v0', city = city, constraints=MetroConstraints(city), nr_stations = nr_stations)
+
+    Q, rewards, avg_rewards, epsilons, best_episode_reward, best_episode_segment = train(env, city, alpha, gamma, epsilon, e_decay, train_episodes, seed, starting_loc)
 
     #Visualizing results and total reward over all episodes
     x = range(train_episodes)
@@ -132,7 +137,21 @@ if __name__ == '__main__':
     fig.suptitle('Average reward over all episodes in training')
     ax.set_title(f'Best episode reward: {np.round(best_episode_reward, 5)}, avg. reward last 10 episodes: {np.round(avg_rewards[-1], 5)}')
     fig.legend()
-    fig.savefig(Path(f'./results/qlearning_ams_a{alpha}_g{gamma}_d{decay}_epis{train_episodes}.png'))
+    fig.savefig(Path(f'./results/qlearning_ams_a{alpha}_g{gamma}_d{e_decay}_epis{train_episodes}.png'))
+
+    # Print the Q table
+    fig, ax = plt.subplots(figsize=(10, 5))
+    Q_actions = Q.argmax(axis=1).reshape(city.grid_x_size, city.grid_y_size)
+    Q_values = Q.max(axis=1).reshape(city.grid_x_size, city.grid_y_size)
+    im = ax.imshow(Q_values, label='Q values', cmap='Blues', alpha=0.5)
+    markers = ['\\uparrow', '\\nearrow', '\\rightarrow', '\\searrow', '\\downarrow', '\\swarrow', '\\leftarrow', '\\nwarrow']
+    for a in range(8):
+        cells = np.nonzero((Q_actions == a) & (Q_values > 0))
+        ax.scatter(cells[1], cells[0], c='red', marker=rf"${markers[a]}$", s=10,)
+    
+    cbar = fig.colorbar(im)
+    fig.suptitle('Q values and best actions')
+    fig.savefig(Path(f'./results/qlearning_ams_qtable_a{alpha}_g{gamma}_d{e_decay}_epis{train_episodes}.png'))
 
     # Testing the agent
     total_rewards = 0
@@ -157,7 +176,7 @@ if __name__ == '__main__':
     plot_grid = gen_line_plot_grid(np.array(generated_lines))
     fig, ax = plt.subplots(figsize=(5, 5))
     ax.imshow(plot_grid)
-    fig.suptitle(f'Average Generated line \n from')
-    fig.savefig(Path(f'./results/qlearning_ams_line_a{alpha}_g{gamma}_d{decay}_epis{train_episodes}.png'))
+    fig.suptitle(f'Average Generated line \n reward: {episode_reward}')
+    fig.savefig(Path(f'./results/qlearning_ams_line_a{alpha}_g{gamma}_d{e_decay}_epis{train_episodes}.png'))
 
     print('Line Segments: ', locations)
