@@ -17,7 +17,7 @@ epsilon = 1
 max_epsilon = 1
 min_epsilon = 0.00
 e_decay = 0.05
-train_episodes = 130
+train_episodes = 120
 
 test_episodes = 1
 nr_stations = 20
@@ -28,6 +28,27 @@ starting_loc = (11, 14)
 policy = None
 
 def train(env: gymnasium.Env, city: City, alpha: float, gamma: float, epsilon: float, e_decay: float, train_episodes: int, seed: int, starting_loc: tuple):
+    """Trains the agent using Q-learning.
+
+    Args:
+        env (gymnasium.Env): The environment to train the agent in.
+        city (City): The city object.
+        alpha (float): The learning rate.
+        gamma (float): The discount factor.
+        epsilon (float): The exploration-exploitation trade-off.
+        e_decay (float): The decay rate of epsilon.
+        train_episodes (int): The number of episodes to train the agent for.
+        seed (int): The random seed for reproducibility.
+        starting_loc (tuple): The starting location of the agent. If None, the starting location is random.
+
+    Returns:
+        Q (np.ndarray): The Q-table.
+        rewards (list): The total reward for each episode.
+        avg_rewards (list): The rolling 10-episode average reward.
+        epsilons (list): The epsilon values for each episode.
+        best_episode_reward (float): The total reward of the best episode.
+        best_episode_segment (list): The line segments of the best episode.
+    """
     Q = np.zeros((env.observation_space.n, env.action_space.n))
     rewards = []
     avg_rewards = []
@@ -132,10 +153,19 @@ if __name__ == '__main__':
                 labels.append(f'a={a}, g={g}')
 
         #Visualizing results and total reward over all episodes
-        fig, ax = plt.subplots(figsize=(10, 5))
+        fig, ax = plt.subplots(figsize=(15, 10))
         # ax.plot(rewards, label='rewards', color='lightgray')
+
+        #### To better distinguish between the different lines, we use a color map and different line styles.
+        # From https://stackoverflow.com/questions/8389636/creating-over-20-unique-legend-colors-using-matplotlib
+        NUM_COLORS = 50
+        LINE_STYLES = ['solid', 'dashed', 'dashdot', 'dotted', (0, (3, 1, 1, 1)), (0, (3, 5, 1, 5, 1, 5))]
+        NUM_STYLES = len(LINE_STYLES)
+        cm = plt.get_cmap('gist_rainbow')
+        ####
+
         for i, avg_rwrds in enumerate(avg_rewards):
-            ax.plot(avg_rwrds, label=labels[i])
+            ax.plot(avg_rwrds, label=labels[i], c=cm(i//NUM_STYLES*float(NUM_STYLES)/NUM_COLORS), linestyle=LINE_STYLES[i%NUM_STYLES])
         ax.set_xlabel('Episode')
         ax.set_ylabel('Training total reward')
         ax.set_ylim(0, None)
@@ -144,7 +174,7 @@ if __name__ == '__main__':
         ax2.plot(epsilons, label='epsilon', color='orange')
         ax2.set_ylabel('Epsilon')
         ax2.set_ylim(0, 1)
-        ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15), ncol=6)
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15), ncol=9)
         fig.savefig(Path(f"./results/hyperparameter_search_d{e_decay}_{datetime.datetime.today().strftime('%Y%m%d_%H_%M_%S.%f')}.png"))
     elif type(alpha) == float:
         Q, rewards, avg_rewards, epsilons, best_episode_reward, best_episode_segment = train(env, city, alpha, gamma, epsilon, e_decay, train_episodes, seed, starting_loc)
