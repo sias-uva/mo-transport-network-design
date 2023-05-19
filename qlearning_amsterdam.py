@@ -11,23 +11,37 @@ import gymnasium
 import matplotlib.pyplot as plt
 import envs
 
-alpha = [0.1, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8] # learning rate
-gamma = [0.1, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+# alpha = [0.1, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8] # learning rate
+# gamma = [0.1, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+alpha = 0.4
+gamma = 0.8
 epsilon = 1
 max_epsilon = 1
-min_epsilon = 0.00
-e_decay = 0.05
-train_episodes = 120
+min_epsilon = 0.01
+e_decay = 0.003
+train_episodes = 20
 
 test_episodes = 1
 nr_stations = 20
 seed = 42
+# starting_loc = None
 starting_loc = (11, 14)
+# Starting location ranges to sample from, x and y coordinates are sampled separately
+# starting_loc = ((9, 11), (12, 14))
 
 # follow pre-determined policy
 policy = None
 
-def train(env: gymnasium.Env, city: City, alpha: float, gamma: float, epsilon: float, e_decay: float, train_episodes: int, seed: int, starting_loc: tuple):
+def highlight_cells(cells, ax, **kwargs):
+    """Highlights a cell in a grid plot. https://stackoverflow.com/questions/56654952/how-to-mark-cells-in-matplotlib-pyplot-imshow-drawing-cell-borders
+    """
+    for cell in cells:
+        (y, x) = cell
+        rect = plt.Rectangle((x-.5, y-.5), 1,1, fill=False, **kwargs)
+        ax.add_patch(rect)
+    return rect
+
+def train(env: gymnasium.Env, city: City, alpha: float, gamma: float, epsilon: float, e_decay: float, train_episodes: int, seed: int, starting_loc: tuple = None):
     """Trains the agent using Q-learning.
 
     Args:
@@ -39,7 +53,7 @@ def train(env: gymnasium.Env, city: City, alpha: float, gamma: float, epsilon: f
         e_decay (float): The decay rate of epsilon.
         train_episodes (int): The number of episodes to train the agent for.
         seed (int): The random seed for reproducibility.
-        starting_loc (tuple): The starting location of the agent. If None, the starting location is random.
+        starting_loc (tuple): The starting location of the agent, if tuple of tuples then it samples from the range. If None, the starting location is random.
 
     Returns:
         Q (np.ndarray): The Q-table.
@@ -56,8 +70,24 @@ def train(env: gymnasium.Env, city: City, alpha: float, gamma: float, epsilon: f
     training_step = 0
     best_episode_reward = 0
     best_episode_segment = []
+    # All the ACTUALIZED starting locations of the agent.
+    actual_starting_locs = set()
     for episode in range(train_episodes):
-        state, info = env.reset(seed=seed, loc=starting_loc)
+        # Initialize starting location
+        if starting_loc:
+            if type(starting_loc[0]) == tuple:
+                loc = (random.randint(*starting_loc[0]), random.randint(*starting_loc[1]))
+            else:
+                loc = starting_loc
+        else:
+            loc = None
+
+        if episode == 0:
+            state, info = env.reset(seed=seed, loc=loc)
+        else:
+            state, info = env.reset(loc=loc)
+
+        actual_starting_locs.add((state['location'][0], state['location'][1]))
         episode_reward = 0
         episode_step = 0
         while True:            
@@ -108,7 +138,7 @@ def train(env: gymnasium.Env, city: City, alpha: float, gamma: float, epsilon: f
 
         print(f'episode: {episode}, reward: {episode_reward} average rewards of last 10 episodes: {avg_rewards[-1]}')
 
-    return Q, rewards, avg_rewards, epsilons, best_episode_reward, best_episode_segment
+    return Q, rewards, avg_rewards, epsilons, best_episode_reward, best_episode_segment, actual_starting_locs
 
 if __name__ == '__main__':
     def gen_line_plot_grid(lines):
@@ -139,6 +169,8 @@ if __name__ == '__main__':
     )
     
     env = gymnasium.make('motndp_amsterdam-v0', city = city, constraints=MetroConstraints(city), nr_stations = nr_stations)
+    # For figure naming
+    param_string = f"a{alpha}_g{gamma}_d{e_decay}_epis{train_episodes}_{datetime.datetime.today().strftime('%Y%m%d_%H_%M_%S.%f')}"
     
     if (type(alpha) == list) & (type(gamma) == list):
         # Plot hypeparameter search results
@@ -147,7 +179,7 @@ if __name__ == '__main__':
         labels = []
         for a in alpha:
             for g in gamma:
-                Q, rwds, avg_rwrds, epsilons, best_episode_reward, best_episode_segment = train(env, city, a, g, epsilon, e_decay, train_episodes, seed, starting_loc)
+                Q, rwds, avg_rwrds, epsilons, best_episode_reward, best_episode_segment, actual_starting_locs = train(env, city, a, g, epsilon, e_decay, train_episodes, seed, starting_loc)
                 rewards.append(rwds)
                 avg_rewards.append(avg_rwrds)
                 labels.append(f'a={a}, g={g}')
@@ -177,7 +209,7 @@ if __name__ == '__main__':
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15), ncol=9)
         fig.savefig(Path(f"./results/hyperparameter_search_d{e_decay}_{datetime.datetime.today().strftime('%Y%m%d_%H_%M_%S.%f')}.png"))
     elif type(alpha) == float:
-        Q, rewards, avg_rewards, epsilons, best_episode_reward, best_episode_segment = train(env, city, alpha, gamma, epsilon, e_decay, train_episodes, seed, starting_loc)
+        Q, rewards, avg_rewards, epsilons, best_episode_reward, best_episode_segment, actual_starting_locs = train(env, city, alpha, gamma, epsilon, e_decay, train_episodes, seed, starting_loc)
 
         #Visualizing results and total reward over all episodes
         x = range(train_episodes)
@@ -196,7 +228,7 @@ if __name__ == '__main__':
         fig.suptitle('Average reward over all episodes in training')
         ax.set_title(f'Best episode reward: {np.round(best_episode_reward, 5)}, avg. reward last 10 episodes: {np.round(avg_rewards[-1], 5)}')
         fig.legend()
-        fig.savefig(Path(f'./results/qlearning_ams_a{alpha}_g{gamma}_d{e_decay}_epis{train_episodes}.png'))
+        fig.savefig(Path(f'./results/qlearning_ams_{param_string}.png'))
 
         # Print the Q table
         fig, ax = plt.subplots(figsize=(10, 5))
@@ -210,13 +242,15 @@ if __name__ == '__main__':
         
         cbar = fig.colorbar(im)
         fig.suptitle('Q values and best actions')
-        fig.savefig(Path(f'./results/qlearning_ams_qtable_a{alpha}_g{gamma}_d{e_decay}_epis{train_episodes}.png'))
+        highlight_cells(actual_starting_locs, ax=ax, color='limegreen')
+        fig.savefig(Path(f'./results/qlearning_ams_qtable_{param_string}.png'))
 
         # Testing the agent
         total_rewards = 0
         generated_lines = []
+        test_starting_loc = tuple(city.vector_to_grid(Q.sum(axis=1).argmax()))
         for episode in range(test_episodes):
-            state, info = env.reset(seed=seed, loc=starting_loc)
+            state, info = env.reset(seed=seed, loc=test_starting_loc)
             episode_reward = 0
             locations = []
             while True:
@@ -235,7 +269,8 @@ if __name__ == '__main__':
         plot_grid = gen_line_plot_grid(np.array(generated_lines))
         fig, ax = plt.subplots(figsize=(5, 5))
         ax.imshow(plot_grid)
+        highlight_cells([test_starting_loc], ax=ax, color='limegreen')
         fig.suptitle(f'Average Generated line \n reward: {episode_reward}')
-        fig.savefig(Path(f'./results/qlearning_ams_line_a{alpha}_g{gamma}_d{e_decay}_epis{train_episodes}.png'))
+        fig.savefig(Path(f'./results/qlearning_ams_line_{param_string}.png'))
 
         print('Line Segments: ', locations)
