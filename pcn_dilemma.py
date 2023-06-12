@@ -47,8 +47,8 @@ def main(args):
         max_buffer_size=50,
         num_model_updates=50,
         starting_loc=(4, 0),
-        save_dir=save_dir
-        # max_return=np.array([1.5, 1.5, -0.0]),
+        max_return=np.array([1, 1]),
+        save_dir=save_dir,
         # known_pareto_front=env.unwrapped.pareto_front(gamma=1.0),
     )
 
