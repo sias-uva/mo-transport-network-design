@@ -11,15 +11,17 @@ import gymnasium
 import matplotlib.pyplot as plt
 import envs
 
-# alpha = [0.1, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8] # learning rate
-# gamma = [0.1, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
-alpha = 0.4
-gamma = 0.8
+# alpha = [0.1, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9] # learning rate
+# gamma = [1]
+alpha = 0.3
+gamma = 1
 epsilon = 1
 max_epsilon = 1
 min_epsilon = 0.01
-e_decay = 0.003
-train_episodes = 20
+e_decay = 0.01
+train_episodes = 250
+
+exploration_episodes = 500
 
 test_episodes = 1
 nr_stations = 20
@@ -27,7 +29,7 @@ seed = 42
 # starting_loc = None
 starting_loc = (11, 14)
 # Starting location ranges to sample from, x and y coordinates are sampled separately
-# starting_loc = ((9, 11), (12, 14))
+# starting_loc = ((8, 12), (11, 15))
 
 # follow pre-determined policy
 policy = None
@@ -248,9 +250,9 @@ if __name__ == '__main__':
         # Testing the agent
         total_rewards = 0
         generated_lines = []
-        test_starting_loc = tuple(city.vector_to_grid(Q.sum(axis=1).argmax()))
+        # test_starting_loc = tuple(city.vector_to_grid(Q.sum(axis=1).argmax()))
         for episode in range(test_episodes):
-            state, info = env.reset(seed=seed, loc=test_starting_loc)
+            state, info = env.reset(seed=seed, loc=starting_loc)
             episode_reward = 0
             locations = []
             while True:
@@ -269,7 +271,7 @@ if __name__ == '__main__':
         plot_grid = gen_line_plot_grid(np.array(generated_lines))
         fig, ax = plt.subplots(figsize=(5, 5))
         ax.imshow(plot_grid)
-        highlight_cells([test_starting_loc], ax=ax, color='limegreen')
+        highlight_cells([starting_loc], ax=ax, color='limegreen')
         fig.suptitle(f'Average Generated line \n reward: {episode_reward}')
         fig.savefig(Path(f'./results/qlearning_ams_line_{param_string}.png'))
 
