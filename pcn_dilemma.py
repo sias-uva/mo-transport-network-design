@@ -1,3 +1,4 @@
+import datetime
 from pathlib import Path
 import mo_gymnasium as mo_gym
 from motndp.city import City
@@ -37,6 +38,7 @@ def main(args):
         log=not args.no_log,
     )
 
+    save_dir = Path(f"./results/pcn_dilemma_{datetime.datetime.today().strftime('%Y%m%d_%H_%M_%S.%f')}")
     agent.train(
         eval_env=make_env(),
         total_timesteps=args.timesteps,
@@ -45,6 +47,7 @@ def main(args):
         max_buffer_size=50,
         num_model_updates=50,
         starting_loc=(4, 0),
+        save_dir=save_dir
         # max_return=np.array([1.5, 1.5, -0.0]),
         # known_pareto_front=env.unwrapped.pareto_front(gamma=1.0),
     )
