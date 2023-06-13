@@ -43,9 +43,9 @@ def main(args):
         eval_env=make_env(),
         total_timesteps=args.timesteps,
         ref_point=np.array([0, 0]),
-        num_er_episodes=10,
+        num_er_episodes=50,
         max_buffer_size=50,
-        num_model_updates=50,
+        num_model_updates=10,
         starting_loc=(4, 0),
         max_return=np.array([1, 1]),
         save_dir=save_dir,
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     parser.add_argument('--nr_stations', default=9, type=int)
     parser.add_argument('--lr', default=1e-2, type=float)
     parser.add_argument('--batch_size', default=256, type=int)
-    parser.add_argument('--timesteps', default=1000, type=int)
+    parser.add_argument('--timesteps', default=2000, type=int)
 
     args = parser.parse_args()
     main(args)
