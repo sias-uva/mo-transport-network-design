@@ -60,6 +60,7 @@ if __name__ == "__main__":
     # parser.add_argument('--nr_stations', default=9, type=int)
     parser.add_argument('--lr', default=1e-2, type=float)
     parser.add_argument('--batch_size', default=256, type=int)
+    parser.add_argument('--num_er_episodes', default=50, type=int)
     parser.add_argument('--timesteps', default=2000, type=int)
 
     args = parser.parse_args()
@@ -74,7 +75,6 @@ if __name__ == "__main__":
         args.experiment_name = "PCN-Dilemma"
         args.scaling_factor = np.array([1, 1, 0.1])
         args.ref_point = np.array([0, 0])
-        args.num_er_episodes=50
         args.max_buffer_size=50
         args.num_model_updates=10
         args.starting_loc=(4, 0)
@@ -88,7 +88,6 @@ if __name__ == "__main__":
         args.experiment_name = "PCN-Amsterdam"
         args.scaling_factor = np.array([1, 1, 1, 1, 1, 0.1])
         args.ref_point = np.array([0, 0, 0, 0, 0])
-        args.num_er_episodes=50
         args.max_buffer_size=50
         args.num_model_updates=10
         args.starting_loc=(11, 14)
