@@ -80,7 +80,7 @@ if __name__ == "__main__":
         args.num_model_updates=10
         args.starting_loc=(4, 0)
         args.max_return=np.array([1, 1])
-    if args.env == 'amsterdam':
+    elif args.env == 'amsterdam':
         args.city_path = Path(f"./envs/mo-tndp/cities/amsterdam")
         args.nr_stations = 20
         args.gym_env = 'motndp_amsterdam-v0'
