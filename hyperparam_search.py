@@ -17,7 +17,7 @@ batch_sizes = [128, 256, 512]
 lrs = [1e-1, 1e-2, 1e-3, 1e-4]
 er_episodes = [25, 50, 100]
 # This is not a hyperparameter, it's the number of objectives
-nr_groups = 2
+nr_groups = 5
 
 for batch_size in batch_sizes:
     for lr in lrs:
