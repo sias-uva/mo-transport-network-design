@@ -6,7 +6,6 @@ from motndp.constraints import MetroConstraints
 import numpy as np
 import envs
 import argparse
-
 from morl_baselines.multi_policy.pcn.pcn_tndp import PCNTNDP
 
 def main(args):
@@ -36,6 +35,9 @@ def main(args):
         log=not args.no_log,
     )
 
+    if args.starting_loc is None:
+        print('NOTE: Training is running with random starting locations.')
+
     save_dir = Path(f"./results/pcn_{args.env}_{datetime.datetime.today().strftime('%Y%m%d_%H_%M_%S.%f')}")
     agent.train(
         eval_env=make_env(),
@@ -55,13 +57,18 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MO PCN - TNDP")
     # Acceptable values: 'dilemma', 'amsterdam'
     parser.add_argument('--env', default='dilemma', type=str)
-    parser.add_argument('--no_log', action='store_true', default=False)
+    # For amsterdam environment we have different groups files (different nr of objectives)
+    parser.add_argument('--nr_groups', default=5, type=int)
+    # Starting location of the agent
+    parser.add_argument('--starting_loc_x', default=None, type=int)
+    parser.add_argument('--starting_loc_y', default=None, type=int)
     # Episode horizon -- used as a proxy of both the budget and the number of stations (stations are not really costed)
     # parser.add_argument('--nr_stations', default=9, type=int)
     parser.add_argument('--lr', default=1e-2, type=float)
     parser.add_argument('--batch_size', default=256, type=int)
     parser.add_argument('--num_er_episodes', default=50, type=int)
     parser.add_argument('--timesteps', default=2000, type=int)
+    parser.add_argument('--no_log', action='store_true', default=False)
 
     args = parser.parse_args()
 
@@ -77,20 +84,22 @@ if __name__ == "__main__":
         args.ref_point = np.array([0, 0])
         args.max_buffer_size=50
         args.num_model_updates=10
-        args.starting_loc=(4, 0)
+        # args.starting_loc = None
+        # args.starting_loc=(4, 0)
         args.max_return=np.array([1, 1])
     elif args.env == 'amsterdam':
         args.city_path = Path(f"./envs/mo-tndp/cities/amsterdam")
         args.nr_stations = 20
         args.gym_env = 'motndp_amsterdam-v0'
-        args.groups_file = "price_groups_5.txt"
+        args.groups_file = f"price_groups_{args.nr_groups}.txt"
         args.ignore_existing_lines = True
         args.experiment_name = "PCN-Amsterdam"
-        args.scaling_factor = np.array([1, 1, 1, 1, 1, 0.1])
-        args.ref_point = np.array([0, 0, 0, 0, 0])
+        args.scaling_factor = np.array([1] * args.nr_groups + [0.01])
+        args.ref_point = np.array([0] * args.nr_groups)
         args.max_buffer_size=50
-        args.num_model_updates=10
-        args.starting_loc=(11, 14)
-        args.max_return=np.array([1, 1, 1, 1, 1])
+        args.num_model_updates=50
+        # args.starting_loc=(9, 19)
+        args.max_return=np.array([1] * args.nr_groups)
     
+    args.starting_loc = (args.starting_loc_x, args.starting_loc_y)
     main(args)
