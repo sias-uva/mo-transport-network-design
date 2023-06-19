@@ -49,6 +49,7 @@ def main(args):
         starting_loc=args.starting_loc,
         max_return=args.max_return,
         save_dir=save_dir,
+        n_policies=args.num_policies,
         # known_pareto_front=env.unwrapped.pareto_front(gamma=1.0),
     )
 
@@ -67,6 +68,9 @@ if __name__ == "__main__":
     parser.add_argument('--lr', default=1e-2, type=float)
     parser.add_argument('--batch_size', default=256, type=int)
     parser.add_argument('--num_er_episodes', default=50, type=int)
+    parser.add_argument('--num_model_updates', default=10, type=int)
+    parser.add_argument('--num_policies', default=10, type=int)
+    parser.add_argument('--max_buffer_size', default=50, type=int)
     parser.add_argument('--timesteps', default=2000, type=int)
     parser.add_argument('--no_log', action='store_true', default=False)
 
@@ -82,8 +86,8 @@ if __name__ == "__main__":
         args.experiment_name = "PCN-Dilemma"
         args.scaling_factor = np.array([1, 1, 0.1])
         args.ref_point = np.array([0, 0])
-        args.max_buffer_size=50
-        args.num_model_updates=10
+        # args.max_buffer_size=50
+        # args.num_model_updates=10
         # args.starting_loc = None
         # args.starting_loc=(4, 0)
         args.max_return=np.array([1, 1])
@@ -96,8 +100,8 @@ if __name__ == "__main__":
         args.experiment_name = "PCN-Amsterdam"
         args.scaling_factor = np.array([1] * args.nr_groups + [0.01])
         args.ref_point = np.array([0] * args.nr_groups)
-        args.max_buffer_size=50
-        args.num_model_updates=50
+        # args.max_buffer_size=50
+        # args.num_model_updates=10
         # args.starting_loc=(9, 19)
         args.max_return=np.array([1] * args.nr_groups)
     
