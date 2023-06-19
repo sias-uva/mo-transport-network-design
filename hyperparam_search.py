@@ -21,7 +21,7 @@ lrs = [1e-1, 1e-2, 1e-3, 1e-4]
 er_episodes = [25, 50, 100]
 max_buffer_sizes = [50, 100, 200]
 model_updates = [10, 20, 50]
-timesteps = [30000]
+timesteps = [10000]
 # ###
 
 if __name__ == "__main__":
