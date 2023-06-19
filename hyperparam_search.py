@@ -7,21 +7,21 @@ from train_pcn import main
 import time
 
 ### Hyperparameters for Dilemma
-batch_sizes = [128, 256]
-lrs = [1e-1]
-er_episodes = [25]
-max_buffer_sizes = [50]
-model_updates = [10]
-timesteps = [1000]
+# batch_sizes = [128, 256]
+# lrs = [1e-1]
+# er_episodes = [25]
+# max_buffer_sizes = [50]
+# model_updates = [10]
+# timesteps = [1000]
 ###
 
 # ### Hyperparameters for Amsterdam
-# batch_sizes = [128, 256, 512]
-# lrs = [1e-1, 1e-2, 1e-3, 1e-4]
-# er_episodes = [25, 50, 100]
-# max_buffer_sizes = [50, 100, 200]
-# model_updates = [10, 20, 50]
-# timesteps = [30000]
+batch_sizes = [128, 256, 512]
+lrs = [1e-1, 1e-2, 1e-3, 1e-4]
+er_episodes = [25, 50, 100]
+max_buffer_sizes = [50, 100, 200]
+model_updates = [10, 20, 50]
+timesteps = [30000]
 # ###
 
 if __name__ == "__main__":
@@ -80,7 +80,7 @@ if __name__ == "__main__":
                             start_time = time.time()
                             # Average running time of the last 5 runs
                             avg_runtime = np.mean(running_times[-5:])
-                            print(f'Run {counter}/{total_runs} | Avg running time: {avg_runtime} | Estimated Time left: {(total_runs - counter)*avg_runtime * 60} minutes | batch_size: {batch_size}, lr: {lr}, er_episodes: {er_ep}, max_buffer_size: {max_buffer_size}, model_update: {model_update}, timestep: {timestep}')
+                            print(f'Run {counter}/{total_runs} | Avg running time: {avg_runtime} | Estimated Time left: {(total_runs - counter)*avg_runtime * 60} minutes | env: {args.env} batch_size: {batch_size}, lr: {lr}, er_episodes: {er_ep}, max_buffer_size: {max_buffer_size}, model_update: {model_update}, timestep: {timestep}')
                             args.batch_size = batch_size
                             args.lr = lr
                             args.num_er_episodes = er_ep
