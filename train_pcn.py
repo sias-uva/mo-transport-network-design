@@ -86,10 +86,6 @@ if __name__ == "__main__":
         args.experiment_name = "PCN-Dilemma"
         args.scaling_factor = np.array([1, 1, 0.1])
         args.ref_point = np.array([0, 0])
-        # args.max_buffer_size=50
-        # args.num_model_updates=10
-        # args.starting_loc = None
-        # args.starting_loc=(4, 0)
         args.max_return=np.array([1, 1])
     elif args.env == 'amsterdam':
         args.city_path = Path(f"./envs/mo-tndp/cities/amsterdam")
@@ -100,10 +96,11 @@ if __name__ == "__main__":
         args.experiment_name = "PCN-Amsterdam"
         args.scaling_factor = np.array([1] * args.nr_groups + [0.01])
         args.ref_point = np.array([0] * args.nr_groups)
-        # args.max_buffer_size=50
-        # args.num_model_updates=10
-        # args.starting_loc=(9, 19)
         args.max_return=np.array([1] * args.nr_groups)
     
-    args.starting_loc = (args.starting_loc_x, args.starting_loc_y)
+    if args.starting_loc_x is not None and args.starting_loc_y is not None:
+        args.starting_loc = (args.starting_loc_x, args.starting_loc_y)
+    else:
+        args.starting_loc = None
+
     main(args)
