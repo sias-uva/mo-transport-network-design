@@ -10,3 +10,9 @@ register(
     id="motndp_dilemma-v0",
     entry_point="motndp.motndp:MOTNDP",
 )
+
+register(
+    id="motndp_margins-v0",
+    entry_point="motndp.motndp:MOTNDP",
+)
+

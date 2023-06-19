@@ -56,7 +56,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MO PCN - TNDP")
-    # Acceptable values: 'dilemma', 'amsterdam'
+    # Acceptable values: 'dilemma', 'margins', 'amsterdam'
     parser.add_argument('--env', default='dilemma', type=str)
     # For amsterdam environment we have different groups files (different nr of objectives)
     parser.add_argument('--nr_groups', default=5, type=int)
@@ -84,6 +84,16 @@ if __name__ == "__main__":
         args.groups_file = "groups.txt"
         args.ignore_existing_lines = True
         args.experiment_name = "PCN-Dilemma"
+        args.scaling_factor = np.array([1, 1, 0.1])
+        args.ref_point = np.array([0, 0])
+        args.max_return=np.array([1, 1])
+    elif args.env == 'margins':
+        args.city_path = Path(f"./envs/mo-tndp/cities/margins_5x5")
+        args.nr_stations = 9
+        args.gym_env = 'motndp_margins-v0'
+        args.groups_file = f"groups.txt"
+        args.ignore_existing_lines = True
+        args.experiment_name = "PCN-Margins"
         args.scaling_factor = np.array([1, 1, 0.1])
         args.ref_point = np.array([0, 0])
         args.max_return=np.array([1, 1])
