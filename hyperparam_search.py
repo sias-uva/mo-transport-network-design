@@ -80,7 +80,7 @@ if __name__ == "__main__":
                             start_time = time.time()
                             # Average running time of the last 5 runs
                             avg_runtime = np.mean(running_times[-5:])
-                            print(f'Run {counter}/{total_runs} | Avg running time: {avg_runtime} | Estimated Time left: {(total_runs - counter)*avg_runtime * 60} minutes | env: {args.env} batch_size: {batch_size}, lr: {lr}, er_episodes: {er_ep}, max_buffer_size: {max_buffer_size}, model_update: {model_update}, timestep: {timestep}')
+                            print(f'Run {counter}/{total_runs} | Avg running time: {avg_runtime} | Estimated Time left: {(total_runs - counter)*avg_runtime / 60} minutes | env: {args.env} batch_size: {batch_size}, lr: {lr}, er_episodes: {er_ep}, max_buffer_size: {max_buffer_size}, model_update: {model_update}, timestep: {timestep}')
                             args.batch_size = batch_size
                             args.lr = lr
                             args.num_er_episodes = er_ep
