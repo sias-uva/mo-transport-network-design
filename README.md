@@ -3,6 +3,11 @@ Designing Transportation Networks with Multiple Objectives
 
 
 # Setup
+Create the conda environment:
+```
+conda env create -f environment.yml
+```
+
 Install the mo-tndp environment:
 ```
 git submodule update --init --recursive
@@ -12,7 +17,7 @@ pip install -e .
 
 Install the morl-baselines repo:
 ```
-cd morl_baselines
+cd morl-baselines
 pip install -e .
 ```
 
