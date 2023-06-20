@@ -16,11 +16,12 @@ import time
 ###
 
 # ### Hyperparameters for Amsterdam
-batch_sizes = [128, 256, 512]
-lrs = [1e-1, 1e-2, 1e-3, 1e-4]
-er_episodes = [25, 50, 100]
-max_buffer_sizes = [50, 100, 200]
-model_updates = [10, 20, 50]
+batch_sizes = [128]
+lrs = [1e-1]
+er_episodes = [25]
+max_buffer_sizes = [25]
+model_updates = [10, 30]
+hidden_dims = [64, 128, 256, 512]
 timesteps = [10000]
 # ###
 
@@ -67,7 +68,7 @@ if __name__ == "__main__":
     else:
         args.starting_loc = None
 
-    total_runs = len(batch_sizes) * len(lrs) * len(er_episodes) * len(max_buffer_sizes) * len(model_updates) * len(timesteps)
+    total_runs = len(batch_sizes) * len(lrs) * len(er_episodes) * len(max_buffer_sizes) * len(model_updates) * len(hidden_dims) * len(timesteps)
     counter = 0
     running_times = []
     for batch_size in batch_sizes:
@@ -75,23 +76,25 @@ if __name__ == "__main__":
             for er_ep in er_episodes:
                 for max_buffer_size in max_buffer_sizes:
                     for model_update in model_updates:
-                        for timestep in timesteps:
-                            counter += 1
-                            start_time = time.time()
-                            # Average running time of the last 5 runs
-                            avg_runtime = np.mean(running_times[-5:])
-                            print(f'Run {counter}/{total_runs} | Avg running time: {avg_runtime} | Estimated Time left: {(total_runs - counter)*avg_runtime / 60} minutes | env: {args.env} batch_size: {batch_size}, lr: {lr}, er_episodes: {er_ep}, max_buffer_size: {max_buffer_size}, model_update: {model_update}, timestep: {timestep}')
-                            args.batch_size = batch_size
-                            args.lr = lr
-                            args.num_er_episodes = er_ep
-                            args.max_buffer_size = max_buffer_size
-                            args.num_model_updates = model_update
-                            args.timesteps = timestep
+                        for hidden_d in hidden_dims:
+                            for timestep in timesteps:
+                                counter += 1
+                                start_time = time.time()
+                                # Average running time of the last 5 runs
+                                avg_runtime = np.mean(running_times[-5:])
+                                print(f'Run {counter}/{total_runs} | Avg running time: {avg_runtime} | Estimated Time left: {(total_runs - counter)*avg_runtime / 60} minutes | env: {args.env} batch_size: {batch_size}, lr: {lr}, er_episodes: {er_ep}, max_buffer_size: {max_buffer_size}, model_update: {model_update}, hidden_size: {hidden_d}, timestep: {timestep}')
+                                args.batch_size = batch_size
+                                args.lr = lr
+                                args.num_er_episodes = er_ep
+                                args.max_buffer_size = max_buffer_size
+                                args.num_model_updates = model_update
+                                args.timesteps = timestep
+                                args.hidden_dim = hidden_d
 
-                            main(args)
+                                main(args)
 
-                            execution_time = time.time() - start_time
-                            running_times.append(execution_time)
+                                execution_time = time.time() - start_time
+                                running_times.append(execution_time)
 
 #%% OLD CODE --  Dilemma Hypeparameter Search
 # batch_sizes = [128, 256, 512]
