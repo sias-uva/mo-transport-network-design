@@ -97,12 +97,12 @@ if __name__ == "__main__":
     checkpoints.sort(key=lambda x: os.path.getmtime(x))
     model = torch.load(checkpoints[-1])
 
-    print(f'Will evaluate model {checkpoints[-1]}')
-
     # Load the environment
     if output['env'] == 'motndp_dilemma-v0':
         city_path = Path(f"./envs/mo-tndp/cities/dilemma_5x5")
         nr_stations = 9
+        nr_groups = len(output['best_front_r'][0])
+        starting_loc = (output['starting_loc'][0], output['starting_loc'][1])
         groups_file = "groups.txt"
         ignore_existing_lines = True
         max_return=np.array([1, 1])
@@ -110,11 +110,14 @@ if __name__ == "__main__":
     elif output['env'] == 'motndp_amsterdam-v0':
         city_path = Path(f"./envs/mo-tndp/cities/amsterdam")
         nr_stations = 20
-        groups_file = "price_groups_5.txt"
+        nr_groups = len(output['best_front_r'][0])
+        starting_loc = (output['starting_loc'][0], output['starting_loc'][1])
+        groups_file = f"price_groups_{nr_groups}.txt"
         ignore_existing_lines = True
-        max_return=np.array([1, 1, 1, 1, 1])
-        starting_loc=(11, 14)
-    
+        max_return=np.array([1] * nr_groups)
+
+    print(f'Will evaluate model {checkpoints[-1]} , with groups file {groups_file}, starting location {starting_loc}')
+
     env = make_env(city_path, output['env'], nr_stations, groups_file, ignore_existing_lines)
 
     inp = -1
