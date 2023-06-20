@@ -16,12 +16,12 @@ import time
 ###
 
 # ### Hyperparameters for Amsterdam
-batch_sizes = [128]
-lrs = [1e-1]
-er_episodes = [25]
-max_buffer_sizes = [25]
+batch_sizes = [128, 256]
+lrs = [1e-1, 2e-1, 1e-2, 2e-2]
+er_episodes = [25, 50]
+max_buffer_sizes = [50]
 model_updates = [10, 30]
-hidden_dims = [64, 128, 256, 512]
+hidden_dims = [32, 64, 128]
 timesteps = [10000]
 # ###
 
@@ -52,6 +52,7 @@ if __name__ == "__main__":
         args.scaling_factor = np.array([1, 1, 0.1])
         args.ref_point = np.array([0, 0])
         args.max_return=np.array([1, 1])
+        args.pf_plot_limits = [0, 0.5]
     elif args.env == 'amsterdam':
         args.city_path = Path(f"./envs/mo-tndp/cities/amsterdam")
         args.nr_stations = 20
@@ -62,6 +63,7 @@ if __name__ == "__main__":
         args.scaling_factor = np.array([1] * args.nr_groups + [0.01])
         args.ref_point = np.array([0] * args.nr_groups)
         args.max_return=np.array([1] * args.nr_groups)
+        args.pf_plot_limits = [0, 0.5]
     
     if args.starting_loc_x is not None and args.starting_loc_y is not None:
         args.starting_loc = (args.starting_loc_x, args.starting_loc_y)
