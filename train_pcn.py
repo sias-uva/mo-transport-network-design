@@ -50,6 +50,7 @@ def main(args):
         starting_loc=args.starting_loc,
         max_return=args.max_return,
         save_dir=save_dir,
+        pf_plot_limits=args.pf_plot_limits,
         n_policies=args.num_policies,
         # known_pareto_front=env.unwrapped.pareto_front(gamma=1.0),
     )
@@ -89,6 +90,7 @@ if __name__ == "__main__":
         args.scaling_factor = np.array([1, 1, 0.1])
         args.ref_point = np.array([0, 0])
         args.max_return=np.array([1, 1])
+        args.pf_plot_limits = [0, 0.5]
     elif args.env == 'margins':
         args.city_path = Path(f"./envs/mo-tndp/cities/margins_5x5")
         args.nr_stations = 9
@@ -99,6 +101,7 @@ if __name__ == "__main__":
         args.scaling_factor = np.array([1, 1, 0.1])
         args.ref_point = np.array([0, 0])
         args.max_return=np.array([1, 1])
+        args.pf_plot_limits = [0, 0.5]
     elif args.env == 'amsterdam':
         args.city_path = Path(f"./envs/mo-tndp/cities/amsterdam")
         args.nr_stations = 20
@@ -109,6 +112,7 @@ if __name__ == "__main__":
         args.scaling_factor = np.array([1] * args.nr_groups + [0.01])
         args.ref_point = np.array([0] * args.nr_groups)
         args.max_return=np.array([1] * args.nr_groups)
+        args.pf_plot_limits = [0, 0.015]
     
     if args.starting_loc_x is not None and args.starting_loc_y is not None:
         args.starting_loc = (args.starting_loc_x, args.starting_loc_y)
