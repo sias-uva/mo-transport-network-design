@@ -33,6 +33,7 @@ def main(args):
         project_name="MORL-TNDP",
         experiment_name=args.experiment_name,
         log=not args.no_log,
+        hidden_dim=args.hidden_dim,
     )
 
     if args.starting_loc is None:
@@ -71,6 +72,7 @@ if __name__ == "__main__":
     parser.add_argument('--num_model_updates', default=10, type=int)
     parser.add_argument('--num_policies', default=10, type=int)
     parser.add_argument('--max_buffer_size', default=50, type=int)
+    parser.add_argument('--hidden_dim', default=64, type=int)
     parser.add_argument('--timesteps', default=2000, type=int)
     parser.add_argument('--no_log', action='store_true', default=False)
 
