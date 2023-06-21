@@ -45,6 +45,7 @@ def main(args):
         total_timesteps=args.timesteps,
         ref_point=args.ref_point,
         num_er_episodes=args.num_er_episodes,
+        num_step_episodes=args.num_step_episodes,
         max_buffer_size=args.max_buffer_size,
         num_model_updates=args.num_model_updates,
         starting_loc=args.starting_loc,
@@ -70,6 +71,7 @@ if __name__ == "__main__":
     parser.add_argument('--lr', default=1e-2, type=float)
     parser.add_argument('--batch_size', default=256, type=int)
     parser.add_argument('--num_er_episodes', default=50, type=int)
+    parser.add_argument('--num_step_episodes', default=10, type=int)
     parser.add_argument('--num_model_updates', default=10, type=int)
     parser.add_argument('--num_policies', default=10, type=int)
     parser.add_argument('--max_buffer_size', default=50, type=int)
