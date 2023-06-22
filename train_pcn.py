@@ -36,6 +36,7 @@ def main(args):
         experiment_name=args.experiment_name,
         log=not args.no_log,
         seed=args.seed,
+        nr_layers=args.nr_layers,
         hidden_dim=args.hidden_dim,
     )
 
@@ -52,6 +53,7 @@ def main(args):
         max_buffer_size=args.max_buffer_size,
         num_model_updates=args.num_model_updates,
         starting_loc=args.starting_loc,
+        nr_stations=args.nr_stations,
         max_return=args.max_return,
         save_dir=save_dir,
         pf_plot_limits=args.pf_plot_limits,
@@ -70,7 +72,7 @@ if __name__ == "__main__":
     parser.add_argument('--starting_loc_x', default=None, type=int)
     parser.add_argument('--starting_loc_y', default=None, type=int)
     # Episode horizon -- used as a proxy of both the budget and the number of stations (stations are not really costed)
-    # parser.add_argument('--nr_stations', default=9, type=int)
+    parser.add_argument('--nr_stations', type=int, required=True)
     parser.add_argument('--lr', default=1e-2, type=float)
     parser.add_argument('--batch_size', default=256, type=int)
     parser.add_argument('--num_er_episodes', default=50, type=int)
@@ -78,6 +80,7 @@ if __name__ == "__main__":
     parser.add_argument('--num_model_updates', default=10, type=int)
     parser.add_argument('--num_policies', default=10, type=int)
     parser.add_argument('--max_buffer_size', default=50, type=int)
+    parser.add_argument('--nr_layers', default=1, type=int)
     parser.add_argument('--hidden_dim', default=64, type=int)
     parser.add_argument('--timesteps', default=2000, type=int)
     parser.add_argument('--no_log', action='store_true', default=False)
@@ -114,7 +117,6 @@ if __name__ == "__main__":
         args.pf_plot_limits = [0, 0.5]
     elif args.env == 'amsterdam':
         args.city_path = Path(f"./envs/mo-tndp/cities/amsterdam")
-        args.nr_stations = 20
         args.gym_env = 'motndp_amsterdam-v0'
         args.groups_file = f"price_groups_{args.nr_groups}.txt"
         args.ignore_existing_lines = True
