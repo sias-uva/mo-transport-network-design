@@ -1,9 +1,11 @@
 import datetime
 from pathlib import Path
+import random
 import mo_gymnasium as mo_gym
 from motndp.city import City
 from motndp.constraints import MetroConstraints
 import numpy as np
+import torch
 import envs
 import argparse
 from morl_baselines.multi_policy.pcn.pcn_tndp import PCNTNDP
@@ -53,6 +55,7 @@ def main(args):
         save_dir=save_dir,
         pf_plot_limits=args.pf_plot_limits,
         n_policies=args.num_policies,
+        seed=args.seed,
         # known_pareto_front=env.unwrapped.pareto_front(gamma=1.0),
     )
 
@@ -78,8 +81,13 @@ if __name__ == "__main__":
     parser.add_argument('--hidden_dim', default=64, type=int)
     parser.add_argument('--timesteps', default=2000, type=int)
     parser.add_argument('--no_log', action='store_true', default=False)
+    parser.add_argument('--seed', default=42, type=int)
 
     args = parser.parse_args()
+
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    random.seed(args.seed)
 
     # Some values are hardcoded for each environment (this is flexible, but we don't want to have to pass 100 arguments to the script)
     if args.env == 'dilemma':
