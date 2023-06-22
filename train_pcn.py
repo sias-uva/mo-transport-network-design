@@ -35,6 +35,7 @@ def main(args):
         project_name="MORL-TNDP",
         experiment_name=args.experiment_name,
         log=not args.no_log,
+        seed=args.seed,
         hidden_dim=args.hidden_dim,
     )
 
@@ -55,7 +56,6 @@ def main(args):
         save_dir=save_dir,
         pf_plot_limits=args.pf_plot_limits,
         n_policies=args.num_policies,
-        seed=args.seed,
         # known_pareto_front=env.unwrapped.pareto_front(gamma=1.0),
     )
 
