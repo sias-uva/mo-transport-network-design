@@ -78,6 +78,7 @@ def run_episode(env, model, desired_return, desired_horizon, max_return, startin
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MO PCN - TNDP")
     parser.add_argument('--path', type=str, help='path of the model to evaluate')
+    parser.add_argument('--checkpoint', type=int, default=None, help='integer index of the checkpoint to evaluate')
     parser.add_argument('--no_log', action='store_true', default=False)
     parser.add_argument('--interactive', action='store_true', default=False, help='interactive policy selection')
 
@@ -95,7 +96,12 @@ if __name__ == "__main__":
     checkpoints = [str(p) for p in model_dir.glob('*.pt')]
     # Sort by creation date
     checkpoints.sort(key=lambda x: os.path.getmtime(x))
-    model = torch.load(checkpoints[-1])
+    if args.checkpoint is not None:
+        model_to_eval = checkpoints[args.checkpoint]
+    else:
+        model_to_eval = checkpoints[-1]
+
+    model = torch.load(model_to_eval)
 
     # Load the environment
     if output['env'] == 'motndp_dilemma-v0':
@@ -116,7 +122,7 @@ if __name__ == "__main__":
         ignore_existing_lines = True
         max_return=np.array([1] * nr_groups)
 
-    print(f'Will evaluate model {checkpoints[-1]} , with groups file {groups_file}, starting location {starting_loc}')
+    print(f'Will evaluate model {model_to_eval} , with groups file {groups_file}, starting location {starting_loc}')
 
     env = make_env(city_path, output['env'], nr_stations, groups_file, ignore_existing_lines)
 
