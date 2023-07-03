@@ -23,9 +23,10 @@ lrs = [1e-1, 1e-2]
 er_episodes = [50, 100]
 max_buffer_sizes = [50, 100]
 model_updates = [5, 10]
-nr_layers = [3]
+nr_layers = [1, 2]
 hidden_dims = [64, 128]
 timesteps = [30000]
+train_mode = 'disttofront'
 # ###
 
 if __name__ == "__main__":
@@ -104,6 +105,7 @@ if __name__ == "__main__":
                                     args.timesteps = timestep
                                     args.hidden_dim = hidden_d
                                     args.nr_layers = nr_l
+                                    args.train_mode = train_mode
 
                                     main(args)
 
