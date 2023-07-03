@@ -59,6 +59,7 @@ def run_episode(env, model, desired_return, desired_horizon, max_return, startin
         transitions.append(Transition(
             observation=obs,
             action=action,
+            action_mask=info['action_mask'],
             reward=np.float32(reward).copy(),
             next_observation=n_obs,
             terminal=done
