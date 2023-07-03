@@ -27,6 +27,7 @@ nr_layers = [1, 2]
 hidden_dims = [64, 128]
 timesteps = [30000]
 train_mode = 'disttofront'
+nr_explore_episodes = 10
 # ###
 
 if __name__ == "__main__":
@@ -106,6 +107,7 @@ if __name__ == "__main__":
                                     args.hidden_dim = hidden_d
                                     args.nr_layers = nr_l
                                     args.train_mode = train_mode
+                                    args.num_explore_episodes = nr_explore_episodes
 
                                     main(args)
 
