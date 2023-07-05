@@ -82,7 +82,7 @@ if __name__ == "__main__":
     else:
         args.starting_loc = None
 
-    total_runs = len(batch_sizes) * len(lrs) * len(er_episodes) * len(max_buffer_sizes) * len(model_updates) * len(hidden_dims) * len(timesteps)
+    total_runs = len(batch_sizes) * len(lrs) * len(er_episodes) * len(max_buffer_sizes) * len(model_updates) * len(nr_layers) * len(hidden_dims) * len(timesteps)
     counter = 0
     running_times = []
     for batch_size in batch_sizes:
