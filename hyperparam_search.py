@@ -28,6 +28,7 @@ nr_layers = [1, 2, 3]
 hidden_dims = [64, 128]
 timesteps = [50000]
 train_mode = 'disttofront2'
+num_explore_episodes = None
 # ###
 
 settings = [batch_sizes, lrs, er_episodes, max_buffer_sizes, model_updates, nr_layers, hidden_dims, timesteps]
@@ -108,6 +109,7 @@ if __name__ == "__main__":
         args.hidden_dim = hidden_d
         args.nr_layers = nr_l
         args.train_mode = train_mode
+        args.num_explore_episodes = num_explore_episodes
 
         main(args)
 
