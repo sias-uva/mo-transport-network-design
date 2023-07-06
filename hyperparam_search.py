@@ -1,5 +1,6 @@
 # It's a script that's not necessary to train and evaluate the PCN, but it's useful to perform grid-search on hyper-parameters.
 import argparse
+from itertools import product
 from pathlib import Path
 import random
 
@@ -18,17 +19,21 @@ import torch
 ###
 
 # ### Hyperparameters for Amsterdam
-batch_sizes = [256, 512, 1024]
+batch_sizes = [128, 256]
 lrs = [1e-1, 1e-2]
 er_episodes = [50, 100]
 max_buffer_sizes = [50, 100]
 model_updates = [5, 10]
-nr_layers = [1, 2]
+nr_layers = [1, 2, 3]
 hidden_dims = [64, 128]
-timesteps = [30000]
-train_mode = 'disttofront'
-nr_explore_episodes = 10
+timesteps = [50000]
+train_mode = 'disttofront2'
 # ###
+
+settings = [batch_sizes, lrs, er_episodes, max_buffer_sizes, model_updates, nr_layers, hidden_dims, timesteps]
+
+# All combinations of hyperparameters
+combinations = list(product(*settings))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MO PCN - TNDP Hyperparameter Search")
@@ -44,6 +49,7 @@ if __name__ == "__main__":
     parser.add_argument('--num_policies', default=10, type=int)
     parser.add_argument('--seed', default=42, type=int)
     parser.add_argument('--no_log', action='store_true', default=False)
+    parser.add_argument('--random', action='store_true', default=False, help='if true, the hyperparameter search will be random instead of exhaustive')
 
     args = parser.parse_args()
 
@@ -82,37 +88,32 @@ if __name__ == "__main__":
     else:
         args.starting_loc = None
 
-    total_runs = len(batch_sizes) * len(lrs) * len(er_episodes) * len(max_buffer_sizes) * len(model_updates) * len(nr_layers) * len(hidden_dims) * len(timesteps)
     counter = 0
     running_times = []
-    for batch_size in batch_sizes:
-        for lr in lrs:
-            for er_ep in er_episodes:
-                for max_buffer_size in max_buffer_sizes:
-                    for model_update in model_updates:
-                        for hidden_d in hidden_dims:
-                            for nr_l in nr_layers:
-                                for timestep in timesteps:
-                                    counter += 1
-                                    start_time = time.time()
-                                    # Average running time of the last 5 runs
-                                    avg_runtime = np.mean(running_times[-5:])
-                                    print(f'Run {counter}/{total_runs} | Avg running time: {avg_runtime} | Estimated Time left: {(total_runs - counter)*avg_runtime / 60} minutes | env: {args.env} batch_size: {batch_size}, lr: {lr}, er_episodes: {er_ep}, max_buffer_size: {max_buffer_size}, model_update: {model_update}, hidden_size: {hidden_d}, timestep: {timestep}')
-                                    args.batch_size = batch_size
-                                    args.lr = lr
-                                    args.num_er_episodes = er_ep
-                                    args.max_buffer_size = max_buffer_size
-                                    args.num_model_updates = model_update
-                                    args.timesteps = timestep
-                                    args.hidden_dim = hidden_d
-                                    args.nr_layers = nr_l
-                                    args.train_mode = train_mode
-                                    args.num_explore_episodes = nr_explore_episodes
+    total_runs = len(combinations)
+    if args.random:
+        random.shuffle(combinations)
+    for batch_size, lr, er_ep, max_buffer_size, model_update, nr_l, hidden_d, timestep in combinations:
+        counter += 1
+        start_time = time.time()
+        # Average running time of the last 5 runs
+        avg_runtime = np.mean(running_times[-5:])
+        print(f'Run {counter}/{total_runs} | Avg running time: {avg_runtime} | Estimated Time left: {(total_runs - counter)*avg_runtime / 60} minutes | env: {args.env} batch_size: {batch_size}, lr: {lr}, er_episodes: {er_ep}, max_buffer_size: {max_buffer_size}, model_update: {model_update}, hidden_size: {hidden_d}, timestep: {timestep}')
+        args.batch_size = batch_size
+        args.lr = lr
+        args.num_er_episodes = er_ep
+        args.max_buffer_size = max_buffer_size
+        args.num_model_updates = model_update
+        args.timesteps = timestep
+        args.hidden_dim = hidden_d
+        args.nr_layers = nr_l
+        args.train_mode = train_mode
 
-                                    main(args)
+        main(args)
 
-                                    execution_time = time.time() - start_time
-                                    running_times.append(execution_time)
+        execution_time = time.time() - start_time
+        running_times.append(execution_time)
+
 
 #%% OLD CODE --  Dilemma Hypeparameter Search
 # batch_sizes = [128, 256, 512]
