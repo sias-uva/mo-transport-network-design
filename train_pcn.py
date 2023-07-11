@@ -61,6 +61,7 @@ def main(args):
         n_policies=args.num_policies,
         train_mode=args.train_mode,
         update_interval=args.update_interval,
+        cd_threshold=args.cd_threshold,
         # known_pareto_front=env.unwrapped.pareto_front(gamma=1.0),
     )
 
@@ -91,6 +92,7 @@ if __name__ == "__main__":
     parser.add_argument('--seed', default=42, type=int)
     parser.add_argument('--train_mode', default='uniform', type=str, choices=['uniform', 'disttofront', 'disttofront2'], help='controls how to select episodes from the replay buffer for training. If uniform, episodes are sampled uniformly. If disttofront, episodes are sampled with probability proportional to their distance to the pareto front.')
     parser.add_argument('--update_interval', default=None, type=int, help='controls how often to update the model. If None, it will update every loop. If a number, it will update every update_interval steps.')
+    parser.add_argument('--cd_threshold', default=0.2, type=float, help='controls the threshold for crowdedness distance.')
 
     args = parser.parse_args()
 
