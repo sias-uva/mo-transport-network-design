@@ -4,29 +4,29 @@ import pandas as pd
 import numpy as np
 
 #% Plot all models
-models_to_plot = [
-                {'dir': 'pcn_amsterdam_20230705_11_14_58.880354', 'name': 'baseline'},
-                {'dir': 'pcn_amsterdam_20230705_13_06_15.465554', 'name': 'baseline'},
-                {'dir': 'pcn_amsterdam_20230705_14_24_30.249039', 'name': 'baseline'},
-                {'dir': 'pcn_amsterdam_20230706_12_39_41.825288', 'name': 'baseline'},
-                # {'dir': 'pcn_amsterdam_20230706_14_33_35.160305', 'name': 'baseline@500k'},
-              {'dir': 'pcn_amsterdam_20230705_19_31_40.423497', 'name': 'dtf'},
-              {'dir': 'pcn_amsterdam_20230705_19_33_45.190523', 'name': 'dtf'},
+# models_to_plot = [
+#                 {'dir': 'pcn_amsterdam_20230705_11_14_58.880354', 'name': 'baseline'},
+#                 {'dir': 'pcn_amsterdam_20230705_13_06_15.465554', 'name': 'baseline'},
+#                 {'dir': 'pcn_amsterdam_20230705_14_24_30.249039', 'name': 'baseline'},
+#                 {'dir': 'pcn_amsterdam_20230706_12_39_41.825288', 'name': 'baseline'},
+#                 # {'dir': 'pcn_amsterdam_20230706_14_33_35.160305', 'name': 'baseline@500k'},
+#               {'dir': 'pcn_amsterdam_20230705_19_31_40.423497', 'name': 'dtf'},
+#               {'dir': 'pcn_amsterdam_20230705_19_33_45.190523', 'name': 'dtf'},
 
-                {'dir': 'pcn_amsterdam_20230706_10_25_46.730664', 'name': 'dtf2'},
-                {'dir': 'pcn_amsterdam_20230706_10_40_06.784805', 'name': 'dtf2'},
-                {'dir': 'pcn_amsterdam_20230706_11_20_11.151743', 'name': 'dtf2'},
-                {'dir': 'pcn_amsterdam_20230706_11_48_12.178011', 'name': 'dtf2'},
+#                 {'dir': 'pcn_amsterdam_20230706_10_25_46.730664', 'name': 'dtf2'},
+#                 {'dir': 'pcn_amsterdam_20230706_10_40_06.784805', 'name': 'dtf2'},
+#                 {'dir': 'pcn_amsterdam_20230706_11_20_11.151743', 'name': 'dtf2'},
+#                 {'dir': 'pcn_amsterdam_20230706_11_48_12.178011', 'name': 'dtf2'},
                 
-                # {'dir': 'pcn_amsterdam_20230706_13_25_22.795103', 'name': 'baselineDTK50k'},
-                # {'dir': 'pcn_amsterdam_20230706_14_49_12.030486', 'name': 'baselineDTK50k'},
-                #   {'dir': 'pcn_amsterdam_20230705_11_22_38.891947', 'name': 'dtf_er'},
-                #   {'dir': 'pcn_amsterdam_20230705_13_04_01.109243', 'name': 'dtf_er'},
-                #   {'dir': 'pcn_amsterdam_20230705_15_13_12.034815', 'name': 'dtf_er'},
-                #   {'dir': 'pcn_amsterdam_20230705_11_26_05.996728', 'name': 'dtf_top10'},
-                #   {'dir': 'pcn_amsterdam_20230705_13_58_50.833274', 'name': 'dtf_top10'},
-                #   {'dir': 'pcn_amsterdam_20230705_15_55_34.410131', 'name': 'dtf_top10'},
-]
+#                 # {'dir': 'pcn_amsterdam_20230706_13_25_22.795103', 'name': 'baselineDTK50k'},
+#                 # {'dir': 'pcn_amsterdam_20230706_14_49_12.030486', 'name': 'baselineDTK50k'},
+#                 #   {'dir': 'pcn_amsterdam_20230705_11_22_38.891947', 'name': 'dtf_er'},
+#                 #   {'dir': 'pcn_amsterdam_20230705_13_04_01.109243', 'name': 'dtf_er'},
+#                 #   {'dir': 'pcn_amsterdam_20230705_15_13_12.034815', 'name': 'dtf_er'},
+#                 #   {'dir': 'pcn_amsterdam_20230705_11_26_05.996728', 'name': 'dtf_top10'},
+#                 #   {'dir': 'pcn_amsterdam_20230705_13_58_50.833274', 'name': 'dtf_top10'},
+#                 #   {'dir': 'pcn_amsterdam_20230705_15_55_34.410131', 'name': 'dtf_top10'},
+# ]
 
 # 10 Stations
 models_to_plot = [
@@ -36,19 +36,24 @@ models_to_plot = [
     {'dir': 'pcn_amsterdam_20230706_22_47_16.110920', 'name': 'baseline'},
     {'dir': 'pcn_amsterdam_20230707_09_31_10.537691', 'name': 'baseline'},
     
-    # {'dir': 'pcn_amsterdam_20230707_11_06_34.501789', 'name': 'baseline_MODEL_UPDATES_1000'},
-    # {'dir': 'pcn_amsterdam_20230707_12_05_53.426532', 'name': 'baseline_MODEL_UPDATES_1000'},
-    # {'dir': 'pcn_amsterdam_20230707_12_05_35.071832', 'name': 'baseline_MODEL_UPDATES_1000'},
-
-    {'dir': 'pcn_amsterdam_20230707_12_53_09.769885', 'name': 'baseline_MODEL_UPDATES_ev1000'},
-    {'dir': 'pcn_amsterdam_20230707_12_54_11.658907', 'name': 'baseline_MODEL_UPDATES_ev1000'},
-    
-    
-    # {'dir': 'pcn_amsterdam_20230707_13_27_46.450130', 'name': 'baseline_MODEL_UPDATES_ev2000'},
-    # {'dir': 'pcn_amsterdam_20230707_13_27_59.221432', 'name': 'baseline_MODEL_UPDATES_ev2000'},
-
     {'dir': 'pcn_amsterdam_20230707_14_02_29.515148', 'name': 'baseline_MODEL_UPDATES_ev500'},
     {'dir': 'pcn_amsterdam_20230707_14_02_20.287639', 'name': 'baseline_MODEL_UPDATES_ev500'},
+
+    {'dir': 'pcn_amsterdam_20230707_15_06_52.175708', 'name': 'dtf_MODEL_UPDATES_ev500'},
+    {'dir': 'pcn_amsterdam_20230707_15_07_14.306401', 'name': 'dtf_MODEL_UPDATES_ev500'},
+    {'dir': 'pcn_amsterdam_20230707_16_22_13.623109', 'name': 'dtf_MODEL_UPDATES_ev500'},
+    {'dir': 'pcn_amsterdam_20230707_16_47_27.392052', 'name': 'dtf_MODEL_UPDATES_ev500'},
+    {'dir': 'pcn_amsterdam_20230707_16_48_14.390614', 'name': 'dtf_MODEL_UPDATES_ev500'},
+
+    {'dir': 'pcn_amsterdam_20230710_10_58_34.852196', 'name': 'dtf2_MODEL_UPDATES_ev500'},
+    {'dir': 'pcn_amsterdam_20230710_10_58_53.485685', 'name': 'dtf2_MODEL_UPDATES_ev500'},
+    {'dir': 'pcn_amsterdam_20230710_11_32_24.437619', 'name': 'dtf2_MODEL_UPDATES_ev500'},
+    {'dir': 'pcn_amsterdam_20230710_11_32_36.391045', 'name': 'dtf2_MODEL_UPDATES_ev500'},
+
+    # {'dir': 'pcn_amsterdam_20230710_12_04_28.040372', 'name': 'dtf2_MODEL_UPDATES_ev500_best'},
+    # {'dir': 'pcn_amsterdam_20230710_12_04_39.002849', 'name': 'dtf2_MODEL_UPDATES_ev500_best'},
+
+
     # {'dir': '', 'name': 'baseline_MODEL_UPDATES_ev1000'},
     
     # {'dir': 'pcn_amsterdam_20230706_16_42_36.528509', 'name': 'baselineDTF50k'},
@@ -64,17 +69,37 @@ models_to_plot = [
     # {'dir': 'pcn_amsterdam_20230707_10_40_21.328566', 'name': 'dtf2'},
     # {'dir': 'pcn_amsterdam_20230707_10_40_36.378424', 'name': 'dtf2'},
 ]
-# models_to_plot = [{'dir': 'pcn_dilemma_20230705_18_42_35.696519', 'name': 'baseline'},
-                #   {'dir': 'pcn_dilemma_20230705_18_44_06.188166', 'name': 'dft'},
-                #   ]
+
+# 10 Stations @ 200k
+models_to_plot = [
+    {'dir': 'pcn_amsterdam_20230710_14_05_48.908216', 'name': 'baseline'},
+    {'dir': 'pcn_amsterdam_20230710_15_19_26.791523', 'name': 'baseline'},
+    {'dir': 'pcn_amsterdam_20230710_16_28_03.135061', 'name': 'baseline'},
+
+    {'dir': 'pcn_amsterdam_20230710_14_07_41.087041', 'name': 'baseline_MODEL_UPDATES_ev500'},
+    {'dir': 'pcn_amsterdam_20230710_15_17_11.407820', 'name': 'baseline_MODEL_UPDATES_ev500'},
+    {'dir': 'pcn_amsterdam_20230710_16_30_12.391358', 'name': 'baseline_MODEL_UPDATES_ev500'},
+
+    {'dir': 'pcn_amsterdam_20230710_14_10_37.927414', 'name': 'dtf_MODEL_UPDATES_ev500'},
+    {'dir': 'pcn_amsterdam_20230710_15_21_00.612220', 'name': 'dtf_MODEL_UPDATES_ev500'},
+    {'dir': 'pcn_amsterdam_20230710_16_32_16.712395', 'name': 'dtf_MODEL_UPDATES_ev500'},
+
+    {'dir': 'pcn_amsterdam_20230710_14_15_24.150347', 'name': 'dtf2_MODEL_UPDATES_ev500'},
+    {'dir': 'pcn_amsterdam_20230710_15_22_35.421954', 'name': 'dtf2_MODEL_UPDATES_ev500'},
+    {'dir': 'pcn_amsterdam_20230710_16_54_39.203461', 'name': 'dtf2_MODEL_UPDATES_ev500'},
+
+]
+
 models_to_plot = pd.DataFrame(models_to_plot)
-colors = {'baseline':'red', 
-          'dtf':'blue', 
-          'dtf2':'green', 
-          'dtf2@200k':'black', 
-          'baseline_MODEL_UPDATES_ev1000': 'orange', 
-          'baseline_MODEL_UPDATES_ev2000': 'purple',
-          'baseline_MODEL_UPDATES_1000': 'black'
+colors = {
+        'baseline':'red', 
+        # 'dtf':'blue', 
+        # 'dtf2':'green', 
+        # 'baseline_MODEL_UPDATES_ev1000': 'orange', 
+        'baseline_MODEL_UPDATES_ev500': 'green',
+        'dtf_MODEL_UPDATES_ev500': 'yellow',
+        'dtf2_MODEL_UPDATES_ev500': 'blue',
+        'dtf2_MODEL_UPDATES_ev500_best': 'orange',
         }
 
 fig, axs = plt.subplots(2, 2, figsize=(15, 8))
@@ -193,6 +218,3 @@ for i, name in enumerate(models_to_plot['name'].unique()):
         except FileNotFoundError:
             pass
 fig.tight_layout()
-
-
-# %%
