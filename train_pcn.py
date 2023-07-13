@@ -129,7 +129,7 @@ if __name__ == "__main__":
         args.groups_file = f"price_groups_{args.nr_groups}.txt"
         args.ignore_existing_lines = True
         args.experiment_name = "PCN-Amsterdam"
-        args.scaling_factor = np.array([1] * args.nr_groups + [0.01])
+        args.scaling_factor = np.array([100] * args.nr_groups + [0.01])
         args.ref_point = np.array([0] * args.nr_groups)
         args.max_return=np.array([1] * args.nr_groups)
         args.pf_plot_limits = [0, 0.015]
