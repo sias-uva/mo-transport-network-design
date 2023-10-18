@@ -132,7 +132,8 @@ if __name__ == "__main__":
         args.scaling_factor = np.array([100] * args.nr_groups + [0.01])
         args.ref_point = np.array([0] * args.nr_groups)
         args.max_return=np.array([1] * args.nr_groups)
-        args.pf_plot_limits = [0, 0.015]
+        # args.pf_plot_limits = [0, 0.015]
+        args.pf_plot_limits = None
     
     if args.starting_loc_x is not None and args.starting_loc_y is not None:
         args.starting_loc = (args.starting_loc_x, args.starting_loc_y)
