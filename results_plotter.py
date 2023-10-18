@@ -2,7 +2,9 @@
 from matplotlib import pyplot as plt
 import pandas as pd
 import numpy as np
+import json
 
+#%%
 #% Plot all models
 # models_to_plot = [
 #                 {'dir': 'pcn_amsterdam_20230705_11_14_58.880354', 'name': 'baseline'},
@@ -70,39 +72,116 @@ models_to_plot = [
     # {'dir': 'pcn_amsterdam_20230707_10_40_36.378424', 'name': 'dtf2'},
 ]
 
-# 10 Stations @ 200k
+# # 10 Stations @ 200k
 models_to_plot = [
     {'dir': 'pcn_amsterdam_20230710_14_05_48.908216', 'name': 'baseline'},
     {'dir': 'pcn_amsterdam_20230710_15_19_26.791523', 'name': 'baseline'},
     {'dir': 'pcn_amsterdam_20230710_16_28_03.135061', 'name': 'baseline'},
 
-    {'dir': 'pcn_amsterdam_20230710_14_07_41.087041', 'name': 'baseline_MODEL_UPDATES_ev500'},
-    {'dir': 'pcn_amsterdam_20230710_15_17_11.407820', 'name': 'baseline_MODEL_UPDATES_ev500'},
-    {'dir': 'pcn_amsterdam_20230710_16_30_12.391358', 'name': 'baseline_MODEL_UPDATES_ev500'},
+    {'dir': 'pcn_amsterdam_20230711_14_30_00.272314', 'name': 'baseline_20step_episodes'},
+    {'dir': 'pcn_amsterdam_20230711_14_30_00.285458', 'name': 'baseline_20step_episodes'},
+    {'dir': 'pcn_amsterdam_20230711_14_29_57.375035', 'name': 'baseline_20step_episodes'},
 
-    {'dir': 'pcn_amsterdam_20230710_14_10_37.927414', 'name': 'dtf_MODEL_UPDATES_ev500'},
-    {'dir': 'pcn_amsterdam_20230710_15_21_00.612220', 'name': 'dtf_MODEL_UPDATES_ev500'},
-    {'dir': 'pcn_amsterdam_20230710_16_32_16.712395', 'name': 'dtf_MODEL_UPDATES_ev500'},
+    # {'dir': 'pcn_amsterdam_20230710_14_07_41.087041', 'name': 'baseline_MODEL_UPDATES_ev500'},
+    # {'dir': 'pcn_amsterdam_20230710_15_17_11.407820', 'name': 'baseline_MODEL_UPDATES_ev500'},
+    # {'dir': 'pcn_amsterdam_20230710_16_30_12.391358', 'name': 'baseline_MODEL_UPDATES_ev500'},
 
-    {'dir': 'pcn_amsterdam_20230710_14_15_24.150347', 'name': 'dtf2_MODEL_UPDATES_ev500'},
-    {'dir': 'pcn_amsterdam_20230710_15_22_35.421954', 'name': 'dtf2_MODEL_UPDATES_ev500'},
-    {'dir': 'pcn_amsterdam_20230710_16_54_39.203461', 'name': 'dtf2_MODEL_UPDATES_ev500'},
+    # {'dir': 'pcn_amsterdam_20230710_14_10_37.927414', 'name': 'dtf_MODEL_UPDATES_ev500'},
+    # {'dir': 'pcn_amsterdam_20230710_15_21_00.612220', 'name': 'dtf_MODEL_UPDATES_ev500'},
+    # {'dir': 'pcn_amsterdam_20230710_16_32_16.712395', 'name': 'dtf_MODEL_UPDATES_ev500'},
+
+    # {'dir': 'pcn_amsterdam_20230710_14_15_24.150347', 'name': 'dtf2_MODEL_UPDATES_ev500'},
+    # {'dir': 'pcn_amsterdam_20230710_15_22_35.421954', 'name': 'dtf2_MODEL_UPDATES_ev500'},
+    # {'dir': 'pcn_amsterdam_20230710_16_54_39.203461', 'name': 'dtf2_MODEL_UPDATES_ev500'},
 
 ]
+
+# # # 10 Stations @ 200k, crowding distance threshold
+# models_to_plot = [
+#     {'dir': 'pcn_amsterdam_20230706_19_18_15.208962', 'name': 'baseline'},
+#     {'dir': 'pcn_amsterdam_20230706_19_32_03.366079', 'name': 'baseline'},
+#     {'dir': 'pcn_amsterdam_20230706_21_26_17.265377', 'name': 'baseline'},
+#     {'dir': 'pcn_amsterdam_20230706_22_47_16.110920', 'name': 'baseline'},
+#     {'dir': 'pcn_amsterdam_20230707_09_31_10.537691', 'name': 'baseline'},
+    
+    
+#     {'dir': 'pcn_amsterdam_20230713_13_09_58.097758', 'name': 'baseline_sf'},
+#     {'dir': 'pcn_amsterdam_20230713_13_26_15.266139', 'name': 'baseline_sf'},
+
+
+
+
+#      {'dir': 'pcn_amsterdam_20230711_10_47_38.126387', 'name': 'baseline_0.3'},
+#      {'dir': 'pcn_amsterdam_20230711_14_47_21.373754', 'name': 'baseline_0.3'},
+#      {'dir': 'pcn_amsterdam_20230711_14_47_27.374584', 'name': 'baseline_0.3'},
+#      {'dir': 'pcn_amsterdam_20230711_14_47_21.412165', 'name': 'baseline_0.3'},
+
+#      {'dir': 'pcn_amsterdam_20230711_14_51_21.115324', 'name': 'baseline_0.5'},
+#      {'dir': 'pcn_amsterdam_20230711_14_51_20.937086', 'name': 'baseline_0.5'},
+
+#      {'dir': 'pcn_amsterdam_20230711_12_09_55.281764', 'name': 'baseline_0.15'},
+#      {'dir': 'pcn_amsterdam_20230711_10_59_06.797089', 'name': 'baseline_0.1'},
+#      {'dir': 'pcn_amsterdam_20230711_12_12_36.552336', 'name': 'baseline_0.1'},
+#      {'dir': 'pcn_amsterdam_20230711_13_19_20.510421', 'name': 'baseline_0.05'},
+# ]
+
+# # 10 Stations @ 200k, new scaling factor
+models_to_plot = [
+    {'dir': 'pcn_amsterdam_20230713_13_52_59.686475', 'name': 'baseline_sf'},
+    {'dir': 'pcn_amsterdam_20230713_13_52_59.686486', 'name': 'baseline_sf'},
+    {'dir': 'pcn_amsterdam_20230713_13_52_59.686430', 'name': 'baseline_sf'},
+    {'dir': 'pcn_amsterdam_20230713_13_55_02.074199', 'name': 'dtf_sf'},
+    {'dir': 'pcn_amsterdam_20230713_13_55_07.698058', 'name': 'dtf_sf'},
+    {'dir': 'pcn_amsterdam_20230713_13_55_07.702153', 'name': 'dtf_sf'},
+]
+
+# 20 Stations @ 30k
+# models_to_plot = [
+#     {'dir': 'pcn_amsterdam_20230713_17_02_44.311874', 'name': 'baseline'},
+#     {'dir': 'pcn_amsterdam_20230713_17_02_44.176873', 'name': 'baseline'},
+#     {'dir': 'pcn_amsterdam_20230713_17_02_44.273859', 'name': 'baseline'},
+   
+#     {'dir': 'pcn_amsterdam_20230713_18_26_38.070319', 'name': 'dtf'},
+#     {'dir': 'pcn_amsterdam_20230713_18_26_38.062950', 'name': 'dtf'},
+#     {'dir': 'pcn_amsterdam_20230713_18_26_37.903533', 'name': 'dtf'},
+
+# ]
+
+# 20 stations @ 50k, new scaling factor
+models_to_plot = [
+    {'dir': 'pcn_amsterdam_20230713_19_23_25.109984', 'name': 'baseline'},
+    {'dir': 'pcn_amsterdam_20230713_19_23_25.170750', 'name': 'baseline'},
+    {'dir': 'pcn_amsterdam_20230713_19_23_25.111063', 'name': 'baseline'},
+   
+    {'dir': 'pcn_amsterdam_20230713_19_22_48.386062', 'name': 'dtf'},
+    {'dir': 'pcn_amsterdam_20230713_19_22_49.820489', 'name': 'dtf'},
+    {'dir': 'pcn_amsterdam_20230713_19_22_49.818150', 'name': 'dtf'},
+
+]
+
 
 models_to_plot = pd.DataFrame(models_to_plot)
 colors = {
         'baseline':'red', 
-        # 'dtf':'blue', 
+        'dtf':'blue', 
         # 'dtf2':'green', 
         # 'baseline_MODEL_UPDATES_ev1000': 'orange', 
+        'baseline_20step_episodes': 'orange',
         'baseline_MODEL_UPDATES_ev500': 'green',
         'dtf_MODEL_UPDATES_ev500': 'yellow',
         'dtf2_MODEL_UPDATES_ev500': 'blue',
         'dtf2_MODEL_UPDATES_ev500_best': 'orange',
+        'baseline_0.5': 'green',
+        'baseline_0.3': 'orange',
+        'baseline_0.1': 'blue',
+        'baseline_0.15': 'black',
+        'baseline_0.05': 'purple',
+        'baseline_sf': 'gray',
+        'dtf_sf': 'blue',
         }
 
 fig, axs = plt.subplots(2, 2, figsize=(15, 8))
+# [ax.set_ylim(0, 2.5e-5) for ax in axs.flatten()]
 for _, model in models_to_plot.iterrows():
     metrics = pd.read_csv(f"./results/{model['dir']}/metrics.csv")
     axs[0][0].plot(metrics['step'], metrics['train_hv'], label=model['name'])
@@ -113,7 +192,9 @@ for _, model in models_to_plot.iterrows():
     axs[1][0].title.set_text('Eval. Hypervolume')
     axs[1][1].plot(metrics['step'], metrics['greedy_hv']/metrics['train_hv'], label=model['name'])
     axs[1][1].title.set_text('Greedy/Train Hypervolume')
+    axs[1][1].set_ylim(0, 1.01)
     axs[0][0].legend()
+    
 
 # %% Confidence intervals per method
 
@@ -218,3 +299,43 @@ for i, name in enumerate(models_to_plot['name'].unique()):
         except FileNotFoundError:
             pass
 fig.tight_layout()
+
+# %% LCN vs PCN
+def gini(x):
+    sorted_x = np.sort(x, axis=1)
+    n = x.shape[1]
+    cum_x = np.cumsum(sorted_x, axis=1, dtype=float)
+    return (n + 1 - 2 * np.sum(cum_x, axis=1) / cum_x[:, -1]) / n
+
+models_to_plot = [
+    {'dir': 'lcn_amsterdam_20230804_19_40_49.371245', 'name': 'lcn_l2'},
+    {'dir': 'lcn_amsterdam_20230804_21_46_22.960346', 'name': 'lcn_l2'},
+    {'dir': 'lcn_amsterdam_20230804_20_07_37.298332', 'name': 'lcn_linf'},
+    {'dir': 'lcn_amsterdam_20230804_21_23_06.860050', 'name': 'lcn_linf'},
+    {'dir': 'pcn_amsterdam_20230804_19_47_02.560807', 'name': 'pcn'},
+]
+
+models_to_plot = pd.DataFrame(models_to_plot)
+final_metrics = {}
+
+for i, name in enumerate(models_to_plot['name'].unique()):
+    models = models_to_plot[models_to_plot['name'] == name].to_dict('records')
+    ginis = []
+
+    for j, model in enumerate(models):
+        metrics = pd.read_csv(f"./results/{model['dir']}/metrics.csv")
+        # Read the content of the output file
+        with open(f"./results/{model['dir']}/output.txt", "r") as file:
+            output = file.read()
+            fronts = json.loads(output)['best_front_r']
+            gini_index = gini(np.array(fronts))
+            # Get the gini index of the more equal 3 solutions in the front.
+            # avg_gini = np.mean(np.sort(gini_index))
+            avg_gini = np.mean(np.sort(gini_index)[:5])
+            ginis.append(avg_gini)
+
+    final_metrics[name] = np.mean(ginis)
+
+fig, ax = plt.subplots(figsize=(5, 5))
+ax.bar(final_metrics.keys(), final_metrics.values())
+# %%
