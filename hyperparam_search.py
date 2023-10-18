@@ -5,7 +5,8 @@ from pathlib import Path
 import random
 
 import numpy as np
-from train_pcn import main
+from train_pcn import main as pcn_main
+from train_lcn import main as lcn_main
 import time
 import torch
 
@@ -29,6 +30,8 @@ hidden_dims = [64, 128]
 timesteps = [50000]
 train_mode = 'disttofront2'
 num_explore_episodes = None
+# 'PCN' or 'LCN'
+model = 'PCN'
 # ###
 
 settings = [batch_sizes, lrs, er_episodes, max_buffer_sizes, model_updates, nr_layers, hidden_dims, timesteps]
@@ -37,7 +40,7 @@ settings = [batch_sizes, lrs, er_episodes, max_buffer_sizes, model_updates, nr_l
 combinations = list(product(*settings))
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="MO PCN - TNDP Hyperparameter Search")
+    parser = argparse.ArgumentParser(description=f"MO {model} - TNDP Hyperparameter Search")
     # Acceptable values: 'dilemma', 'amsterdam'
     parser.add_argument('--env', default='dilemma', type=str)
     # For amsterdam environment we have different groups files (different nr of objectives)
@@ -66,7 +69,7 @@ if __name__ == "__main__":
         args.groups_file = "groups.txt"
         args.num_step_episodes = 10
         args.ignore_existing_lines = True
-        args.experiment_name = "PCN-Dilemma"
+        args.experiment_name = f"{model}-Dilemma"
         args.scaling_factor = np.array([1, 1, 0.1])
         args.ref_point = np.array([0, 0])
         args.max_return=np.array([1, 1])
@@ -78,8 +81,8 @@ if __name__ == "__main__":
         args.groups_file = f"price_groups_{args.nr_groups}.txt"
         args.num_step_episodes = 10
         args.ignore_existing_lines = True
-        args.experiment_name = "PCN-Amsterdam"
-        args.scaling_factor = np.array([1] * args.nr_groups + [0.01])
+        args.experiment_name = f"{model}-Amsterdam"
+        args.scaling_factor = np.array([100] * args.nr_groups + [0.01])
         args.ref_point = np.array([0] * args.nr_groups)
         args.max_return=np.array([1] * args.nr_groups)
         args.pf_plot_limits = [0, 0.015]
@@ -111,37 +114,10 @@ if __name__ == "__main__":
         args.train_mode = train_mode
         args.num_explore_episodes = num_explore_episodes
 
-        main(args)
+        if model == 'PCN':
+            pcn_main(args)
+        elif model == 'LCN':
+            lcn_main(args)
 
         execution_time = time.time() - start_time
         running_times.append(execution_time)
-
-
-#%% OLD CODE --  Dilemma Hypeparameter Search
-# batch_sizes = [128, 256, 512]
-# lrs = [1e-1, 1e-2, 1e-3, 1e-4]
-# er_episodes = [25, 50, 100]
-
-# for batch_size in batch_sizes:
-#     for lr in lrs:
-#         for er_ep in er_episodes:
-#             print(f'batch_size: {batch_size}, lr: {lr}, er_episodes: {er_ep}')
-#             %run train_pcn.py --env=dilemma --starting_loc_x=4 --starting_loc_y=0 --batch_size={batch_size} --lr={lr} --num_er_episodes={er_ep} --timesteps=2000
-
-# #%% Amsterdam Hypeparameter Search
-# # batch_sizes = [128, 256, 512]
-# # lrs = [1e-1, 1e-2, 1e-3, 1e-4]
-# # er_episodes = [25, 50, 100]
-# # This is not a hyperparameter, it's the number of objectives
-
-# batch_sizes = [128, 256, 512]
-# lrs = [1e-1, 1e-2, 1e-3, 1e-4]
-# er_episodes = [25, 50, 100]
-
-# nr_groups = 5
-
-# for batch_size in batch_sizes:
-#     for lr in lrs:
-#         for er_ep in er_episodes:
-#             print(f'batch_size: {batch_size}, lr: {lr}, er_episodes: {er_ep}')
-#             %run train_pcn.py --env=amsterdam --starting_loc_x=9 --starting_loc_y=19 --batch_size={batch_size} --lr={lr} --nr_groups={nr_groups} --num_er_episodes={er_ep} --timesteps=30000
