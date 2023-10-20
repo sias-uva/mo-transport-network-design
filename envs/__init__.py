@@ -5,6 +5,10 @@ register(
     entry_point="motndp.motndp:MOTNDP",
 )
 
+register(
+    id="motndp_amsterdam_10x10-v0",
+    entry_point="motndp.motndp:MOTNDP",
+)
 
 register(
     id="motndp_dilemma-v0",
