@@ -149,13 +149,12 @@ models_to_plot = [
 
 # 20 stations @ 50k, new scaling factor
 models_to_plot = [
-    {'dir': 'pcn_amsterdam_20230713_19_23_25.109984', 'name': 'baseline'},
     {'dir': 'pcn_amsterdam_20230713_19_23_25.170750', 'name': 'baseline'},
     {'dir': 'pcn_amsterdam_20230713_19_23_25.111063', 'name': 'baseline'},
    
-    {'dir': 'pcn_amsterdam_20230713_19_22_48.386062', 'name': 'dtf'},
-    {'dir': 'pcn_amsterdam_20230713_19_22_49.820489', 'name': 'dtf'},
-    {'dir': 'pcn_amsterdam_20230713_19_22_49.818150', 'name': 'dtf'},
+    {'dir': 'pcn_amsterdam_20230713_18_26_38.070319', 'name': 'dtf'},
+    {'dir': 'pcn_amsterdam_20230713_18_26_38.062950', 'name': 'dtf'},
+    # {'dir': 'pcn_amsterdam_20231018_10_26_00.342164', 'name': 'dtf'},
 
 ]
 
@@ -301,18 +300,24 @@ for i, name in enumerate(models_to_plot['name'].unique()):
 fig.tight_layout()
 
 # %% LCN vs PCN
-def gini(x):
+def gini(x, normalized=True):
     sorted_x = np.sort(x, axis=1)
     n = x.shape[1]
     cum_x = np.cumsum(sorted_x, axis=1, dtype=float)
-    return (n + 1 - 2 * np.sum(cum_x, axis=1) / cum_x[:, -1]) / n
+    gi = (n + 1 - 2 * np.sum(cum_x, axis=1) / cum_x[:, -1]) / n
+    if normalized:
+        gi = gi * (n / (n - 1))
+    return gi
 
 models_to_plot = [
-    {'dir': 'lcn_amsterdam_20230804_19_40_49.371245', 'name': 'lcn_l2'},
-    {'dir': 'lcn_amsterdam_20230804_21_46_22.960346', 'name': 'lcn_l2'},
-    {'dir': 'lcn_amsterdam_20230804_20_07_37.298332', 'name': 'lcn_linf'},
-    {'dir': 'lcn_amsterdam_20230804_21_23_06.860050', 'name': 'lcn_linf'},
-    {'dir': 'pcn_amsterdam_20230804_19_47_02.560807', 'name': 'pcn'},
+    # {'dir': 'lcn_amsterdam_20230804_19_40_49.371245', 'name': 'lcn_l2'},
+    # {'dir': 'lcn_amsterdam_20230804_21_46_22.960346', 'name': 'lcn_l2'},
+    # {'dir': 'lcn_amsterdam_20230804_20_07_37.298332', 'name': 'lcn_linf'},
+    # {'dir': 'lcn_amsterdam_20230804_21_23_06.860050', 'name': 'lcn_linf'},
+    # {'dir': 'pcn_amsterdam_20230804_19_47_02.560807', 'name': 'pcn'},
+
+    {'dir': 'lcn_amsterdam_20231020_02_58_59.046020', 'name': 'LCN'},
+    {'dir': 'pcn_amsterdam_20230713_18_26_38.070319', 'name': 'PCN'}
 ]
 
 models_to_plot = pd.DataFrame(models_to_plot)
@@ -331,11 +336,34 @@ for i, name in enumerate(models_to_plot['name'].unique()):
             gini_index = gini(np.array(fronts))
             # Get the gini index of the more equal 3 solutions in the front.
             # avg_gini = np.mean(np.sort(gini_index))
-            avg_gini = np.mean(np.sort(gini_index)[:5])
+            avg_gini = np.mean(np.sort(gini_index))
             ginis.append(avg_gini)
 
     final_metrics[name] = np.mean(ginis)
 
 fig, ax = plt.subplots(figsize=(5, 5))
 ax.bar(final_metrics.keys(), final_metrics.values())
+
+models_to_plot = pd.DataFrame(models_to_plot)
+all_results = {}
+for i, name in enumerate(models_to_plot['name'].unique()):
+    models = models_to_plot[models_to_plot['name'] == name].to_dict('records')
+
+    for j, model in enumerate(models):
+        metrics = pd.read_csv(f"./results/{model['dir']}/metrics.csv")
+        # Read the content of the output file
+        with open(f"./results/{model['dir']}/output.txt", "r") as file:
+            output = file.read()
+            fronts = json.loads(output)['best_front_r']
+            gini_index = gini(np.array(fronts))
+            total_efficiency = np.sum(fronts, axis=1)
+            all_results[name] = {'gini': gini_index, 'total_efficiency': total_efficiency}
+
+fig, ax = plt.subplots(figsize=(5, 5))
+for name in all_results.keys():
+    ax.scatter(all_results[name]['total_efficiency'], all_results[name]['gini'], label=name, alpha=0.5)
+ax.set_xlabel('Total Efficiency')
+ax.set_ylabel('Gini Index (normalized)')
+ax.legend()
+
 # %%
