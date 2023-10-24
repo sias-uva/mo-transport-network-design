@@ -133,7 +133,17 @@ if __name__ == "__main__":
         args.ref_point = np.array([0] * args.nr_groups)
         args.max_return=np.array([1] * args.nr_groups)
         args.pf_plot_limits = None
-    
+    elif args.env == 'xian':
+        args.city_path = Path(f"./envs/mo-tndp/cities/xian")
+        args.gym_env = 'motndp_xian-v0'
+        args.groups_file = f"price_groups_{args.nr_groups}.txt"
+        args.ignore_existing_lines = True
+        args.experiment_name = "PCN-Xian"
+        args.scaling_factor = np.array([100] * args.nr_groups + [0.01])
+        args.ref_point = np.array([0] * args.nr_groups)
+        args.max_return=np.array([1] * args.nr_groups)
+        args.pf_plot_limits = None
+        
     if args.starting_loc_x is not None and args.starting_loc_y is not None:
         args.starting_loc = (args.starting_loc_x, args.starting_loc_y)
     else:
