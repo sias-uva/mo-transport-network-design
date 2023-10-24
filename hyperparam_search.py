@@ -30,9 +30,6 @@ hidden_dims = [64, 128]
 timesteps = [50000]
 train_mode = 'disttofront2'
 num_explore_episodes = None
-# 'PCN' or 'LCN'
-model = 'PCN'
-# ###
 
 settings = [batch_sizes, lrs, er_episodes, max_buffer_sizes, model_updates, nr_layers, hidden_dims, timesteps]
 
@@ -40,7 +37,7 @@ settings = [batch_sizes, lrs, er_episodes, max_buffer_sizes, model_updates, nr_l
 combinations = list(product(*settings))
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=f"MO {model} - TNDP Hyperparameter Search")
+    parser = argparse.ArgumentParser(description=f"MO-TNDP Hyperparameter Search")
     # Acceptable values: 'dilemma', 'amsterdam'
     parser.add_argument('--env', default='dilemma', type=str)
     # For amsterdam environment we have different groups files (different nr of objectives)
@@ -50,6 +47,7 @@ if __name__ == "__main__":
     parser.add_argument('--starting_loc_y', default=None, type=int)
     # Episode horizon -- used as a proxy of both the budget and the number of stations (stations are not really costed)
     # parser.add_argument('--nr_stations', default=9, type=int)
+    parser.add_argument('--model', default=None, type=str) # PCN or LCN
     parser.add_argument('--num_policies', default=10, type=int)
     parser.add_argument('--seed', default=42, type=int)
     parser.add_argument('--no_log', action='store_true', default=False)
@@ -69,11 +67,13 @@ if __name__ == "__main__":
         args.groups_file = "groups.txt"
         args.num_step_episodes = 10
         args.ignore_existing_lines = True
-        args.experiment_name = f"{model}-Dilemma"
+        args.experiment_name = f"{args.model}-Dilemma"
         args.scaling_factor = np.array([1, 1, 0.1])
         args.ref_point = np.array([0, 0])
         args.max_return=np.array([1, 1])
         args.pf_plot_limits = [0, 0.5]
+        args.update_interval = None
+        args.cd_threshold = 0.2
     elif args.env == 'amsterdam':
         args.city_path = Path(f"./envs/mo-tndp/cities/amsterdam")
         args.nr_stations = 20
@@ -81,11 +81,28 @@ if __name__ == "__main__":
         args.groups_file = f"price_groups_{args.nr_groups}.txt"
         args.num_step_episodes = 10
         args.ignore_existing_lines = True
-        args.experiment_name = f"{model}-Amsterdam"
+        args.experiment_name = f"{args.model}-Amsterdam"
         args.scaling_factor = np.array([100] * args.nr_groups + [0.01])
         args.ref_point = np.array([0] * args.nr_groups)
         args.max_return=np.array([1] * args.nr_groups)
-        args.pf_plot_limits = [0, 0.015]
+        # args.pf_plot_limits = [0, 0.015]
+        args.pf_plot_limits = None
+        args.update_interval = None
+        args.cd_threshold = 0.2
+    elif args.env == 'xian':
+        args.city_path = Path(f"./envs/mo-tndp/cities/xian")
+        args.nr_stations = 20
+        args.gym_env = 'motndp_xian-v0'
+        args.groups_file = f"price_groups_{args.nr_groups}.txt"
+        args.num_step_episodes = 10
+        args.ignore_existing_lines = True
+        args.experiment_name = f"{args.model}-Xian"
+        args.scaling_factor = np.array([100] * args.nr_groups + [0.01])
+        args.ref_point = np.array([0] * args.nr_groups)
+        args.max_return=np.array([1] * args.nr_groups)
+        args.pf_plot_limits = None
+        args.update_interval = None
+        args.cd_threshold = 0.2
     
     if args.starting_loc_x is not None and args.starting_loc_y is not None:
         args.starting_loc = (args.starting_loc_x, args.starting_loc_y)
@@ -114,9 +131,9 @@ if __name__ == "__main__":
         args.train_mode = train_mode
         args.num_explore_episodes = num_explore_episodes
 
-        if model == 'PCN':
+        if args.model == 'PCN':
             pcn_main(args)
-        elif model == 'LCN':
+        elif args.model == 'LCN':
             lcn_main(args)
 
         execution_time = time.time() - start_time
