@@ -136,27 +136,37 @@ models_to_plot = [
 ]
 
 # 20 Stations @ 30k
-# models_to_plot = [
-#     {'dir': 'pcn_amsterdam_20230713_17_02_44.311874', 'name': 'baseline'},
-#     {'dir': 'pcn_amsterdam_20230713_17_02_44.176873', 'name': 'baseline'},
-#     {'dir': 'pcn_amsterdam_20230713_17_02_44.273859', 'name': 'baseline'},
-   
-#     {'dir': 'pcn_amsterdam_20230713_18_26_38.070319', 'name': 'dtf'},
-#     {'dir': 'pcn_amsterdam_20230713_18_26_38.062950', 'name': 'dtf'},
-#     {'dir': 'pcn_amsterdam_20230713_18_26_37.903533', 'name': 'dtf'},
-
-# ]
-
-# 20 stations @ 50k, new scaling factor
 models_to_plot = [
-    {'dir': 'pcn_amsterdam_20230713_19_23_25.170750', 'name': 'baseline'},
-    {'dir': 'pcn_amsterdam_20230713_19_23_25.111063', 'name': 'baseline'},
+    {'dir': 'pcn_amsterdam_20230713_17_02_44.311874', 'name': 'baseline'},
+    {'dir': 'pcn_amsterdam_20230713_17_02_44.176873', 'name': 'baseline'},
+    {'dir': 'pcn_amsterdam_20230713_17_02_44.273859', 'name': 'baseline'},
    
     {'dir': 'pcn_amsterdam_20230713_18_26_38.070319', 'name': 'dtf'},
     {'dir': 'pcn_amsterdam_20230713_18_26_38.062950', 'name': 'dtf'},
-    # {'dir': 'pcn_amsterdam_20231018_10_26_00.342164', 'name': 'dtf'},
+    {'dir': 'pcn_amsterdam_20230713_18_26_37.903533', 'name': 'dtf'},
 
 ]
+
+# 20 stations @ 50k, new scaling factor
+# models_to_plot = [
+#     {'dir': 'pcn_amsterdam_20230713_19_23_25.170750', 'name': 'baseline'},
+#     {'dir': 'pcn_amsterdam_20230713_19_23_25.111063', 'name': 'baseline'},
+   
+#     {'dir': 'pcn_amsterdam_20230713_18_26_38.070319', 'name': 'dtf'},
+#     {'dir': 'pcn_amsterdam_20230713_18_26_38.062950', 'name': 'dtf'},
+#     # {'dir': 'pcn_amsterdam_20231018_10_26_00.342164', 'name': 'dtf'},
+
+# ]
+
+# # LCN
+# models_to_plot = [
+#     {'dir': 'lcn_amsterdam_20231023_11_30_35.331255', 'name': 'baseline'},
+#     {'dir': 'lcn_amsterdam_20231023_11_30_35.299109', 'name': 'baseline'},
+   
+#     {'dir': 'lcn_amsterdam_20231023_11_50_32.217883', 'name': 'dtf'},
+#     {'dir': 'lcn_amsterdam_20231023_11_44_54.212951', 'name': 'dtf'},
+#     {'dir': 'lcn_amsterdam_20231023_11_44_54.211632', 'name': 'dtf'},
+# ]
 
 
 models_to_plot = pd.DataFrame(models_to_plot)
@@ -213,7 +223,7 @@ def calc_ci(models, metric, z=1.96):
     return np.vstack((lb, m, ub))
 
 
-fig, axs = plt.subplots(2, 2, figsize=(15, 8))
+fig, axs = plt.subplots(2, 2, figsize=(15, 9))
 
 for name in models_to_plot['name'].unique():
     models = models_to_plot[models_to_plot['name'] == name].to_dict('records')
@@ -316,8 +326,8 @@ models_to_plot = [
     # {'dir': 'lcn_amsterdam_20230804_21_23_06.860050', 'name': 'lcn_linf'},
     # {'dir': 'pcn_amsterdam_20230804_19_47_02.560807', 'name': 'pcn'},
 
-    {'dir': 'lcn_amsterdam_20231020_02_58_59.046020', 'name': 'LCN'},
-    {'dir': 'pcn_amsterdam_20230713_18_26_38.070319', 'name': 'PCN'}
+    {'dir': 'lcn_amsterdam_20231023_16_39_14.841412', 'name': 'LCN'},
+    {'dir': 'pcn_amsterdam_20231023_16_39_03.516000', 'name': 'PCN'}
 ]
 
 models_to_plot = pd.DataFrame(models_to_plot)
@@ -346,6 +356,7 @@ ax.bar(final_metrics.keys(), final_metrics.values())
 
 models_to_plot = pd.DataFrame(models_to_plot)
 all_results = {}
+groups = None
 for i, name in enumerate(models_to_plot['name'].unique()):
     models = models_to_plot[models_to_plot['name'] == name].to_dict('records')
 
@@ -355,15 +366,31 @@ for i, name in enumerate(models_to_plot['name'].unique()):
         with open(f"./results/{model['dir']}/output.txt", "r") as file:
             output = file.read()
             fronts = json.loads(output)['best_front_r']
+            groups = len(fronts[0])
             gini_index = gini(np.array(fronts))
             total_efficiency = np.sum(fronts, axis=1)
-            all_results[name] = {'gini': gini_index, 'total_efficiency': total_efficiency}
+            nash_welfare = np.prod(fronts, axis=1)
+            all_results[name] = {'gini': gini_index, 'total_efficiency': total_efficiency, 
+                                 'sen_welfare': total_efficiency * (1-gini_index), 'nash_welfare': nash_welfare}
 
-fig, ax = plt.subplots(figsize=(5, 5))
+fig, axs = plt.subplots(1, 4, figsize=(20, 5))
 for name in all_results.keys():
-    ax.scatter(all_results[name]['total_efficiency'], all_results[name]['gini'], label=name, alpha=0.5)
-ax.set_xlabel('Total Efficiency')
-ax.set_ylabel('Gini Index (normalized)')
-ax.legend()
+    axs[0].scatter(all_results[name]['total_efficiency'], all_results[name]['gini'], label=name, alpha=0.5)
+axs[0].set_title('Efficiency vs Gini Index')
+axs[0].set_xlabel('Total Efficiency')
+axs[0].set_ylabel('Gini Index (normalized)')
+axs[0].legend()
 
+for i, name in enumerate(all_results.keys()):
+    axs[1].boxplot(all_results[name]['gini'], positions=[i], labels=[name])
+axs[1].set_title('Gini Index')
+
+for i, name in enumerate(all_results.keys()):
+    axs[2].boxplot(all_results[name]['sen_welfare'], positions=[i], labels=[name])
+axs[2].set_title('Sen Welfare (Efficiency * (1 - Gini Index))')
+
+for i, name in enumerate(all_results.keys()):
+    axs[3].boxplot(all_results[name]['nash_welfare'], positions=[i], labels=[name])
+axs[3].set_title('Nash Welfare')
+fig.suptitle(f"LCN vs PCN - {groups} groups")
 # %%
