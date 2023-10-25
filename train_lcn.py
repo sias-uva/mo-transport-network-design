@@ -138,7 +138,7 @@ if __name__ == "__main__":
         args.gym_env = 'motndp_xian-v0'
         args.groups_file = f"price_groups_{args.nr_groups}.txt"
         args.ignore_existing_lines = True
-        args.experiment_name = "PCN-Xian"
+        args.experiment_name = "LCN-Xian"
         args.scaling_factor = np.array([100] * args.nr_groups + [0.01])
         args.ref_point = np.array([0] * args.nr_groups)
         args.max_return=np.array([1] * args.nr_groups)
