@@ -38,6 +38,7 @@ def main(args):
         seed=args.seed,
         nr_layers=args.nr_layers,
         hidden_dim=args.hidden_dim,
+        distance_ref=args.distance_ref,
     )
 
     if args.starting_loc is None:
@@ -93,6 +94,7 @@ if __name__ == "__main__":
     parser.add_argument('--train_mode', default='uniform', type=str, choices=['uniform', 'disttofront', 'disttofront2'], help='controls how to select episodes from the replay buffer for training. If uniform, episodes are sampled uniformly. If disttofront, episodes are sampled with probability proportional to their distance to the pareto front.')
     parser.add_argument('--update_interval', default=None, type=int, help='controls how often to update the model. If None, it will update every loop. If a number, it will update every update_interval steps.')
     parser.add_argument('--cd_threshold', default=0.2, type=float, help='controls the threshold for crowdedness distance.')
+    parser.add_argument('--distance_ref', default='nondominated', type=str, choices=['nondominated', 'optimal_max', 'nondominated_mean'], help='controls the reference point for calculating the distance of every solution to the optimal point.')
 
     args = parser.parse_args()
 
