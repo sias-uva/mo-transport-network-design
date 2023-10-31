@@ -24,12 +24,15 @@ batch_sizes = [128, 256]
 lrs = [1e-1, 1e-2]
 er_episodes = [50, 100]
 max_buffer_sizes = [50, 100]
-model_updates = [5, 10]
-nr_layers = [1, 2, 3]
+# model_updates = [5, 10]
+model_updates = [5]
+# nr_layers = [1, 2, 3]
+nr_layers = [1, 2]
 hidden_dims = [64, 128]
-timesteps = [50000]
-train_mode = 'disttofront2'
+timesteps = [30000]
+train_mode = 'uniform'
 num_explore_episodes = None
+distance_ref = 'nondominated_mean'
 
 settings = [batch_sizes, lrs, er_episodes, max_buffer_sizes, model_updates, nr_layers, hidden_dims, timesteps]
 
@@ -103,6 +106,7 @@ if __name__ == "__main__":
         args.pf_plot_limits = None
         args.update_interval = None
         args.cd_threshold = 0.2
+        args.distance_ref = distance_ref
     
     if args.starting_loc_x is not None and args.starting_loc_y is not None:
         args.starting_loc = (args.starting_loc_x, args.starting_loc_y)
