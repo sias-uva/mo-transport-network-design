@@ -32,7 +32,7 @@ hidden_dims = [64, 128]
 timesteps = [30000]
 train_mode = 'uniform'
 num_explore_episodes = None
-distance_ref = 'nondominated_mean'
+distance_ref = 'interpolate'
 
 settings = [batch_sizes, lrs, er_episodes, max_buffer_sizes, model_updates, nr_layers, hidden_dims, timesteps]
 
@@ -55,6 +55,7 @@ if __name__ == "__main__":
     parser.add_argument('--seed', default=42, type=int)
     parser.add_argument('--no_log', action='store_true', default=False)
     parser.add_argument('--random', action='store_true', default=False, help='if true, the hyperparameter search will be random instead of exhaustive')
+    parser.add_argument('--lcn_lambda', default=None, type=float)
 
     args = parser.parse_args()
 
@@ -77,6 +78,7 @@ if __name__ == "__main__":
         args.pf_plot_limits = [0, 0.5]
         args.update_interval = None
         args.cd_threshold = 0.2
+        args.lcn_lambda = args.lcn_lambda
     elif args.env == 'amsterdam':
         args.city_path = Path(f"./envs/mo-tndp/cities/amsterdam")
         args.nr_stations = 20
@@ -92,6 +94,7 @@ if __name__ == "__main__":
         args.pf_plot_limits = None
         args.update_interval = None
         args.cd_threshold = 0.2
+        args.lcn_lambda = args.lcn_lambda
     elif args.env == 'xian':
         args.city_path = Path(f"./envs/mo-tndp/cities/xian")
         args.nr_stations = 20
@@ -107,6 +110,7 @@ if __name__ == "__main__":
         args.update_interval = None
         args.cd_threshold = 0.2
         args.distance_ref = distance_ref
+        args.lcn_lambda = args.lcn_lambda
     
     if args.starting_loc_x is not None and args.starting_loc_y is not None:
         args.starting_loc = (args.starting_loc_x, args.starting_loc_y)
