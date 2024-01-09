@@ -32,7 +32,8 @@ hidden_dims = [64, 128]
 timesteps = [30000]
 train_mode = 'uniform'
 num_explore_episodes = None
-distance_ref = 'interpolate'
+# distance_ref = None
+distance_ref = 'optimal_max'
 
 settings = [batch_sizes, lrs, er_episodes, max_buffer_sizes, model_updates, nr_layers, hidden_dims, timesteps]
 
@@ -81,7 +82,7 @@ if __name__ == "__main__":
         args.lcn_lambda = args.lcn_lambda
     elif args.env == 'amsterdam':
         args.city_path = Path(f"./envs/mo-tndp/cities/amsterdam")
-        args.nr_stations = 20
+        args.nr_stations = 10
         args.gym_env = 'motndp_amsterdam-v0'
         args.groups_file = f"price_groups_{args.nr_groups}.txt"
         args.num_step_episodes = 10
@@ -94,6 +95,7 @@ if __name__ == "__main__":
         args.pf_plot_limits = None
         args.update_interval = None
         args.cd_threshold = 0.2
+        args.distance_ref = distance_ref
         args.lcn_lambda = args.lcn_lambda
     elif args.env == 'xian':
         args.city_path = Path(f"./envs/mo-tndp/cities/xian")
