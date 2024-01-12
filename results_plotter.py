@@ -55,11 +55,11 @@ all_objectives = [
         {'name': 'LCN_Lambda_0.3', 'dirs': ['lcn_xian_20240105_10_56_23.761950', 'lcn_xian_20240106_15_50_19.671774', 'lcn_xian_20240106_16_31_50.850046']},
         {'name': 'LCN_Lambda_0.4', 'dirs': ['lcn_xian_20240105_10_56_39.236767', 'lcn_xian_20240106_15_50_41.058354', 'lcn_xian_20240106_16_37_21.072217']},
         {'name': 'LCN_Lambda_0.5', 'dirs': ['lcn_xian_20240105_10_57_50.800221', 'lcn_xian_20240106_15_51_07.942022', 'lcn_xian_20240106_16_44_32.902128']},
-        {'name': 'LCN_Lambda_0.6', 'dirs': ['lcn_xian_20240105_11_32_24.053751', 'lcn_xian_20240106_16_03_21.250718', 'lcn_xian_20240106_16_44_53.067325']}, 
+        {'name': 'LCN_Lambda_0.6', 'dirs': ['lcn_xian_20240110_14_21_50.354585', 'lcn_xian_20240110_12_09_02.587302', 'lcn_xian_20240110_12_09_03.257627']}, 
         {'name': 'LCN_Lambda_0.7', 'dirs': ['lcn_xian_20240105_11_32_45.469236', 'lcn_xian_20240106_16_04_08.057850', 'lcn_xian_20240106_17_00_27.340156']},
-        {'name': 'LCN_Lambda_0.8', 'dirs': ['lcn_xian_20240105_11_33_34.715944', 'lcn_xian_20240105_12_11_47.769122', 'lcn_xian_20240106_17_00_44.256015']},
+        {'name': 'LCN_Lambda_0.8', 'dirs': ['lcn_xian_20231221_13_04_18.503687', 'lcn_xian_20240110_11_58_16.516068', 'lcn_xian_20240110_11_58_19.538591']},
         {'name': 'LCN_Lambda_0.9', 'dirs': ['lcn_xian_20240105_12_06_39.994789', 'lcn_xian_20240106_16_07_06.454882', 'lcn_xian_20240106_17_01_04.146726']},
-        {'name': 'LCN_Lambda_1.0', 'dirs': ['lcn_xian_20240105_12_06_59.482921', 'lcn_xian_20240106_16_15_08.375551', 'lcn_xian_20240106_16_15_19.684245']},
+        {'name': 'LCN_Lambda_1.0', 'dirs': ['lcn_xian_20231221_15_06_26.599246', 'lcn_xian_20240110_11_39_14.608825', 'lcn_xian_20240110_11_39_18.362828']},
 
      ]},
 
@@ -145,21 +145,21 @@ all_objectives = [
      ]},
 ]
 
-## AMSTERDAM - 10 Stations
+# AMSTERDAM - 10 Stations
 all_objectives = [
     {'nr_groups': 2,
      'models': [
         {'name': 'PCN', 'dirs': ['pcn_amsterdam_20240108_13_01_00.778807', 'pcn_amsterdam_20240108_17_20_07.542513', 'pcn_amsterdam_20240108_17_26_09.093184']},
         {'name': 'LCN_ND', 'dirs': ['lcn_amsterdam_20240107_10_11_32.394826', 'lcn_amsterdam_20240108_17_38_08.076197', 'lcn_amsterdam_20240108_17_46_19.928274']},
-        # {'name': 'LCN_OPTMAX', 'dirs': []},
-        # {'name': 'LCN_NDMEAN', 'dirs': []},
+        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240108_12_26_27.169590', 'lcn_amsterdam_20240109_12_49_43.217241', 'lcn_amsterdam_20240109_12_49_50.515894']},
+        {'name': 'LCN_NDMEAN', 'dirs': ['lcn_amsterdam_20240112_00_30_56.974278']},
      ]},
 
      {'nr_groups': 3, 
      'models': [
-        {'name': 'PCN', 'dirs': []},
+        {'name': 'PCN', 'dirs': ['pcn_amsterdam_20240109_21_39_25.509057', 'pcn_amsterdam_20240110_16_05_16.003156', 'pcn_amsterdam_20240110_16_05_32.771992']},
         {'name': 'LCN_ND', 'dirs': ['lcn_amsterdam_20240107_18_10_19.466760', 'lcn_amsterdam_20240108_20_58_24.047456', 'lcn_amsterdam_20240108_21_40_38.580133']},
-        {'name': 'LCN_OPTMAX', 'dirs': []},
+        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240108_21_41_36.541590', 'lcn_amsterdam_20240110_10_47_17.814055', 'lcn_amsterdam_20240110_10_47_22.195133']},
         {'name': 'LCN_NDMEAN', 'dirs': []},
      ]},
 
@@ -167,30 +167,30 @@ all_objectives = [
      'models': [
         {'name': 'PCN', 'dirs': ['pcn_amsterdam_20240104_18_09_06.462886', 'pcn_amsterdam_20240108_12_58_10.631250', 'pcn_amsterdam_20240108_12_58_16.652467']},
         {'name': 'LCN_ND', 'dirs': ['lcn_amsterdam_20240108_20_58_49.749453', 'lcn_amsterdam_20240108_21_39_47.553554', 'lcn_amsterdam_20240108_22_08_07.191329']},
-        # {'name': 'LCN_OPTMAX', 'dirs': []},
+        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240109_18_03_40.856486', 'lcn_amsterdam_20240111_11_15_13.976013', 'lcn_amsterdam_20240111_11_15_18.613571']},
         # {'name': 'LCN_NDMEAN', 'dirs': []},
      ]},
 
      {'nr_groups': 5,
      'models': [
         {'name': 'PCN', 'dirs': ['pcn_amsterdam_20240103_20_27_53.063974', 'pcn_amsterdam_20240108_13_58_08.926091', 'pcn_amsterdam_20240108_15_38_47.417417']},
-        {'name': 'LCN_ND', 'dirs': ['lcn_amsterdam_20240107_16_21_51.303601', 'lcn_amsterdam_20240108_22_09_31.479469']},
-        {'name': 'LCN_OPTMAX', 'dirs': []},
+        {'name': 'LCN_ND', 'dirs': ['lcn_amsterdam_20240107_16_21_51.303601', 'lcn_amsterdam_20240108_22_09_31.479469', 'lcn_amsterdam_20240108_22_13_03.190803']},
+        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240109_15_09_24.960638', 'lcn_amsterdam_20240111_11_23_19.171292']},
         {'name': 'LCN_NDMEAN', 'dirs': []},
      ]},
 
      {'nr_groups': 6,
      'models': [
         {'name': 'PCN', 'dirs': ['pcn_amsterdam_20240105_18_12_44.252718', 'pcn_amsterdam_20240108_16_30_15.035406', 'pcn_amsterdam_20240108_16_30_18.519311']},
-        {'name': 'LCN_ND', 'dirs': []},
-        {'name': 'LCN_OPTMAX', 'dirs': []},
+        {'name': 'LCN_ND', 'dirs': ['lcn_amsterdam_20240107_22_04_25.859926', 'lcn_amsterdam_20240109_09_28_20.393661', 'lcn_amsterdam_20240109_09_28_24.902641']},
+        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240110_23_55_56.733360']},
         {'name': 'LCN_NDMEAN', 'dirs': []},
      ]},
 
      {'nr_groups': 7,
      'models': [
         {'name': 'PCN', 'dirs':        ['pcn_amsterdam_20240104_08_25_38.900589', 'pcn_amsterdam_20240108_16_33_52.512832', 'pcn_amsterdam_20240108_17_34_48.315408']},
-        {'name': 'LCN_ND', 'dirs':     []},
+        {'name': 'LCN_ND', 'dirs':     ['lcn_amsterdam_20240107_22_24_36.910516', 'lcn_amsterdam_20240109_09_33_21.491671', 'lcn_amsterdam_20240109_10_18_44.316108']},
         {'name': 'LCN_OPTMAX', 'dirs': []},
         {'name': 'LCN_NDMEAN', 'dirs': []},
      ]},
@@ -198,15 +198,15 @@ all_objectives = [
      {'nr_groups': 8,
      'models': [
         {'name': 'PCN', 'dirs':        ['pcn_amsterdam_20240104_21_20_01.222785', 'pcn_amsterdam_20240108_17_59_10.349946', 'pcn_amsterdam_20240108_18_03_27.554833']},
-        {'name': 'LCN_ND', 'dirs':     []},
-        {'name': 'LCN_OPTMAX', 'dirs': []},
+        {'name': 'LCN_ND', 'dirs':     ['lcn_amsterdam_20240108_19_18_01.962049', 'lcn_amsterdam_20240112_13_28_11.272913', 'lcn_amsterdam_20240112_13_28_13.723613']},
+        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240109_19_12_06.840031']},
         {'name': 'LCN_NDMEAN', 'dirs': []},
      ]},
 
      {'nr_groups': 9,
      'models': [
         {'name': 'PCN', 'dirs':        ['pcn_amsterdam_20240105_15_08_43.307181', 'pcn_amsterdam_20240108_18_29_39.047196', 'pcn_amsterdam_20240108_19_02_17.164682']},
-        {'name': 'LCN_ND', 'dirs':     []},
+        {'name': 'LCN_ND', 'dirs':     ['lcn_amsterdam_20240111_10_07_28.175932', 'lcn_amsterdam_20240111_10_07_28.283603', 'lcn_amsterdam_20240111_10_07_32.119925']},
         {'name': 'LCN_OPTMAX', 'dirs': []},
         {'name': 'LCN_NDMEAN', 'dirs': []},
      ]},
@@ -214,7 +214,7 @@ all_objectives = [
      {'nr_groups': 10,
      'models': [
         {'name': 'PCN', 'dirs':        ['pcn_amsterdam_20240106_06_59_51.676341', 'pcn_amsterdam_20240108_19_05_38.185490', 'pcn_amsterdam_20240108_20_57_34.062783']}, 
-        {'name': 'LCN_ND', 'dirs':     []},
+        {'name': 'LCN_ND', 'dirs':     ['lcn_amsterdam_20240110_15_57_25.825464', 'lcn_amsterdam_20240112_13_31_09.736475', '']},
         {'name': 'LCN_OPTMAX', 'dirs': []},
         {'name': 'LCN_NDMEAN', 'dirs': []},
      ]},
@@ -254,6 +254,8 @@ for oidx, objective in enumerate(all_objectives):
                     gini_index = gini(np.array(fronts))
                     total_efficiency = np.sum(fronts, axis=1)
                     avg_efficiency = np.mean(fronts, axis=1)
+                    # if model['dirs'][i] == 'lcn_xian_20240110_12_09_02.587302':
+                        # print('asdas')
                     hv = hypervolume(ref_point, fronts)
                     nash_welfare = np.prod(fronts, axis=1)
                     results_by_objective[model_name]['fronts'] = fronts
@@ -286,9 +288,10 @@ hv = pcnvlcn[pcnvlcn['metric'] == 'hv']
 # hv['value'] = hv.groupby('nr_groups')['value'].transform(lambda x: x / x.max())
 # Normalize hv['value'] 
 hv['value'] = hv.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
+hv['value'] = hv['value'].fillna(0)
 
 sns.boxplot(data=hv, x="nr_groups", y="value", hue="model", ax=axs[0])
-axs[0].set_title('Hypervolume')
+axs[0].set_title('Normalized Hypervolume')
 
 eff = pcnvlcn[pcnvlcn['metric'] == 'total_efficiency']
 eff['value'] = eff.groupby('nr_groups')['value'].transform(lambda x: x / x.max())
@@ -300,9 +303,9 @@ sns.boxplot(data=gini_, x="nr_groups", y="value", hue="model", ax=axs[2])
 axs[2].set_title('Gini')
 
 sen_welfare = pcnvlcn[pcnvlcn['metric'] == 'sen_welfare']
-sen_welfare['value'] = sen_welfare.groupby('nr_groups')['value'].transform(lambda x: x / x.max())
+sen_welfare['value'] = sen_welfare.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
 sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[3])
-axs[3].set_title('Sen Welfare (Efficiency * (1 - Gini Index))')
+axs[3].set_title('Normalized Sen Welfare (Efficiency * (1 - Gini Index))')
 fig.tight_layout()
 
 #%% Plot Total Efficiency, Gini Index, Sen Welfare for lambda-LCN (0.0-1.0)
@@ -356,12 +359,6 @@ axs[3].axhline(pcn_sen_welfare['value'].max(), ls='--', color='black', alpha=0.5
 fig.suptitle(f'λ-LCN with {NR_GROUPS_TO_PLOT} groups', fontsize=20)
 fig.text(0.5, 0.95, 'Gray Horizontal Line indicates the best solution found by PCN', ha='center', va='center', fontsize=14, color='gray')
 fig.tight_layout()
-
-
-
-
-
-
 
 
 
