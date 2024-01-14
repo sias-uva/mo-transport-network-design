@@ -34,7 +34,7 @@ all_objectives = [
      'models': [
         {'name': 'PCN', 'dirs': ['pcn_xian_20231026_19_57_12.259730', 'pcn_xian_20231221_17_13_28.741533', 'pcn_xian_20231221_17_16_07.823677']},
         {'name': 'LCN_ND', 'dirs': ['lcn_xian_20231027_10_35_51.656132', 'lcn_xian_20231220_14_59_53.519271', 'lcn_xian_20231220_15_00_10.564421']},
-        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_xian_20231030_17_47_36.629611', 'lcn_xian_20231220_15_02_57.746395']},
+        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_xian_20231030_17_47_36.629611', 'lcn_xian_20231220_15_02_57.746395', 'lcn_xian_20240105_14_47_03.507169']},
         {'name': 'LCN_NDMEAN', 'dirs': ['lcn_xian_20231028_01_07_53.729884', 'lcn_xian_20231220_17_03_12.414722', 'lcn_xian_20231220_17_03_18.736912']},
         # {'name': 'LCN_Lambda_0.0', 'dirs': ['lcn_xian_20231220_17_30_54.791998', 'lcn_xian_20231230_13_29_42.430687', 'lcn_xian_20231230_13_31_16.726711']},
         # {'name': 'LCN_Lambda_0.1', 'dirs': ['lcn_xian_20231220_19_23_57.505711', 'lcn_xian_20231230_13_32_50.819328', 'lcn_xian_20231230_16_11_31.788882']},
@@ -152,7 +152,7 @@ all_objectives = [
         {'name': 'PCN', 'dirs': ['pcn_amsterdam_20240108_13_01_00.778807', 'pcn_amsterdam_20240108_17_20_07.542513', 'pcn_amsterdam_20240108_17_26_09.093184']},
         {'name': 'LCN_ND', 'dirs': ['lcn_amsterdam_20240107_10_11_32.394826', 'lcn_amsterdam_20240108_17_38_08.076197', 'lcn_amsterdam_20240108_17_46_19.928274']},
         {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240108_12_26_27.169590', 'lcn_amsterdam_20240109_12_49_43.217241', 'lcn_amsterdam_20240109_12_49_50.515894']},
-        {'name': 'LCN_NDMEAN', 'dirs': ['lcn_amsterdam_20240112_00_30_56.974278']},
+        {'name': 'LCN_NDMEAN', 'dirs': ['lcn_amsterdam_20240112_00_30_56.974278', 'lcn_amsterdam_20240112_15_54_08.068799', 'lcn_amsterdam_20240112_16_13_34.153684']},
      ]},
 
      {'nr_groups': 3, 
@@ -160,7 +160,7 @@ all_objectives = [
         {'name': 'PCN', 'dirs': ['pcn_amsterdam_20240109_21_39_25.509057', 'pcn_amsterdam_20240110_16_05_16.003156', 'pcn_amsterdam_20240110_16_05_32.771992']},
         {'name': 'LCN_ND', 'dirs': ['lcn_amsterdam_20240107_18_10_19.466760', 'lcn_amsterdam_20240108_20_58_24.047456', 'lcn_amsterdam_20240108_21_40_38.580133']},
         {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240108_21_41_36.541590', 'lcn_amsterdam_20240110_10_47_17.814055', 'lcn_amsterdam_20240110_10_47_22.195133']},
-        {'name': 'LCN_NDMEAN', 'dirs': []},
+        {'name': 'LCN_NDMEAN', 'dirs': ['lcn_amsterdam_20240112_06_42_28.137646', 'lcn_amsterdam_20240113_22_47_13.821275', 'lcn_amsterdam_20240113_22_47_17.305739']},
      ]},
 
      {'nr_groups': 4,
@@ -168,7 +168,7 @@ all_objectives = [
         {'name': 'PCN', 'dirs': ['pcn_amsterdam_20240104_18_09_06.462886', 'pcn_amsterdam_20240108_12_58_10.631250', 'pcn_amsterdam_20240108_12_58_16.652467']},
         {'name': 'LCN_ND', 'dirs': ['lcn_amsterdam_20240108_20_58_49.749453', 'lcn_amsterdam_20240108_21_39_47.553554', 'lcn_amsterdam_20240108_22_08_07.191329']},
         {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240109_18_03_40.856486', 'lcn_amsterdam_20240111_11_15_13.976013', 'lcn_amsterdam_20240111_11_15_18.613571']},
-        # {'name': 'LCN_NDMEAN', 'dirs': []},
+        {'name': 'LCN_NDMEAN', 'dirs': ['lcn_amsterdam_20240112_12_57_51.113202', 'lcn_amsterdam_20240113_22_50_41.907029']},
      ]},
 
      {'nr_groups': 5,
@@ -176,14 +176,14 @@ all_objectives = [
         {'name': 'PCN', 'dirs': ['pcn_amsterdam_20240103_20_27_53.063974', 'pcn_amsterdam_20240108_13_58_08.926091', 'pcn_amsterdam_20240108_15_38_47.417417']},
         {'name': 'LCN_ND', 'dirs': ['lcn_amsterdam_20240107_16_21_51.303601', 'lcn_amsterdam_20240108_22_09_31.479469', 'lcn_amsterdam_20240108_22_13_03.190803']},
         {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240109_15_09_24.960638', 'lcn_amsterdam_20240111_11_23_19.171292']},
-        {'name': 'LCN_NDMEAN', 'dirs': []},
+        {'name': 'LCN_NDMEAN', 'dirs': ['lcn_amsterdam_20240113_07_01_47.678304']},
      ]},
 
      {'nr_groups': 6,
      'models': [
         {'name': 'PCN', 'dirs': ['pcn_amsterdam_20240105_18_12_44.252718', 'pcn_amsterdam_20240108_16_30_15.035406', 'pcn_amsterdam_20240108_16_30_18.519311']},
         {'name': 'LCN_ND', 'dirs': ['lcn_amsterdam_20240107_22_04_25.859926', 'lcn_amsterdam_20240109_09_28_20.393661', 'lcn_amsterdam_20240109_09_28_24.902641']},
-        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240110_23_55_56.733360']},
+        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240110_23_55_56.733360', 'lcn_amsterdam_20240112_14_38_37.581301', 'lcn_amsterdam_20240112_14_38_43.749497']},
         {'name': 'LCN_NDMEAN', 'dirs': []},
      ]},
 
@@ -199,7 +199,7 @@ all_objectives = [
      'models': [
         {'name': 'PCN', 'dirs':        ['pcn_amsterdam_20240104_21_20_01.222785', 'pcn_amsterdam_20240108_17_59_10.349946', 'pcn_amsterdam_20240108_18_03_27.554833']},
         {'name': 'LCN_ND', 'dirs':     ['lcn_amsterdam_20240108_19_18_01.962049', 'lcn_amsterdam_20240112_13_28_11.272913', 'lcn_amsterdam_20240112_13_28_13.723613']},
-        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240109_19_12_06.840031']},
+        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240109_19_12_06.840031', 'lcn_amsterdam_20240112_15_52_13.230587', 'lcn_amsterdam_20240112_15_52_24.219015']},
         {'name': 'LCN_NDMEAN', 'dirs': []},
      ]},
 
@@ -214,7 +214,7 @@ all_objectives = [
      {'nr_groups': 10,
      'models': [
         {'name': 'PCN', 'dirs':        ['pcn_amsterdam_20240106_06_59_51.676341', 'pcn_amsterdam_20240108_19_05_38.185490', 'pcn_amsterdam_20240108_20_57_34.062783']}, 
-        {'name': 'LCN_ND', 'dirs':     ['lcn_amsterdam_20240110_15_57_25.825464', 'lcn_amsterdam_20240112_13_31_09.736475', '']},
+        {'name': 'LCN_ND', 'dirs':     ['lcn_amsterdam_20240110_15_57_25.825464', 'lcn_amsterdam_20240112_13_31_09.736475', 'lcn_amsterdam_20240112_14_37_46.363796']},
         {'name': 'LCN_OPTMAX', 'dirs': []},
         {'name': 'LCN_NDMEAN', 'dirs': []},
      ]},
@@ -280,9 +280,17 @@ for oidx, objective in enumerate(all_objectives):
     results_by_objective.loc[results_by_objective['model'].str.contains('Lambda'), 'model'] = 'LCN_Lambda'
     all_results = pd.concat([all_results, results_by_objective])
     
+#%%
 # Plot Total Efficiency, Gini Index, Sen Welfare for PCN vs LCN (ND, OPTMAX, NDMEAN)
-fig, axs = plt.subplots(4, 1, figsize=(20, 16))
+fig, axs = plt.subplots(4, 1, figsize=(10, 12))
 pcnvlcn = all_results[all_results['model'].isin(['PCN', 'LCN_ND', 'LCN_OPTMAX', 'LCN_NDMEAN'])]
+pcnvlcn.loc[pcnvlcn['model'] == 'LCN_ND', 'model'] = 'LCN'
+pcnvlcn.loc[pcnvlcn['model'] == 'LCN_OPTMAX', 'model'] = 'LCN-Redist'
+pcnvlcn.loc[pcnvlcn['model'] == 'LCN_NDMEAN', 'model'] = 'LCN-Mean'
+
+colors = ["#BFBFBF", "#1A85FF", "#E66100", "#D41159"]
+sns.set_palette(sns.color_palette(colors))
+LINEWIDTH = 1.5
 
 hv = pcnvlcn[pcnvlcn['metric'] == 'hv']
 # hv['value'] = hv.groupby('nr_groups')['value'].transform(lambda x: x / x.max())
@@ -290,26 +298,41 @@ hv = pcnvlcn[pcnvlcn['metric'] == 'hv']
 hv['value'] = hv.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
 hv['value'] = hv['value'].fillna(0)
 
-sns.boxplot(data=hv, x="nr_groups", y="value", hue="model", ax=axs[0])
+sns.boxplot(data=hv, x="nr_groups", y="value", hue="model", ax=axs[0], legend=False, linewidth=LINEWIDTH)
 axs[0].set_title('Normalized Hypervolume')
+axs[0].set_xlabel(None)
+axs[0].set_ylabel(None)
 
 eff = pcnvlcn[pcnvlcn['metric'] == 'total_efficiency']
 eff['value'] = eff.groupby('nr_groups')['value'].transform(lambda x: x / x.max())
-sns.boxplot(data=eff, x="nr_groups", y="value", hue="model", ax=axs[1])
+bxplot = sns.boxplot(data=eff, x="nr_groups", y="value", hue="model", ax=axs[1], legend='brief', linewidth=LINEWIDTH)
+bxplot.legend_.set_title(None)
+bxplot.legend(fontsize=12)
 axs[1].set_title('Total Efficiency')
+axs[1].set_xlabel(None)
+axs[1].set_ylabel(None)
 
 gini_ = pcnvlcn[pcnvlcn['metric'] == 'gini']
-sns.boxplot(data=gini_, x="nr_groups", y="value", hue="model", ax=axs[2])
+sns.boxplot(data=gini_, x="nr_groups", y="value", hue="model", ax=axs[2], legend=None, linewidth=LINEWIDTH)
 axs[2].set_title('Gini')
+axs[2].set_xlabel(None)
+axs[2].set_ylabel(None)
 
 sen_welfare = pcnvlcn[pcnvlcn['metric'] == 'sen_welfare']
 sen_welfare['value'] = sen_welfare.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
-sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[3])
+sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[3], legend=False, linewidth=LINEWIDTH)
 axs[3].set_title('Normalized Sen Welfare (Efficiency * (1 - Gini Index))')
+axs[3].set_xlabel('Number of Groups')
+axs[3].set_ylabel(None)
 fig.tight_layout()
+
+# %%
 
 #%% Plot Total Efficiency, Gini Index, Sen Welfare for lambda-LCN (0.0-1.0)
 NR_GROUPS_TO_PLOT = 3
+colors = ["#1A85FF", "#E66100", "#D41159", "#BFBFBF"]
+sns.set_palette(sns.color_palette(colors))
+LINEWIDTH = 2
 
 # Get the results for PCN, to compare them to the lambda-LCN results
 pcn_eff = all_results[(all_results['model']=='PCN') & (all_results['nr_groups']==NR_GROUPS_TO_PLOT) & (all_results['metric']=='total_efficiency')]
@@ -322,7 +345,7 @@ lambda_lcn = all_results[(all_results['model'].isin(['LCN_Lambda'])) & (all_resu
 lambda_lcn = lambda_lcn[lambda_lcn['nr_groups'] == NR_GROUPS_TO_PLOT]
 
 hyperv = lambda_lcn[lambda_lcn['metric'] == 'hv']
-sns.boxplot(data=hyperv, x="lambda", y="value", ax=axs[0])
+sns.boxplot(data=hyperv, x="lambda", y="value", ax=axs[0], linewidth=LINEWIDTH)
 axs[0].set_title('Hypervolume')
 axs[0].set_ylabel('Hypervolume')
 axs[0].set_xlabel(None)
@@ -332,7 +355,7 @@ axs[0].set_xlabel(None)
 axs[0].axhline(pcn_hv['value'].max(), ls='--', color='black', alpha=0.5)
 
 eff = lambda_lcn[lambda_lcn['metric'] == 'total_efficiency']
-sns.boxplot(data=eff, x="lambda", y="value", ax=axs[1])
+sns.boxplot(data=eff, x="lambda", y="value", ax=axs[1], linewidth=LINEWIDTH)
 axs[1].set_title('Total Efficiency')
 axs[1].set_ylabel('Efficiency')
 
@@ -341,7 +364,7 @@ axs[1].set_ylabel('Efficiency')
 axs[1].axhline(pcn_eff['value'].max(), ls='--', color='black', alpha=0.5)
 
 gini_ = lambda_lcn[lambda_lcn['metric'] == 'gini']
-sns.boxplot(data=gini_, x="lambda", y="value", ax=axs[2])
+sns.boxplot(data=gini_, x="lambda", y="value", ax=axs[2], linewidth=LINEWIDTH)
 axs[2].set_title('Gini')
 axs[2].set_ylabel('Gini Index')
 # axs[2].axhline(pcn_gini['value'].quantile(0.25), ls='--', color='black', alpha=0.5)
@@ -350,7 +373,7 @@ axs[2].axhline(pcn_gini['value'].min(), ls='--', color='black', alpha=0.5)
 
 
 sen_welfare = lambda_lcn[lambda_lcn['metric'] == 'sen_welfare']
-sns.boxplot(data=sen_welfare, x="lambda", y="value", ax=axs[3])
+sns.boxplot(data=sen_welfare, x="lambda", y="value", ax=axs[3], linewidth=LINEWIDTH)
 axs[3].set_title('Sen Welfare (Efficiency * (1 - Gini Index))')
 axs[3].set_ylabel('Sen Welfare')
 # axs[3].axhline(pcn_sen_welfare['value'].quantile(0.25), ls='--', color='black', alpha=0.5)
@@ -358,6 +381,35 @@ axs[3].set_ylabel('Sen Welfare')
 axs[3].axhline(pcn_sen_welfare['value'].max(), ls='--', color='black', alpha=0.5)
 fig.suptitle(f'λ-LCN with {NR_GROUPS_TO_PLOT} groups', fontsize=20)
 fig.text(0.5, 0.95, 'Gray Horizontal Line indicates the best solution found by PCN', ha='center', va='center', fontsize=14, color='gray')
+fig.tight_layout()
+
+
+#%% SAME BUT ONLY for Hypervolume and Sen Welfare
+colors = ["#1A85FF", "#E66100", "#D41159", "#BFBFBF"]
+sns.set_palette(sns.color_palette(colors))
+LINEWIDTH = 2
+
+fig, axs = plt.subplots(2, 1, figsize=(7, 6))
+lambda_lcn = all_results[(all_results['model'].isin(['LCN_Lambda'])) & (all_results['lambda'].isin([0.0, 0.2, 0.4, 0.6, 0.8, 1.0]))]
+lambda_lcn = lambda_lcn[lambda_lcn['nr_groups'] == NR_GROUPS_TO_PLOT]
+
+hyperv = lambda_lcn[lambda_lcn['metric'] == 'hv']
+sns.boxplot(data=hyperv, x="lambda", y="value", ax=axs[0], linewidth=2)
+axs[0].set_title('Hypervolume')
+axs[0].set_ylabel(None)
+axs[0].set_xlabel(None)
+axs[0].axhline(pcn_hv['value'].max(), ls='--', color='black', alpha=0.5)
+
+sen_welfare = lambda_lcn[lambda_lcn['metric'] == 'sen_welfare']
+sns.boxplot(data=sen_welfare, x="lambda", y="value", ax=axs[1], linewidth=2)
+axs[1].set_title('Sen Welfare (Efficiency * (1 - Gini Index))')
+axs[1].set_ylabel(None)
+axs[1].set_xlabel('λ')
+# axs[1].axhline(pcn_sen_welfare['value'].quantile(0.25), ls='--', color='black', alpha=0.5)
+# axs[1].axhline(pcn_sen_welfare['value'].quantile(0.75), ls='--', color='black', alpha=0.5)
+axs[1].axhline(pcn_sen_welfare['value'].max(), ls='--', color='black', alpha=0.5)
+# fig.suptitle(f'λ-LCN with {NR_GROUPS_TO_PLOT} groups', fontsize=20)
+# fig.text(0.5, 0.95, 'Gray Horizontal Line indicates the best solution found by PCN', ha='center', va='center', fontsize=14, color='gray')
 fig.tight_layout()
 
 
