@@ -200,7 +200,7 @@ all_objectives = [
         {'name': 'PCN', 'dirs':        ['pcn_amsterdam_20240104_21_20_01.222785', 'pcn_amsterdam_20240108_17_59_10.349946', 'pcn_amsterdam_20240108_18_03_27.554833']},
         {'name': 'LCN_ND', 'dirs':     ['lcn_amsterdam_20240108_19_18_01.962049', 'lcn_amsterdam_20240112_13_28_11.272913', 'lcn_amsterdam_20240112_13_28_13.723613']},
         {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240109_19_12_06.840031', 'lcn_amsterdam_20240112_15_52_13.230587', 'lcn_amsterdam_20240112_15_52_24.219015']},
-        {'name': 'LCN_NDMEAN', 'dirs': ['lcn_amsterdam_20240115_03_20_55.637839', 'lcn_amsterdam_20240115_13_50_56.101996']},
+        {'name': 'LCN_NDMEAN', 'dirs': ['lcn_amsterdam_20240115_03_20_55.637839', 'lcn_amsterdam_20240115_13_50_56.101996', 'lcn_amsterdam_20240115_14_45_19.076955']},
      ]},
 
      {'nr_groups': 9,
@@ -208,7 +208,7 @@ all_objectives = [
         {'name': 'PCN', 'dirs':        ['pcn_amsterdam_20240105_15_08_43.307181', 'pcn_amsterdam_20240108_18_29_39.047196', 'pcn_amsterdam_20240108_19_02_17.164682']},
         {'name': 'LCN_ND', 'dirs':     ['lcn_amsterdam_20240111_10_07_28.175932', 'lcn_amsterdam_20240111_10_07_28.283603', 'lcn_amsterdam_20240111_10_07_32.119925']},
         {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240111_21_40_14.542172', 'lcn_amsterdam_20240115_09_27_26.351658', 'lcn_amsterdam_20240115_10_24_25.292173']},
-        {'name': 'LCN_NDMEAN', 'dirs': []},
+        {'name': 'LCN_NDMEAN', 'dirs': ['lcn_amsterdam_20240114_03_35_10.144305', 'lcn_amsterdam_20240118_10_42_53.502440', 'lcn_amsterdam_20240118_10_42_53.522727']},
      ]},
 
      {'nr_groups': 10,
