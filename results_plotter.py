@@ -329,7 +329,11 @@ axs[3].set_ylabel(None)
 fig.tight_layout()
 
 # %% Show the mean and SE of the values for the table
-sen_welfare.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
+# sen_welfare.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
+# hv.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
+# eff.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
+gini_.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
+
 
 #%%
 ## Same but only hv and sen_welfare
@@ -448,15 +452,15 @@ lambda_lcn = all_results[(all_results['model'].isin(['LCN_Lambda'])) & (all_resu
 lambda_lcn = lambda_lcn[lambda_lcn['nr_groups'] == NR_GROUPS_TO_PLOT]
 
 hyperv = lambda_lcn[lambda_lcn['metric'] == 'hv']
-sns.boxplot(data=hyperv, x="lambda", y="value", ax=axs[0], linewidth=2)
+sns.boxplot(data=hyperv, x="lambda", y="value", ax=axs[0], linewidth=2, width=0.6)
 axs[0].set_title('Hypervolume')
 axs[0].set_ylabel(None)
 axs[0].set_xlabel(None)
 axs[0].axhline(pcn_hv['value'].max(), ls='--', color='black', alpha=0.5)
 
 sen_welfare = lambda_lcn[lambda_lcn['metric'] == 'sen_welfare']
-sns.boxplot(data=sen_welfare, x="lambda", y="value", ax=axs[1], linewidth=2)
-axs[1].set_title('Sen Welfare (Efficiency * (1 - Gini Index))')
+sns.boxplot(data=sen_welfare, x="lambda", y="value", ax=axs[1], linewidth=2, width=0.6)
+axs[1].set_title('Sen Welfare')
 axs[1].set_ylabel(None)
 axs[1].set_xlabel('λ')
 # axs[1].axhline(pcn_sen_welfare['value'].quantile(0.25), ls='--', color='black', alpha=0.5)
