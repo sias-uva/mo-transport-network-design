@@ -21,6 +21,11 @@ cd morl-baselines
 pip install -e .
 ```
 
+Install the [deep-sea-treasure](https://github.com/imec-idlab/deep-sea-treasure) environment:
+```
+python3 -m pip install  deep_sea_treasure
+```
+
 On Mac M1, if you get an error while installing the morl_baselines, do `pip install osqp==0.6.1` and try again ([source](https://stackoverflow.com/questions/65920955/failed-building-wheel-for-qdldl-when-installing-cvxpy))
 
 # Reproducing the Experiments
