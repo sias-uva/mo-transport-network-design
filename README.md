@@ -26,6 +26,16 @@ Install the [deep-sea-treasure](https://github.com/imec-idlab/deep-sea-treasure)
 python3 -m pip install  deep_sea_treasure
 ```
 
+To run GPI-PD: Install [pycddlib](https://pycddlib.readthedocs.io/en/latest/quickstart.html#installation)
+First install gmp:
+```
+brew install gmp
+```
+Then, to install the package using pip:
+```
+CFLAGS=-I`brew --prefix gmp`/include LDFLAGS=-L`brew --prefix gmp`/lib pip install pip install pycddlib
+```
+
 On Mac M1, if you get an error while installing the morl_baselines, do `pip install osqp==0.6.1` and try again ([source](https://stackoverflow.com/questions/65920955/failed-building-wheel-for-qdldl-when-installing-cvxpy))
 
 # Reproducing the Experiments
