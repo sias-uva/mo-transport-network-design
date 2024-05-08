@@ -254,8 +254,6 @@ for oidx, objective in enumerate(all_objectives):
                     gini_index = gini(np.array(fronts))
                     total_efficiency = np.sum(fronts, axis=1)
                     avg_efficiency = np.mean(fronts, axis=1)
-                    # if model['dirs'][i] == 'lcn_xian_20240110_12_09_02.587302':
-                        # print('asdas')
                     hv = hypervolume(ref_point, fronts)
                     nash_welfare = np.prod(fronts, axis=1)
                     results_by_objective[model_name]['fronts'] = fronts
@@ -506,4 +504,22 @@ fig.tight_layout()
 # ax.scatter([0.003]*3, [0.003]*3, [0.003]*3, alpha=0.5, c='Red', s=50, label='Equality')
 # ax.legend()
 
+# %% MANUAL PLOT
+# RUN IN DOWNLOADS
+
+lines = pd.read_csv('./wandb_export_2024-04-09T10 45 56.775+02 00.csv')
+fig, ax = plt.subplots(figsize=(10, 5))
+lines.plot(ax=ax, color=["#BFBFBF", "#1A85FF", "#E66100", "#D41159"], linewidth=3)
+ax.set_xlabel('Steps (NOT training steps)')
+ax.set_ylabel('Median Sen Welfare')
 # %%
+x = np.array([[0.0044, 0.0045, 0.0062, 0.0061, 0.0044, 0.0053], 
+              [0.0023, 0.0055, 0.0053, 0.0066, 0.0054, 0.0036],
+              [0.0026, 0.0061, 0.0061, 0.0008, 0.0025, 0.0022],
+              [0.0023, 0.0055, 0.0075, 0.0066, 0.0031, 0.0027],
+              [0.0026, 0.0061, 0.0039, 0.0084, 0.0037, 0.0037],
+              [0.0026, 0.0061, 0.0039, 0.0081, 0.0026, 0.0051],
+              [0.0026, 0.0061, 0.0061, 0.0077, 0.0017, 0.0051]
+             ])
+
+np.round(x.sum() * (1 - gini(x)), 2)
