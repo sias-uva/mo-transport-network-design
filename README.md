@@ -38,5 +38,24 @@ CFLAGS=-I`brew --prefix gmp`/include LDFLAGS=-L`brew --prefix gmp`/lib pip insta
 
 On Mac M1, if you get an error while installing the morl_baselines, do `pip install osqp==0.6.1` and try again ([source](https://stackoverflow.com/questions/65920955/failed-building-wheel-for-qdldl-when-installing-cvxpy))
 
+On a linux cluster without sudo permissions, use the following istructions.
+Firstly, cd to your home directory.
+```
+wget https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.bz2
+tar -xjf gmp-6.3.0.tar.bz2
+cd gmp-6.3.0/
+./configure --prefix=/home/YOUR_USER_NAME/opt/
+```
+Then, configure the lib and include paths:
+```
+export LD_LIBRARY_PATH=/home/YOUR_USER_NAME/opt/lib:$LD_LIBRARY_PATH
+export C_INCLUDE_PATH=/home/YOUR_USER_NAME/opt/include:$C_INCLUDE_PATH
+```
+
+And finally, install pycddlib:
+```
+CFLAGS=-I/home/dmichai/opt/include LDFLAGS=-L/home/dmichai/opt/lib pip install pycddlib
+```
+
 # Reproducing the Experiments
 All commands to reproduce the experiments can be found [here](https://aware-night-ab1.notion.site/Project-B-MO-LCN-Experiment-Tracker-b4d21ab160eb458a9cff9ab9314606a7)
