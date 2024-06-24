@@ -31,7 +31,6 @@ nr_layers = [1, 2]
 hidden_dims = [64, 128]
 timesteps = [30000]
 train_mode = 'uniform'
-num_explore_episodes = None
 # distance_ref = None
 distance_ref = 'optimal_max'
 
@@ -136,7 +135,6 @@ if __name__ == "__main__":
         args.hidden_dim = hidden_d
         args.nr_layers = nr_l
         args.train_mode = train_mode
-        args.num_explore_episodes = num_explore_episodes
 
         if args.model == 'PCN':
             pcn_main(args)
