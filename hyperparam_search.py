@@ -77,7 +77,6 @@ if __name__ == "__main__":
         args.ref_point = np.array([0, 0])
         args.max_return=np.array([1, 1])
         args.pf_plot_limits = [0, 0.5]
-        args.update_interval = None
         args.cd_threshold = 0.2
         args.lcn_lambda = args.lcn_lambda
     elif args.env == 'amsterdam':
@@ -93,7 +92,6 @@ if __name__ == "__main__":
         args.max_return=np.array([1] * args.nr_groups)
         # args.pf_plot_limits = [0, 0.015]
         args.pf_plot_limits = None
-        args.update_interval = None
         args.cd_threshold = 0.2
         args.distance_ref = distance_ref
         args.lcn_lambda = args.lcn_lambda
@@ -109,7 +107,6 @@ if __name__ == "__main__":
         args.ref_point = np.array([0] * args.nr_groups)
         args.max_return=np.array([1] * args.nr_groups)
         args.pf_plot_limits = None
-        args.update_interval = None
         args.cd_threshold = 0.2
         args.distance_ref = distance_ref
         args.lcn_lambda = args.lcn_lambda
