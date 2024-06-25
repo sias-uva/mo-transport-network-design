@@ -105,7 +105,6 @@ if __name__ == "__main__":
         args.groups_file = "groups.txt"
         args.ignore_existing_lines = True
         args.experiment_name = "GPI-LS-Dilemma"
-        args.scaling_factor = np.array([1, 1, 0.1])
         args.ref_point = np.array([0, 0])
         args.max_return=np.array([1, 1])
         args.pf_plot_limits = [0, 0.5]
@@ -119,7 +118,7 @@ if __name__ == "__main__":
         args.learning_starts = 50
         args.learning_rate = 1e-5
         args.target_update_freq = 100
-        args.gradient_updates = 10
+        args.gradient_updates = 5
     elif args.env == 'margins':
         args.city_path = Path(f"./envs/mo-tndp/cities/margins_5x5")
         args.nr_stations = 9
@@ -128,7 +127,6 @@ if __name__ == "__main__":
         args.groups_file = f"groups.txt"
         args.ignore_existing_lines = True
         args.experiment_name = "GPI-LS-Margins"
-        args.scaling_factor = np.array([1, 1, 0.1])
         args.ref_point = np.array([0, 0])
         args.max_return=np.array([1, 1])
         args.pf_plot_limits = [0, 0.5]
@@ -139,10 +137,31 @@ if __name__ == "__main__":
         args.groups_file = f"price_groups_{args.nr_groups}.txt"
         args.ignore_existing_lines = True
         args.experiment_name = "GPI-LS-Amsterdam"
-        args.scaling_factor = np.array([100] * args.nr_groups + [0.01])
         args.ref_point = np.array([0] * args.nr_groups)
         args.max_return=np.array([1] * args.nr_groups)
         args.pf_plot_limits = None
+    # if args.env == 'amsterdam_10x10':
+    #     args.city_path = Path(f"./envs/mo-tndp/cities/amsterdam_10x10")
+    #     args.nr_stations = 10
+    #     args.gym_env = 'motndp_amsterdam_10x10-v0'
+    #     args.project_name = "MORL-TNDP"
+    #     args.groups_file = "groups.txt"
+    #     args.ignore_existing_lines = True
+    #     args.experiment_name = "GPI-LS-Amsterdam_10x10"
+    #     args.ref_point = np.array([0, 0])
+    #     args.max_return=np.array([1, 1])
+    #     args.pf_plot_limits = [0, 0.5]
+    #     args.net_arch = [64, 64]
+    #     args.batch_size = 32
+    #     args.timesteps_per_iter = 100
+    #     args.total_timesteps = 3000
+    #     args.epsilon_decay_steps = 1500
+    #     args.num_eval_weights_for_front = 100
+    #     args.buffer_size = 5000
+    #     args.learning_starts = 100
+    #     args.learning_rate = 1e-5
+    #     args.target_update_freq = 100
+    #     args.gradient_updates = 1
     elif args.env == 'xian':
         args.city_path = Path(f"./envs/mo-tndp/cities/xian")
         args.gym_env = 'motndp_xian-v0'
@@ -150,29 +169,24 @@ if __name__ == "__main__":
         args.groups_file = f"price_groups_{args.nr_groups}.txt"
         args.ignore_existing_lines = True
         args.experiment_name = "GPI-LS-Xian"
-        args.scaling_factor = np.array([100] * args.nr_groups + [0.01])
         args.ref_point = np.array([0] * args.nr_groups)
         args.max_return=np.array([1] * args.nr_groups)
         args.pf_plot_limits = None
-        args.net_arch = [256, 256]
-        args.batch_size = 128
-        args.timesteps_per_iter = 10000
-        args.total_timesteps = 100000
-        # args.total_timesteps = 200000
-        args.epsilon_decay_steps = 90000
-        # args.epsilon_decay_steps = 100000
+        args.net_arch = [128, 128]
+        args.batch_size = 32
+        args.timesteps_per_iter = 1000
+        args.total_timesteps = 10000
+        args.epsilon_decay_steps = 3000
         args.num_eval_weights_for_front = 100
-        args.buffer_size = 100000
-        args.learning_starts = 50
-        args.learning_rate = 1e-5
-        args.target_update_freq = 200
-        # args.target_update_freq = 500
-        args.gradient_updates = 10
+        args.buffer_size = 5000
+        args.learning_starts = 1000
+        args.learning_rate = 1e-2
+        args.target_update_freq = 100
+        args.gradient_updates = 1
     elif args.env == 'dst':
         args.gym_env = 'DeepSeaTreasure-v0'
         args.project_name = "DST"
         args.experiment_name = "GPI-LS-DST"
-        args.scaling_factor = np.array([1, 1, 0.1])
         args.ref_point = np.array([0, 0])
         args.max_return=np.array([1, 1])
         args.pf_plot_limits = [0, 0.5]
