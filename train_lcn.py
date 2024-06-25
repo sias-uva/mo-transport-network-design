@@ -8,12 +8,15 @@ import numpy as np
 import torch
 import envs
 import argparse
-from morl_baselines.multi_policy.lcn.lcn import LCNTNDP
+from morl_baselines.multi_policy.lcn.lcn import LCNTNDP, LCNTNDPModel
 
 def main(args):
-    def make_env():
+    def make_env(gym_env):
+        if gym_env == 'dst':
+            return mo_gym.make(gym_env)
+        
         city = City(
-            args.city_path, 
+            args.city_path,
             groups_file=args.groups_file,
             ignore_existing_lines=args.ignore_existing_lines
         )
@@ -25,14 +28,14 @@ def main(args):
 
         return env
 
-    env = make_env()
+    env = make_env(args.gym_env)
 
     agent = LCNTNDP(
         env,
         scaling_factor=args.scaling_factor,
         learning_rate=args.lr,
         batch_size=args.batch_size,
-        project_name="MORL-TNDP",
+        project_name=args.project_name,
         experiment_name=args.experiment_name,
         log=not args.no_log,
         seed=args.seed,
@@ -40,6 +43,7 @@ def main(args):
         hidden_dim=args.hidden_dim,
         distance_ref=args.distance_ref,
         lcn_lambda=args.lcn_lambda,
+        model_class=LCNTNDPModel
     )
 
     if args.starting_loc is None:
@@ -47,11 +51,10 @@ def main(args):
 
     save_dir = Path(f"./results/lcn_{args.env}_{datetime.datetime.today().strftime('%Y%m%d_%H_%M_%S.%f')}")
     agent.train(
-        eval_env=make_env(),
         total_timesteps=args.timesteps,
+        eval_env=make_env(args.gym_env),
         ref_point=args.ref_point,
         num_er_episodes=args.num_er_episodes,
-        num_explore_episodes=args.num_explore_episodes,
         num_step_episodes=args.num_step_episodes,
         max_buffer_size=args.max_buffer_size,
         num_model_updates=args.num_model_updates,
@@ -61,8 +64,6 @@ def main(args):
         save_dir=save_dir,
         pf_plot_limits=args.pf_plot_limits,
         n_policies=args.num_policies,
-        train_mode=args.train_mode,
-        update_interval=args.update_interval,
         cd_threshold=args.cd_threshold,
         # known_pareto_front=env.unwrapped.pareto_front(gamma=1.0),
     )
@@ -70,7 +71,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MO LCN - TNDP")
-    # Acceptable values: 'dilemma', 'margins', 'amsterdam'
+    # Acceptable values: 'dilemma', 'margins', 'amsterdam', 'dst'
     parser.add_argument('--env', default='dilemma', type=str)
     # For amsterdam environment we have different groups files (different nr of objectives)
     parser.add_argument('--nr_groups', default=5, type=int)
@@ -82,7 +83,6 @@ if __name__ == "__main__":
     parser.add_argument('--lr', default=1e-2, type=float)
     parser.add_argument('--batch_size', default=256, type=int)
     parser.add_argument('--num_er_episodes', default=50, type=int)
-    parser.add_argument('--num_explore_episodes', type=int, default=None, help='the nr of top episodes to use to calcualte the desired return when exploring. If None, it will use all ER episodes.')
     parser.add_argument('--num_step_episodes', default=10, type=int)
     parser.add_argument('--num_model_updates', default=10, type=int)
     parser.add_argument('--num_policies', default=10, type=int)
@@ -92,8 +92,6 @@ if __name__ == "__main__":
     parser.add_argument('--timesteps', default=2000, type=int)
     parser.add_argument('--no_log', action='store_true', default=False)
     parser.add_argument('--seed', default=42, type=int)
-    parser.add_argument('--train_mode', default='uniform', type=str, choices=['uniform', 'disttofront', 'disttofront2'], help='controls how to select episodes from the replay buffer for training. If uniform, episodes are sampled uniformly. If disttofront, episodes are sampled with probability proportional to their distance to the pareto front.')
-    parser.add_argument('--update_interval', default=None, type=int, help='controls how often to update the model. If None, it will update every loop. If a number, it will update every update_interval steps.')
     parser.add_argument('--cd_threshold', default=0.2, type=float, help='controls the threshold for crowdedness distance.')
     parser.add_argument('--distance_ref', default='nondominated', type=str, choices=['nondominated', 'optimal_max', 'nondominated_mean', 'interpolate', 'interpolate2', 'interpolate3'], help='controls the reference point for calculating the distance of every solution to the optimal point.')
     parser.add_argument('--lcn_lambda', default=None, type=float, help='value between 0 and 1. Controls the size of the front to explore. lambda -> 1: full pareto front. lambda -> 0 full lorenz front.')
@@ -109,6 +107,7 @@ if __name__ == "__main__":
         args.city_path = Path(f"./envs/mo-tndp/cities/dilemma_5x5")
         args.nr_stations = 9
         args.gym_env = 'motndp_dilemma-v0'
+        args.project_name = "MORL-TNDP"
         args.groups_file = "groups.txt"
         args.ignore_existing_lines = True
         args.experiment_name = "LCN-Dilemma"
@@ -120,6 +119,7 @@ if __name__ == "__main__":
         args.city_path = Path(f"./envs/mo-tndp/cities/margins_5x5")
         args.nr_stations = 9
         args.gym_env = 'motndp_margins-v0'
+        args.project_name = "MORL-TNDP"
         args.groups_file = f"groups.txt"
         args.ignore_existing_lines = True
         args.experiment_name = "LCN-Margins"
@@ -130,6 +130,7 @@ if __name__ == "__main__":
     elif args.env == 'amsterdam':
         args.city_path = Path(f"./envs/mo-tndp/cities/amsterdam")
         args.gym_env = 'motndp_amsterdam-v0'
+        args.project_name = "MORL-TNDP"
         args.groups_file = f"price_groups_{args.nr_groups}.txt"
         args.ignore_existing_lines = True
         args.experiment_name = "LCN-Amsterdam"
@@ -140,6 +141,7 @@ if __name__ == "__main__":
     elif args.env == 'xian':
         args.city_path = Path(f"./envs/mo-tndp/cities/xian")
         args.gym_env = 'motndp_xian-v0'
+        args.project_name = "MORL-TNDP"
         args.groups_file = f"price_groups_{args.nr_groups}.txt"
         args.ignore_existing_lines = True
         args.experiment_name = "LCN-Xian"
@@ -147,7 +149,15 @@ if __name__ == "__main__":
         args.ref_point = np.array([0] * args.nr_groups)
         args.max_return=np.array([1] * args.nr_groups)
         args.pf_plot_limits = None
-        
+    elif args.env == 'dst':
+        args.gym_env = 'DeepSeaTreasure-v0'
+        args.project_name = "DST"
+        args.experiment_name = "LCN-DST"
+        args.scaling_factor = np.array([1, 1, 0.1])
+        args.ref_point = np.array([0, 0])
+        args.max_return=np.array([1, 1])
+        args.pf_plot_limits = [0, 0.5]
+
     if args.starting_loc_x is not None and args.starting_loc_y is not None:
         args.starting_loc = (args.starting_loc_x, args.starting_loc_y)
     else:
