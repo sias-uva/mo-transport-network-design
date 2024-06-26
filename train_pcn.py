@@ -90,7 +90,8 @@ if __name__ == "__main__":
     parser.add_argument('--cd_threshold', default=0.2, type=float, help='controls the threshold for crowdedness distance.')
 
     args = parser.parse_args()
-
+    print(args)
+    
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     random.seed(args.seed)

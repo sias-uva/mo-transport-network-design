@@ -97,6 +97,7 @@ if __name__ == "__main__":
     parser.add_argument('--lcn_lambda', default=None, type=float, help='value between 0 and 1. Controls the size of the front to explore. lambda -> 1: full pareto front. lambda -> 0 full lorenz front.')
 
     args = parser.parse_args()
+    print(args)
 
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)

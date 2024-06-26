@@ -91,6 +91,7 @@ if __name__ == "__main__":
     parser.add_argument('--seed', default=42, type=int)
 
     args = parser.parse_args()
+    print(args)
 
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
