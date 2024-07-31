@@ -1,5 +1,6 @@
 #%%
 import os
+from typing import List
 from matplotlib import pyplot as plt
 import pandas as pd
 import numpy as np
@@ -9,7 +10,12 @@ plt.rcParams.update({'font.size': 18})
 from pymoo.indicators.hv import HV
 from morl_baselines.common.performance_indicators import hypervolume
 
-# %% LCN vs PCN
+#%%
+def read_json(file_path):
+    with open(file_path, 'r') as file:
+        json_content = json.load(file)
+    return json_content
+
 def gini(x, normalized=True):
     sorted_x = np.sort(x, axis=1)
     n = x.shape[1]
@@ -19,206 +25,12 @@ def gini(x, normalized=True):
         gi = gi * (n / (n - 1))
     return gi
 
-all_objectives = [
-    ## XIAN -- PCN vs LCN (ND, OPTMAX, NDMEAN)
-    {'nr_groups': 2,
-     'models': [
-        {'name': 'PCN', 'dirs': ['pcn_xian_20231025_00_29_11.009308', 'pcn_xian_20231221_17_05_37.776445', 'pcn_xian_20231221_17_06_46.045896']},
-        # {'name': 'PCN_HV', 'dirs': ['pcn_xian_20231025_14_57_58.229993']},
-        {'name': 'LCN_ND', 'dirs': ['lcn_xian_20231024_15_11_42.594057', 'lcn_xian_20231220_13_53_13.263588', 'lcn_xian_20231220_13_53_29.501767']},
-        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_xian_20231031_19_50_00.078706', 'lcn_xian_20231220_14_44_33.522291', 'lcn_xian_20231220_14_44_51.798498']},
-        {'name': 'LCN_NDMEAN', 'dirs': ['lcn_xian_20231031_18_20_59.173870', 'lcn_xian_20231220_14_47_26.220395', 'lcn_xian_20231220_14_47_57.984685']},
-     ]},
+xian_result_dirs = read_json('./result_dirs_xian.txt')
+xian_result_dirs_new = read_json('./result_dirs_xian_new.txt')
+amsterdam_result_dirs = read_json('./result_dirs_ams.txt')
+amsterdam_result_dirs_new = read_json('./result_dirs_ams_new.txt')
 
-     {'nr_groups': 3, 
-     'models': [
-        {'name': 'PCN', 'dirs': ['pcn_xian_20231026_19_57_12.259730', 'pcn_xian_20231221_17_13_28.741533', 'pcn_xian_20231221_17_16_07.823677']},
-        {'name': 'LCN_ND', 'dirs': ['lcn_xian_20231027_10_35_51.656132', 'lcn_xian_20231220_14_59_53.519271', 'lcn_xian_20231220_15_00_10.564421']},
-        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_xian_20231030_17_47_36.629611', 'lcn_xian_20231220_15_02_57.746395', 'lcn_xian_20240105_14_47_03.507169']},
-        {'name': 'LCN_NDMEAN', 'dirs': ['lcn_xian_20231028_01_07_53.729884', 'lcn_xian_20231220_17_03_12.414722', 'lcn_xian_20231220_17_03_18.736912']},
-        # {'name': 'LCN_Lambda_0.0', 'dirs': ['lcn_xian_20231220_17_30_54.791998', 'lcn_xian_20231230_13_29_42.430687', 'lcn_xian_20231230_13_31_16.726711']},
-        # {'name': 'LCN_Lambda_0.1', 'dirs': ['lcn_xian_20231220_19_23_57.505711', 'lcn_xian_20231230_13_32_50.819328', 'lcn_xian_20231230_16_11_31.788882']},
-        # {'name': 'LCN_Lambda_0.2', 'dirs': ['lcn_xian_20231220_13_40_05.161123', 'lcn_xian_20231230_16_11_46.903158', 'lcn_xian_20231230_16_15_58.578610']},
-        # {'name': 'LCN_Lambda_0.3', 'dirs': ['lcn_xian_20231220_17_31_54.882410', 'lcn_xian_20231230_16_26_58.092950', 'lcn_xian_20231230_16_51_50.555284']},
-        # {'name': 'LCN_Lambda_0.4', 'dirs': ['lcn_xian_20231220_14_57_49.642641', 'lcn_xian_20231230_16_25_40.149452', 'lcn_xian_20231230_16_25_45.420788']},
-        # {'name': 'LCN_Lambda_0.5', 'dirs': ['lcn_xian_20231220_18_18_21.304292', 'lcn_xian_20231231_18_38_25.815554', 'lcn_xian_20231231_18_38_32.040668']},
-        # {'name': 'LCN_Lambda_0.6', 'dirs': ['lcn_xian_20231220_19_56_38.709599', 'lcn_xian_20231231_18_39_11.034438', 'lcn_xian_20231231_18_53_06.497753']},
-        # {'name': 'LCN_Lambda_0.7', 'dirs': ['lcn_xian_20231220_14_05_26.124152', 'lcn_xian_20231231_18_53_39.088964', 'lcn_xian_20231231_18_53_43.368080']},
-        # {'name': 'LCN_Lambda_0.8', 'dirs': ['lcn_xian_20231221_15_02_14.233385', 'lcn_xian_20231231_19_05_50.681596', 'lcn_xian_20231231_19_05_58.900443']},
-        # {'name': 'LCN_Lambda_0.9', 'dirs': ['lcn_xian_20231221_17_39_23.693903', 'lcn_xian_20231231_19_06_35.791660', 'lcn_xian_20231231_19_22_46.233640']},
-        # {'name': 'LCN_Lambda_1.0', 'dirs': ['lcn_xian_20231221_10_41_50.036536', 'lcn_xian_20231231_19_23_02.379536', 'lcn_xian_20231231_19_23_46.110507']},
-
-        ## Interpolate3
-        {'name': 'LCN_Lambda_0.0', 'dirs': ['lcn_xian_20240105_10_42_52.606690', 'lcn_xian_20240105_10_17_58.219304', 'lcn_xian_20240106_16_16_45.800515']},
-        {'name': 'LCN_Lambda_0.1', 'dirs': ['lcn_xian_20240105_10_42_56.580745', 'lcn_xian_20240105_10_18_06.591934', 'lcn_xian_20240106_16_27_27.764975']},
-        {'name': 'LCN_Lambda_0.2', 'dirs': ['lcn_xian_20240105_10_43_03.423714', 'lcn_xian_20240105_10_18_19.858721', 'lcn_xian_20240106_16_30_02.294221']},
-        {'name': 'LCN_Lambda_0.3', 'dirs': ['lcn_xian_20240105_10_56_23.761950', 'lcn_xian_20240106_15_50_19.671774', 'lcn_xian_20240106_16_31_50.850046']},
-        {'name': 'LCN_Lambda_0.4', 'dirs': ['lcn_xian_20240105_10_56_39.236767', 'lcn_xian_20240106_15_50_41.058354', 'lcn_xian_20240106_16_37_21.072217']},
-        {'name': 'LCN_Lambda_0.5', 'dirs': ['lcn_xian_20240105_10_57_50.800221', 'lcn_xian_20240106_15_51_07.942022', 'lcn_xian_20240106_16_44_32.902128']},
-        {'name': 'LCN_Lambda_0.6', 'dirs': ['lcn_xian_20240110_14_21_50.354585', 'lcn_xian_20240110_12_09_02.587302', 'lcn_xian_20240110_12_09_03.257627']}, 
-        {'name': 'LCN_Lambda_0.7', 'dirs': ['lcn_xian_20240105_11_32_45.469236', 'lcn_xian_20240106_16_04_08.057850', 'lcn_xian_20240106_17_00_27.340156']},
-        {'name': 'LCN_Lambda_0.8', 'dirs': ['lcn_xian_20231221_13_04_18.503687', 'lcn_xian_20240110_11_58_16.516068', 'lcn_xian_20240110_11_58_19.538591']},
-        {'name': 'LCN_Lambda_0.9', 'dirs': ['lcn_xian_20240105_12_06_39.994789', 'lcn_xian_20240106_16_07_06.454882', 'lcn_xian_20240106_17_01_04.146726']},
-        {'name': 'LCN_Lambda_1.0', 'dirs': ['lcn_xian_20231221_15_06_26.599246', 'lcn_xian_20240110_11_39_14.608825', 'lcn_xian_20240110_11_39_18.362828']},
-
-     ]},
-
-     {'nr_groups': 4,
-     'models': [
-        {'name': 'PCN', 'dirs': ['pcn_xian_20231221_23_50_49.667392', 'pcn_xian_20231222_10_07_26.733823', 'pcn_xian_20231222_10_07_34.709387']},
-        {'name': 'LCN_ND', 'dirs': ['lcn_xian_20231031_20_34_46.319655', 'lcn_xian_20231221_16_46_35.929493', 'lcn_xian_20231221_16_46_49.155431']},
-        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_xian_20231031_20_57_36.686604', 'lcn_xian_20231221_16_51_28.384988', 'lcn_xian_20231221_17_02_48.227904']},
-        {'name': 'LCN_NDMEAN', 'dirs': ['lcn_xian_20231031_14_06_09.833760', 'lcn_xian_20231221_18_00_15.460010', 'lcn_xian_20231221_18_00_24.285662']},
-     ]},
-
-     {'nr_groups': 5,
-     'models': [
-        {'name': 'PCN', 'dirs': ['pcn_xian_20231222_06_43_24.520264', 'pcn_xian_20231222_10_12_34.260974', 'pcn_xian_20231222_10_22_47.341518']},
-        {'name': 'LCN_ND', 'dirs': ['lcn_xian_20231031_15_37_43.607061', 'lcn_xian_20231221_18_07_11.697683', 'lcn_xian_20231221_18_13_20.184699']},
-        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_xian_20231031_17_22_15.390900', 'lcn_xian_20231221_18_16_19.629580', 'lcn_xian_20231221_18_17_27.264538']},
-        {'name': 'LCN_NDMEAN', 'dirs': ['lcn_xian_20231101_03_27_35.010116', 'lcn_xian_20231222_10_35_27.721735', 'lcn_xian_20231222_10_36_54.179537']},
-     ]},
-
-     {'nr_groups': 6,
-     'models': [
-        {'name': 'PCN', 'dirs': ['pcn_xian_20231222_05_18_23.713060', 'pcn_xian_20231222_10_42_08.861957', 'pcn_xian_20231222_13_51_29.156008']},
-        {'name': 'LCN_ND', 'dirs': ['lcn_xian_20231101_20_50_50.262098', 'lcn_xian_20231222_13_55_28.792287', 'lcn_xian_20231222_13_55_14.499330']},
-        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_xian_20231101_23_59_04.892749', 'lcn_xian_20231222_14_09_29.475197', 'lcn_xian_20231222_14_20_13.646705']},
-        {'name': 'LCN_NDMEAN', 'dirs': ['lcn_xian_20231102_00_39_34.815751', 'lcn_xian_20231222_14_21_49.604156', 'lcn_xian_20231222_14_30_21.727029']},
-        # {'name': 'LCN_Lambda_0.0', 'dirs': ['lcn_xian_20231223_03_51_02.035482', 'lcn_xian_20240103_12_39_41.243528', 'lcn_xian_20240103_12_39_50.651435']},
-        # {'name': 'LCN_Lambda_0.1', 'dirs': ['lcn_xian_20231222_15_35_54.370796', 'lcn_xian_20240103_12_43_21.486401', 'lcn_xian_20240103_12_58_03.785256']},
-        # {'name': 'LCN_Lambda_0.2', 'dirs': ['lcn_xian_20231223_02_22_19.068841', 'lcn_xian_20240103_12_59_05.165989', 'lcn_xian_20240103_12_59_13.866006']},
-        # {'name': 'LCN_Lambda_0.3', 'dirs': ['lcn_xian_20231222_23_50_40.792027', 'lcn_xian_20240103_13_22_20.152186', 'lcn_xian_20240103_13_22_27.755196']},
-        # {'name': 'LCN_Lambda_0.4', 'dirs': ['lcn_xian_20231223_03_50_28.413054', 'lcn_xian_20240103_13_24_46.625112', 'lcn_xian_20240103_15_22_06.047546']},
-        # {'name': 'LCN_Lambda_0.5', 'dirs': ['lcn_xian_20231223_03_38_58.678816', 'lcn_xian_20240103_15_23_58.995186', 'lcn_xian_20240103_15_24_04.417342']},
-        # {'name': 'LCN_Lambda_0.6', 'dirs': ['lcn_xian_20240103_13_15_07.614476', 'lcn_xian_20240105_09_54_58.256737', 'lcn_xian_20240105_09_55_02.372001']},
-        # {'name': 'LCN_Lambda_0.7', 'dirs': ['lcn_xian_20231229_23_13_00.075207', 'lcn_xian_20240103_15_38_14.852001', 'lcn_xian_20240103_15_41_31.690977']},
-        # {'name': 'LCN_Lambda_0.8', 'dirs': ['lcn_xian_20231227_10_30_37.066763', 'lcn_xian_20240103_15_41_55.425827', 'lcn_xian_20240103_15_56_10.839843']},
-        # {'name': 'LCN_Lambda_0.9', 'dirs': ['lcn_xian_20231227_14_31_33.262752', 'lcn_xian_20240103_16_06_08.909584', 'lcn_xian_20240103_16_08_55.025827']},
-        # {'name': 'LCN_Lambda_1.0', 'dirs': ['lcn_xian_20231230_17_58_12.046057', 'lcn_xian_20240103_16_09_32.898444', 'lcn_xian_20240103_17_06_29.331688']},
-
-        ## Interpolate3
-        {'name': 'LCN_Lambda_0.0', 'dirs': ['lcn_xian_20240105_12_43_13.935811', 'lcn_xian_20240106_17_10_32.866164', 'lcn_xian_20240108_09_35_47.242270']},
-        {'name': 'LCN_Lambda_0.1', 'dirs': ['lcn_xian_20240105_12_43_30.919111', 'lcn_xian_20240106_17_11_02.437616', 'lcn_xian_20240108_10_00_55.067102']},
-        {'name': 'LCN_Lambda_0.2', 'dirs': ['lcn_xian_20240105_12_43_48.156219', 'lcn_xian_20240106_17_11_37.252309', 'lcn_xian_20240108_10_01_09.645822']},
-        {'name': 'LCN_Lambda_0.3', 'dirs': ['lcn_xian_20240105_13_21_45.148803', 'lcn_xian_20240106_17_30_47.711754', 'lcn_xian_20240108_10_02_14.761305']},
-        {'name': 'LCN_Lambda_0.4', 'dirs': ['lcn_xian_20240105_13_21_56.386628', 'lcn_xian_20240106_17_31_00.054289', 'lcn_xian_20240108_10_42_52.703536']},
-        {'name': 'LCN_Lambda_0.5', 'dirs': ['lcn_xian_20240105_13_22_08.118364', 'lcn_xian_20240106_17_31_33.566415', 'lcn_xian_20240108_10_43_12.203160']},
-        {'name': 'LCN_Lambda_0.6', 'dirs': ['lcn_xian_20240105_13_50_00.004743', 'lcn_xian_20240106_17_51_42.304328', 'lcn_xian_20240108_10_43_49.043968']},
-        {'name': 'LCN_Lambda_0.7', 'dirs': ['lcn_xian_20240105_14_16_16.501580', 'lcn_xian_20240106_17_51_52.976563', 'lcn_xian_20240108_11_07_46.944352']},
-        {'name': 'LCN_Lambda_0.8', 'dirs': ['lcn_xian_20240105_13_50_19.726513', 'lcn_xian_20240106_17_52_16.733108', 'lcn_xian_20240108_11_08_03.770924']},
-        {'name': 'LCN_Lambda_0.9', 'dirs': ['lcn_xian_20240105_14_16_31.714213', 'lcn_xian_20240108_09_34_55.039430', 'lcn_xian_20240108_11_09_02.291641']},
-        {'name': 'LCN_Lambda_1.0', 'dirs': ['lcn_xian_20240105_13_50_34.828994', 'lcn_xian_20240108_09_35_03.251690', 'lcn_xian_20240108_11_27_56.174596']},
-
-     ]},
-
-     {'nr_groups': 7,
-     'models': [
-        {'name': 'PCN', 'dirs': ['pcn_xian_20231222_08_55_25.941723', 'pcn_xian_20231222_14_57_23.739874', 'pcn_xian_20231222_14_57_31.976834']},
-        {'name': 'LCN_ND', 'dirs': ['lcn_xian_20231101_15_20_51.805160', 'lcn_xian_20231222_14_57_56.348703', 'lcn_xian_20231222_15_30_31.084748']},
-        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_xian_20231101_21_16_46.111166', 'lcn_xian_20231222_15_31_35.361593', 'lcn_xian_20231222_15_31_44.709426']},
-        {'name': 'LCN_NDMEAN', 'dirs': ['lcn_xian_20231101_11_07_18.996482', 'lcn_xian_20231222_16_01_12.895824', 'lcn_xian_20231222_16_01_22.677730']},
-     ]},
-
-     {'nr_groups': 8,
-     'models': [
-        {'name': 'PCN', 'dirs': ['pcn_xian_20231222_12_09_13.742678', 'pcn_xian_20231227_15_28_42.251814', 'pcn_xian_20231227_15_28_57.920106']},
-        {'name': 'LCN_ND', 'dirs': ['lcn_xian_20231104_02_19_49.123322', 'lcn_xian_20231222_16_02_26.783621', 'lcn_xian_20231227_15_33_05.170445']},
-        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_xian_20231104_09_50_45.815954', 'lcn_xian_20231227_15_54_02.878568', 'lcn_xian_20231227_15_54_13.305009']},
-        {'name': 'LCN_NDMEAN', 'dirs': ['lcn_xian_20231104_00_20_11.895885', 'lcn_xian_20231227_15_55_14.416467', 'lcn_xian_20231227_16_23_37.917198']},
-     ]},
-
-     {'nr_groups': 9,
-     'models': [
-        {'name': 'PCN', 'dirs': ['pcn_xian_20231223_06_22_56.997405', 'pcn_xian_20231227_17_08_40.492328', 'pcn_xian_20231227_17_09_24.836241']},
-        {'name': 'LCN_ND', 'dirs': ['lcn_xian_20231104_09_15_53.872422', 'lcn_xian_20231227_16_25_38.142788', 'lcn_xian_20231227_16_25_44.687983']},
-        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_xian_20231103_11_44_11.962378', 'lcn_xian_20231227_17_11_46.744104', 'lcn_xian_20231227_17_37_05.654135']},
-        {'name': 'LCN_NDMEAN', 'dirs': ['lcn_xian_20231103_21_09_16.023286', 'lcn_xian_20231227_17_37_21.273219', 'lcn_xian_20231227_17_39_32.436277']},
-     ]},
-
-     {'nr_groups': 10,
-     'models': [
-        {'name': 'PCN', 'dirs': ['pcn_xian_20231230_09_50_11.556705', 'pcn_xian_20231230_16_48_04.893434', 'pcn_xian_20231230_16_48_16.788576',]},
-        {'name': 'LCN_ND', 'dirs': ['lcn_xian_20231115_20_13_10.771362', 'lcn_xian_20231227_18_12_34.258525', 'lcn_xian_20231227_18_13_21.258877']},
-        {'name': 'LCN_OPTMAX', 'dirs': ['lcn_xian_20231107_23_24_04.859340', 'lcn_xian_20231227_18_15_40.794295', 'lcn_xian_20231228_19_49_15.985623']},
-        {'name': 'LCN_NDMEAN', 'dirs': ['lcn_xian_20231106_10_49_36.941661', 'lcn_xian_20231228_19_50_36.283374', 'lcn_xian_20231228_19_54_38.446733']},
-     ]},
-]
-
-# AMSTERDAM - 10 Stations
-# all_objectives = [
-#     {'nr_groups': 2,
-#      'models': [
-#         {'name': 'PCN', 'dirs': ['pcn_amsterdam_20240108_13_01_00.778807', 'pcn_amsterdam_20240108_17_20_07.542513', 'pcn_amsterdam_20240108_17_26_09.093184']},
-#         {'name': 'LCN_ND', 'dirs': ['lcn_amsterdam_20240107_10_11_32.394826', 'lcn_amsterdam_20240108_17_38_08.076197', 'lcn_amsterdam_20240108_17_46_19.928274']},
-#         {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240108_12_26_27.169590', 'lcn_amsterdam_20240109_12_49_43.217241', 'lcn_amsterdam_20240109_12_49_50.515894']},
-#         {'name': 'LCN_NDMEAN', 'dirs': ['lcn_amsterdam_20240112_00_30_56.974278', 'lcn_amsterdam_20240112_15_54_08.068799', 'lcn_amsterdam_20240112_16_13_34.153684']},
-#      ]},
-
-#      {'nr_groups': 3, 
-#      'models': [
-#         {'name': 'PCN', 'dirs': ['pcn_amsterdam_20240109_21_39_25.509057', 'pcn_amsterdam_20240110_16_05_16.003156', 'pcn_amsterdam_20240110_16_05_32.771992']},
-#         {'name': 'LCN_ND', 'dirs': ['lcn_amsterdam_20240107_18_10_19.466760', 'lcn_amsterdam_20240108_20_58_24.047456', 'lcn_amsterdam_20240108_21_40_38.580133']},
-#         {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240108_21_41_36.541590', 'lcn_amsterdam_20240110_10_47_17.814055', 'lcn_amsterdam_20240110_10_47_22.195133']},
-#         {'name': 'LCN_NDMEAN', 'dirs': ['lcn_amsterdam_20240112_06_42_28.137646', 'lcn_amsterdam_20240113_22_47_13.821275', 'lcn_amsterdam_20240113_22_47_17.305739']},
-#      ]},
-
-#      {'nr_groups': 4,
-#      'models': [
-#         {'name': 'PCN', 'dirs': ['pcn_amsterdam_20240104_18_09_06.462886', 'pcn_amsterdam_20240108_12_58_10.631250', 'pcn_amsterdam_20240108_12_58_16.652467']},
-#         {'name': 'LCN_ND', 'dirs': ['lcn_amsterdam_20240108_20_58_49.749453', 'lcn_amsterdam_20240108_21_39_47.553554', 'lcn_amsterdam_20240108_22_08_07.191329']},
-#         {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240109_18_03_40.856486', 'lcn_amsterdam_20240111_11_15_13.976013', 'lcn_amsterdam_20240111_11_15_18.613571']},
-#         {'name': 'LCN_NDMEAN', 'dirs': ['lcn_amsterdam_20240112_12_57_51.113202', 'lcn_amsterdam_20240113_22_50_41.907029', 'lcn_amsterdam_20240114_10_03_53.201230']},
-#      ]},
-
-#      {'nr_groups': 5,
-#      'models': [
-#         {'name': 'PCN', 'dirs': ['pcn_amsterdam_20240103_20_27_53.063974', 'pcn_amsterdam_20240108_13_58_08.926091', 'pcn_amsterdam_20240108_15_38_47.417417']},
-#         {'name': 'LCN_ND', 'dirs': ['lcn_amsterdam_20240107_16_21_51.303601', 'lcn_amsterdam_20240108_22_09_31.479469', 'lcn_amsterdam_20240108_22_13_03.190803']},
-#         {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240109_15_09_24.960638', 'lcn_amsterdam_20240111_11_23_19.171292', 'lcn_amsterdam_20240111_11_52_45.441523']},
-#         {'name': 'LCN_NDMEAN', 'dirs': ['lcn_amsterdam_20240113_07_01_47.678304', 'lcn_amsterdam_20240114_10_04_05.968234', 'lcn_amsterdam_20240114_10_04_21.890106']},
-#      ]},
-
-#      {'nr_groups': 6,
-#      'models': [
-#         {'name': 'PCN', 'dirs': ['pcn_amsterdam_20240105_18_12_44.252718', 'pcn_amsterdam_20240108_16_30_15.035406', 'pcn_amsterdam_20240108_16_30_18.519311']},
-#         {'name': 'LCN_ND', 'dirs': ['lcn_amsterdam_20240107_22_04_25.859926', 'lcn_amsterdam_20240109_09_28_20.393661', 'lcn_amsterdam_20240109_09_28_24.902641']},
-#         {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240110_23_55_56.733360', 'lcn_amsterdam_20240112_14_38_37.581301', 'lcn_amsterdam_20240112_14_38_43.749497']},
-#         {'name': 'LCN_NDMEAN', 'dirs': ['lcn_amsterdam_20240114_09_31_43.997272', 'lcn_amsterdam_20240115_12_21_20.925802', 'lcn_amsterdam_20240115_12_21_25.339718']},
-#      ]},
-
-#      {'nr_groups': 7,
-#      'models': [
-#         {'name': 'PCN', 'dirs':        ['pcn_amsterdam_20240104_08_25_38.900589', 'pcn_amsterdam_20240108_16_33_52.512832', 'pcn_amsterdam_20240108_17_34_48.315408']},
-#         {'name': 'LCN_ND', 'dirs':     ['lcn_amsterdam_20240107_22_24_36.910516', 'lcn_amsterdam_20240109_09_33_21.491671', 'lcn_amsterdam_20240109_10_18_44.316108']},
-#         {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240112_18_47_06.897313', 'lcn_amsterdam_20240115_09_24_28.165641', 'lcn_amsterdam_20240115_09_25_04.976029']},
-#         {'name': 'LCN_NDMEAN', 'dirs': ['lcn_amsterdam_20240113_07_37_27.886777', 'lcn_amsterdam_20240115_12_27_36.074277', 'lcn_amsterdam_20240115_13_50_09.368435']},
-#      ]},
-
-#      {'nr_groups': 8,
-#      'models': [
-#         {'name': 'PCN', 'dirs':        ['pcn_amsterdam_20240104_21_20_01.222785', 'pcn_amsterdam_20240108_17_59_10.349946', 'pcn_amsterdam_20240108_18_03_27.554833']},
-#         {'name': 'LCN_ND', 'dirs':     ['lcn_amsterdam_20240108_19_18_01.962049', 'lcn_amsterdam_20240112_13_28_11.272913', 'lcn_amsterdam_20240112_13_28_13.723613']},
-#         {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240109_19_12_06.840031', 'lcn_amsterdam_20240112_15_52_13.230587', 'lcn_amsterdam_20240112_15_52_24.219015']},
-#         {'name': 'LCN_NDMEAN', 'dirs': ['lcn_amsterdam_20240115_03_20_55.637839', 'lcn_amsterdam_20240115_13_50_56.101996', 'lcn_amsterdam_20240115_14_45_19.076955']},
-#      ]},
-
-#      {'nr_groups': 9,
-#      'models': [
-#         {'name': 'PCN', 'dirs':        ['pcn_amsterdam_20240105_15_08_43.307181', 'pcn_amsterdam_20240108_18_29_39.047196', 'pcn_amsterdam_20240108_19_02_17.164682']},
-#         {'name': 'LCN_ND', 'dirs':     ['lcn_amsterdam_20240111_10_07_28.175932', 'lcn_amsterdam_20240111_10_07_28.283603', 'lcn_amsterdam_20240111_10_07_32.119925']},
-#         {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240111_21_40_14.542172', 'lcn_amsterdam_20240115_09_27_26.351658', 'lcn_amsterdam_20240115_10_24_25.292173']},
-#         {'name': 'LCN_NDMEAN', 'dirs': ['lcn_amsterdam_20240114_03_35_10.144305', 'lcn_amsterdam_20240118_10_42_53.502440', 'lcn_amsterdam_20240118_10_42_53.522727']},
-#      ]},
-
-#      {'nr_groups': 10,
-#      'models': [
-#         {'name': 'PCN', 'dirs':        ['pcn_amsterdam_20240106_06_59_51.676341', 'pcn_amsterdam_20240108_19_05_38.185490', 'pcn_amsterdam_20240108_20_57_34.062783']}, 
-#         {'name': 'LCN_ND', 'dirs':     ['lcn_amsterdam_20240110_15_57_25.825464', 'lcn_amsterdam_20240112_13_31_09.736475', 'lcn_amsterdam_20240112_14_37_46.363796']},
-#         {'name': 'LCN_OPTMAX', 'dirs': ['lcn_amsterdam_20240112_20_00_32.266655', 'lcn_amsterdam_20240115_10_26_56.404564', 'lcn_amsterdam_20240115_13_48_48.872908']},
-#         {'name': 'LCN_NDMEAN', 'dirs': ['lcn_amsterdam_20240116_21_08_34.270625', 'lcn_amsterdam_20240119_10_33_39.249385', 'lcn_amsterdam_20240119_10_33_39.253129']},
-#      ]},
-# ]
+all_objectives = xian_result_dirs_new
 
 all_results = pd.DataFrame()
 REQ_SEEDS = 3 # to control if a model was not run for sufficient seeds
@@ -468,10 +280,6 @@ axs[1].axhline(pcn_sen_welfare['value'].max(), ls='--', color='black', alpha=0.5
 # fig.text(0.5, 0.95, 'Gray Horizontal Line indicates the best solution found by PCN', ha='center', va='center', fontsize=14, color='gray')
 fig.tight_layout()
 
-
-
-
-
 # %% Plot the fronts for each Lambda -- NR GROUPS = 3
 # plt.rcParams.update({'font.size': 12})
 # fronts_3 = lambda_lcn[lambda_lcn['nr_groups'] == 3]
@@ -507,19 +315,100 @@ fig.tight_layout()
 # %% MANUAL PLOT
 # RUN IN DOWNLOADS
 
-lines = pd.read_csv('./wandb_export_2024-04-09T10 45 56.775+02 00.csv')
-fig, ax = plt.subplots(figsize=(10, 5))
-lines.plot(ax=ax, color=["#BFBFBF", "#1A85FF", "#E66100", "#D41159"], linewidth=3)
-ax.set_xlabel('Steps (NOT training steps)')
-ax.set_ylabel('Median Sen Welfare')
-# %%
-x = np.array([[0.0044, 0.0045, 0.0062, 0.0061, 0.0044, 0.0053], 
-              [0.0023, 0.0055, 0.0053, 0.0066, 0.0054, 0.0036],
-              [0.0026, 0.0061, 0.0061, 0.0008, 0.0025, 0.0022],
-              [0.0023, 0.0055, 0.0075, 0.0066, 0.0031, 0.0027],
-              [0.0026, 0.0061, 0.0039, 0.0084, 0.0037, 0.0037],
-              [0.0026, 0.0061, 0.0039, 0.0081, 0.0026, 0.0051],
-              [0.0026, 0.0061, 0.0061, 0.0077, 0.0017, 0.0051]
-             ])
+# lines = pd.read_csv('./wandb_export_2024-04-09T10 45 56.775+02 00.csv')
+# fig, ax = plt.subplots(figsize=(10, 5))
+# lines.plot(ax=ax, color=["#BFBFBF", "#1A85FF", "#E66100", "#D41159"], linewidth=3)
+# ax.set_xlabel('Steps (NOT training steps)')
+# ax.set_ylabel('Median Sen Welfare')
 
-np.round(x.sum() * (1 - gini(x)), 2)
+# #%% all lines, 2 objectives
+# # RUN IN DOWNLOADS
+# def generate_results(filenames):
+#     lines = pd.DataFrame()
+#     for results in filenames:
+#         hv = pd.read_csv(results)
+#         hv.columns = ['step', f'hv_{results}', 'hv_min', 'hv_max']
+#         lines[f'hv_{results}'] = hv[f'hv_{results}']
+    
+#     lines['mean'] = lines.mean(axis=1)
+#     lines['ub'] = lines['mean'] + 1.96 * lines.sem(axis=1)
+#     lines['lb'] = lines['mean'] - 1.96 * lines.sem(axis=1)
+    
+#     return lines
+    
+# fig, ax = plt.subplots(figsize=(10, 5))
+# pcn_results = generate_results(['pcn_2_42.csv', 'pcn_2_1234.csv', 'pcn_2_3405.csv'])
+# pcn_results['mean'].plot(ax=ax, color=["#BFBFBF"], linewidth=3, label='PCN')
+# ax.fill_between(pcn_results.index, pcn_results['lb'], pcn_results['ub'], facecolor='#BFBFBF', alpha=0.1)
+
+# lcn_results = generate_results(['lcn_2_42.csv', 'lcn_2_1234.csv', 'lcn_2_3405.csv'])
+# lcn_results['mean'].plot(ax=ax, color=["#1A85FF"], linewidth=3, label='LCN')
+# ax.fill_between(lcn_results.index, lcn_results['lb'], lcn_results['ub'], facecolor='#1A85FF', alpha=0.1)
+
+# lcn_optmax_results = generate_results(['lcn_2_optmax_42.csv', 'lcn_2_optmax_1234.csv', 'lcn_2_optmax_3405.csv'])
+# lcn_optmax_results['mean'].plot(ax=ax, color=["#E66100"], linewidth=3, label='LCN_optmax')
+# ax.fill_between(lcn_optmax_results.index, lcn_optmax_results['lb'], lcn_optmax_results['ub'], facecolor='#E66100', alpha=0.1)
+
+
+# lcn_ndmean_results = generate_results(['lcn_2_ndmean_42.csv', 'lcn_2_ndmean_1234.csv', 'lcn_2_ndmean_3405.csv'])
+# lcn_ndmean_results['mean'].plot(ax=ax, color=["#D41159"], linewidth=3, label='LCN_ndmean')
+# ax.fill_between(lcn_ndmean_results.index, lcn_ndmean_results['lb'], lcn_ndmean_results['ub'], facecolor='#D41159', alpha=0.1)
+
+# plt.legend()
+
+# #% all lines, 5 objectives    
+# fig, ax = plt.subplots(figsize=(10, 5))
+# pcn_results = generate_results(['pcn_5_42.csv', 'pcn_5_1234.csv'])
+# pcn_results['mean'].plot(ax=ax, color=["#BFBFBF"], linewidth=3, label='PCN')
+# ax.fill_between(pcn_results.index, pcn_results['lb'], pcn_results['ub'], facecolor='#BFBFBF', alpha=0.1)
+
+# lcn_results = generate_results(['lcn_5_42.csv', 'lcn_5_1234.csv'])
+# lcn_results['mean'].plot(ax=ax, color=["#1A85FF"], linewidth=3, label='LCN')
+# ax.fill_between(lcn_results.index, lcn_results['lb'], lcn_results['ub'], facecolor='#1A85FF', alpha=0.1)
+
+# lcn_optmax_results = generate_results(['lcn_5_optmax_42.csv', 'lcn_5_optmax_1234.csv'])
+# lcn_optmax_results['mean'].plot(ax=ax, color=["#E66100"], linewidth=3, label='LCN_optmax')
+# ax.fill_between(lcn_optmax_results.index, lcn_optmax_results['lb'], lcn_optmax_results['ub'], facecolor='#E66100', alpha=0.1)
+
+
+# lcn_ndmean_results = generate_results(['lcn_5_ndmean_42.csv', 'lcn_5_ndmean_1234.csv'])
+# lcn_ndmean_results['mean'].plot(ax=ax, color=["#D41159"], linewidth=3, label='LCN_ndmean')
+# ax.fill_between(lcn_ndmean_results.index, lcn_ndmean_results['lb'], lcn_ndmean_results['ub'], facecolor='#D41159', alpha=0.1)
+
+# plt.legend()
+# # %%
+# x = np.array([[0.0044, 0.0045, 0.0062, 0.0061, 0.0044, 0.0053], 
+#               [0.0023, 0.0055, 0.0053, 0.0066, 0.0054, 0.0036],
+#               [0.0026, 0.0061, 0.0061, 0.0008, 0.0025, 0.0022],
+#               [0.0023, 0.0055, 0.0075, 0.0066, 0.0031, 0.0027],
+#               [0.0026, 0.0061, 0.0039, 0.0084, 0.0037, 0.0037],
+#               [0.0026, 0.0061, 0.0039, 0.0081, 0.0026, 0.0051],
+#               [0.0026, 0.0061, 0.0061, 0.0077, 0.0017, 0.0051]
+#              ])
+
+# np.round(x.sum() * (1 - gini(x)), 2)
+
+#%% MANUAL Plot for the DC Paper
+# from matplotlib.ticker import FormatStrFormatter
+# plt.rcParams.update({'font.size': 16})
+
+# hv = pd.read_csv('./hypervolume.csv')
+# sw = pd.read_csv('./sen_welfare.csv')
+# front = pd.read_csv('./front.csv')
+
+# fig, axs = plt.subplots(1, 3, figsize=(17, 5))
+# hv.plot(ax=axs[0], x='Step', y='hypervolume', linewidth=3, color='#88D18A', legend=False)
+# axs[0].set_xlabel('Step')
+# axs[0].set_title('Hypervolume')
+
+# sw.plot(ax=axs[1], x='Step', y='sen_welfare_median', linewidth=3, color='#A833B9', legend=False)
+# axs[1].set_xlabel('Step')
+# axs[1].set_title('Sen Welfare')
+
+
+# front.plot(kind='scatter', ax=axs[2], x='objective_1', y='objective_2', s=100)
+# axs[2].set_title('Pareto Front')
+# axs[2].set_xlabel('group 1')
+# axs[2].set_ylabel('group 2')
+# plt.gca().ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
+# %%

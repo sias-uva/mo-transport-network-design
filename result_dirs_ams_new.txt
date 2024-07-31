@@ -1,0 +1,73 @@
+[
+    {"nr_groups": 2,
+     "models": [
+        {"name": "PCN", "dirs":        ["pcn_amsterdam_20240626_17_53_34.134680", "pcn_amsterdam_20240626_17_53_34.818923", "pcn_amsterdam_20240626_17_53_44.891655"]},
+        {"name": "LCN_ND", "dirs":     ["lcn_amsterdam_20240627_13_45_35.874632" , "lcn_amsterdam_20240627_14_00_46.826719", "lcn_amsterdam_20240627_14_00_46.826610"]},
+        {"name": "LCN_OPTMAX", "dirs": ["lcn_amsterdam_20240628_14_46_43.139224", "lcn_amsterdam_20240628_14_55_03.799405", "lcn_amsterdam_20240628_15_02_17.883200"]},
+        {"name": "LCN_NDMEAN", "dirs": ["lcn_amsterdam_20240630_16_53_35.873147", "lcn_amsterdam_20240630_16_53_51.446002", "lcn_amsterdam_20240630_16_53_34.946504"]}
+     ]},
+
+     {"nr_groups": 3, 
+     "models": [
+        {"name": "PCN", "dirs":        ["pcn_amsterdam_20240626_17_53_52.029054", "pcn_amsterdam_20240626_17_54_02.609216", "pcn_amsterdam_20240626_17_54_02.609204"]},
+         {"name": "LCN_ND", "dirs":    ["lcn_amsterdam_20240627_14_01_39.610528", "lcn_amsterdam_20240627_14_01_49.328116", "lcn_amsterdam_20240627_14_01_39.620312"]},
+        {"name": "LCN_OPTMAX", "dirs": ["lcn_amsterdam_20240628_16_43_20.573987", "lcn_amsterdam_20240628_17_00_31.840675", "lcn_amsterdam_20240628_16_52_57.322736"]},
+        {"name": "LCN_NDMEAN", "dirs": ["lcn_amsterdam_20240630_16_54_24.320089", "lcn_amsterdam_20240630_16_54_36.141720", "lcn_amsterdam_20240630_16_54_36.141636"]}
+     ]},
+
+     {"nr_groups": 4,
+     "models": [
+        {"name": "PCN", "dirs":        ["pcn_amsterdam_20240626_18_56_27.314269", "pcn_amsterdam_20240626_18_57_43.115012", "pcn_amsterdam_20240626_18_57_43.115012"]},
+        {"name": "LCN_ND", "dirs":     ["lcn_amsterdam_20240627_15_44_10.512818", "lcn_amsterdam_20240627_15_57_50.982304", "lcn_amsterdam_20240627_15_51_42.506618"]},
+        {"name": "LCN_OPTMAX", "dirs": ["lcn_amsterdam_20240628_18_10_46.375906", "lcn_amsterdam_20240628_18_29_50.618356", "lcn_amsterdam_20240628_18_19_34.594101"]},
+        {"name": "LCN_NDMEAN", "dirs": ["lcn_amsterdam_20240630_18_21_47.989005", "lcn_amsterdam_20240630_18_22_37.491212", "lcn_amsterdam_20240630_18_22_12.388765"]}
+     ]},
+
+     {"nr_groups": 5,
+     "models": [
+        {"name": "PCN", "dirs":        ["pcn_amsterdam_20240626_20_30_03.125638", "pcn_amsterdam_20240626_20_41_12.626523", "pcn_amsterdam_20240626_20_40_06.701921"]},
+        {"name": "LCN_ND", "dirs":     ["lcn_amsterdam_20240627_16_39_55.732505", "lcn_amsterdam_20240627_16_51_06.809110", "lcn_amsterdam_20240627_16_44_53.673586"]},
+        {"name": "LCN_OPTMAX", "dirs": ["lcn_amsterdam_20240628_18_37_47.970227", "lcn_amsterdam_20240628_18_59_35.677822", "lcn_amsterdam_20240628_18_59_24.928281"]},
+        {"name": "LCN_NDMEAN", "dirs": ["lcn_amsterdam_20240630_18_44_31.336030", "lcn_amsterdam_20240630_18_50_02.764813", "lcn_amsterdam_20240630_18_48_19.315514"]}
+     ]},
+
+     {"nr_groups": 6,
+     "models": [
+        {"name": "PCN", "dirs":        ["pcn_amsterdam_20240626_20_48_22.569829", "pcn_amsterdam_20240626_20_59_27.995771", "pcn_amsterdam_20240626_20_52_08.324619"]},
+        {"name": "LCN_ND", "dirs":     ["lcn_amsterdam_20240627_19_01_38.542214", "lcn_amsterdam_20240627_19_07_36.616048", "lcn_amsterdam_20240627_19_04_39.317235"]},
+        {"name": "LCN_OPTMAX", "dirs": ["lcn_amsterdam_20240628_19_59_38.945635", "lcn_amsterdam_20240628_20_23_24.520628", "lcn_amsterdam_20240628_20_12_07.532841"]},
+        {"name": "LCN_NDMEAN", "dirs": ["lcn_amsterdam_20240630_20_55_24.559817", "lcn_amsterdam_20240630_21_06_57.454799", "lcn_amsterdam_20240630_21_04_45.020483"]}
+     ]},
+
+     {"nr_groups": 7,
+     "models": [
+        {"name": "PCN", "dirs":        ["pcn_amsterdam_20240626_22_50_25.340192", "pcn_amsterdam_20240626_22_59_32.533547", "pcn_amsterdam_20240626_22_51_35.316881"]},
+        {"name": "LCN_ND", "dirs":     ["lcn_amsterdam_20240627_19_08_10.370507", "lcn_amsterdam_20240627_19_20_18.526236", "lcn_amsterdam_20240627_19_12_33.037722"]},
+        {"name": "LCN_OPTMAX", "dirs": ["lcn_amsterdam_20240628_20_51_24.897164", "lcn_amsterdam_20240628_21_22_45.621564", "lcn_amsterdam_20240628_21_14_59.390337"]},
+        {"name": "LCN_NDMEAN", "dirs": ["lcn_amsterdam_20240715_17_06_45.356173", "lcn_amsterdam_20240715_17_06_46.436289", "lcn_amsterdam_20240715_17_06_47.409725"]}
+     ]},
+
+     {"nr_groups": 8,
+     "models": [
+        {"name": "PCN", "dirs":        ["pcn_amsterdam_20240627_01_49_57.696942", "pcn_amsterdam_20240627_02_03_11.864208", "pcn_amsterdam_20240627_01_54_24.016898"]},
+        {"name": "LCN_ND", "dirs":     ["lcn_amsterdam_20240627_22_03_05.217280", "lcn_amsterdam_20240627_22_20_06.385618", "lcn_amsterdam_20240627_22_18_06.854500"]},
+        {"name": "LCN_OPTMAX", "dirs": ["lcn_amsterdam_20240628_22_39_24.993646", "lcn_amsterdam_20240628_23_15_12.510619", "lcn_amsterdam_20240628_22_45_58.340389"]},
+        {"name": "LCN_NDMEAN", "dirs": ["lcn_amsterdam_20240630_21_51_52.182155", "lcn_amsterdam_20240630_21_46_54.291337", "lcn_amsterdam_20240630_21_45_37.521819"]}
+     ]},
+
+     {"nr_groups": 9,
+     "models": [
+        {"name": "PCN", "dirs":        ["pcn_amsterdam_20240627_02_36_01.061257", "pcn_amsterdam_20240627_03_01_45.726382", "pcn_amsterdam_20240627_02_40_51.025937"]},
+        {"name": "LCN_ND", "dirs":     ["lcn_amsterdam_20240628_11_06_00.579314", "lcn_amsterdam_20240628_11_06_09.307927", "lcn_amsterdam_20240628_11_06_00.579252"]},
+        {"name": "LCN_OPTMAX", "dirs": ["lcn_amsterdam_20240629_02_11_48.468630", "lcn_amsterdam_20240629_03_03_04.443375", "lcn_amsterdam_20240629_02_45_40.428975"]},
+        {"name": "LCN_NDMEAN", "dirs": ["lcn_amsterdam_20240630_23_27_56.255663", "lcn_amsterdam_20240630_23_48_38.520643", "lcn_amsterdam_20240630_23_41_24.880147"]}
+     ]},
+
+     {"nr_groups": 10,
+     "models": [
+        {"name": "PCN", "dirs":        ["pcn_amsterdam_20240627_06_21_42.132973", "pcn_amsterdam_20240627_06_53_34.654268", "pcn_amsterdam_20240627_06_33_31.587463"]}, 
+        {"name": "LCN_ND", "dirs":     ["lcn_amsterdam_20240628_11_06_10.904288", "lcn_amsterdam_20240628_11_06_22.627852", "lcn_amsterdam_20240628_11_06_22.627883"]},
+        {"name": "LCN_OPTMAX", "dirs": ["lcn_amsterdam_20240629_04_49_42.038298", "lcn_amsterdam_20240629_05_40_41.993858", "lcn_amsterdam_20240629_05_03_56.429697"]},
+        {"name": "LCN_NDMEAN", "dirs": ["lcn_amsterdam_20240701_04_00_29.348588", "lcn_amsterdam_20240701_04_03_05.231986", "lcn_amsterdam_20240701_04_31_19.269515"]}
+     ]}
+]
