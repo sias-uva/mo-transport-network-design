@@ -44,7 +44,7 @@
         {"name": "PCN", "dirs":        ["pcn_amsterdam_20240626_22_50_25.340192", "pcn_amsterdam_20240626_22_59_32.533547", "pcn_amsterdam_20240626_22_51_35.316881"]},
         {"name": "LCN_ND", "dirs":     ["lcn_amsterdam_20240627_19_08_10.370507", "lcn_amsterdam_20240627_19_20_18.526236", "lcn_amsterdam_20240627_19_12_33.037722"]},
         {"name": "LCN_OPTMAX", "dirs": ["lcn_amsterdam_20240628_20_51_24.897164", "lcn_amsterdam_20240628_21_22_45.621564", "lcn_amsterdam_20240628_21_14_59.390337"]},
-        {"name": "LCN_NDMEAN", "dirs": ["lcn_amsterdam_20240715_17_06_45.356173", "lcn_amsterdam_20240715_17_06_46.436289", "lcn_amsterdam_20240715_17_06_47.409725"]}
+        {"name": "LCN_NDMEAN", "dirs": ["lcn_amsterdam_20240731_11_02_39.264899", "lcn_amsterdam_20240731_11_02_41.720218", "lcn_amsterdam_20240731_11_02_41.719244"]}
      ]},
 
      {"nr_groups": 8,
