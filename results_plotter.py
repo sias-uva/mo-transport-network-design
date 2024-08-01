@@ -30,7 +30,7 @@ xian_result_dirs_new = read_json('./result_dirs_xian_new.txt')
 amsterdam_result_dirs = read_json('./result_dirs_ams.txt')
 amsterdam_result_dirs_new = read_json('./result_dirs_ams_new.txt')
 
-all_objectives = xian_result_dirs_new
+all_objectives = amsterdam_result_dirs_new
 
 all_results = pd.DataFrame()
 REQ_SEEDS = 3 # to control if a model was not run for sufficient seeds
@@ -139,10 +139,10 @@ axs[3].set_ylabel(None)
 fig.tight_layout()
 
 # %% Show the mean and SE of the values for the table
-# sen_welfare.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
+sen_welfare.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
 # hv.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
 # eff.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
-gini_.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
+# gini_.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
 
 
 #%%
@@ -172,29 +172,29 @@ axs[1].set_ylabel(None)
 fig.tight_layout()
 #%%
 ## Boxplot but only gini and sen_welfare
-fig, axs = plt.subplots(2, 1, figsize=(7, 6))
-pcnvlcn = all_results[all_results['model'].isin(['PCN', 'LCN_ND'])]
-pcnvlcn.loc[pcnvlcn['model'] == 'LCN_ND', 'model'] = 'LCN'
+# fig, axs = plt.subplots(2, 1, figsize=(7, 6))
+# pcnvlcn = all_results[all_results['model'].isin(['PCN', 'LCN_ND'])]
+# pcnvlcn.loc[pcnvlcn['model'] == 'LCN_ND', 'model'] = 'LCN'
 
-hv = pcnvlcn[pcnvlcn['metric'] == 'hv']
-hv['value'] = hv.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
-hv['value'] = hv['value'].fillna(0)
+# hv = pcnvlcn[pcnvlcn['metric'] == 'hv']
+# hv['value'] = hv.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
+# hv['value'] = hv['value'].fillna(0)
 
-hvboxplot = sns.boxplot(data=hv, x="nr_groups", y="value", hue="model", ax=axs[0], legend=True, linewidth=LINEWIDTH)
-hvboxplot.legend_.set_title(None)
-hvboxplot.legend(fontsize=14)
-axs[0].set_title('Normalized Hypervolume')
-axs[0].set_xlabel(None)
-axs[0].set_ylabel(None)
+# hvboxplot = sns.boxplot(data=hv, x="nr_groups", y="value", hue="model", ax=axs[0], legend=True, linewidth=LINEWIDTH)
+# hvboxplot.legend_.set_title(None)
+# hvboxplot.legend(fontsize=14)
+# axs[0].set_title('Normalized Hypervolume')
+# axs[0].set_xlabel(None)
+# axs[0].set_ylabel(None)
 
-sen_welfare = pcnvlcn[pcnvlcn['metric'] == 'sen_welfare']
-sen_welfare['value'] = sen_welfare.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
-sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[1], legend=False, linewidth=LINEWIDTH)
-axs[1].set_title('Normalized Sen Welfare')
-axs[1].set_xlabel('Number of Groups')
-axs[1].set_ylabel(None)
+# sen_welfare = pcnvlcn[pcnvlcn['metric'] == 'sen_welfare']
+# sen_welfare['value'] = sen_welfare.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
+# sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[1], legend=False, linewidth=LINEWIDTH)
+# axs[1].set_title('Normalized Sen Welfare')
+# axs[1].set_xlabel('Number of Groups')
+# axs[1].set_ylabel(None)
 
-fig.tight_layout()
+# fig.tight_layout()
 
 #%% Plot Total Efficiency, Gini Index, Sen Welfare for lambda-LCN (0.0-1.0)
 NR_GROUPS_TO_PLOT = 3
