@@ -26,7 +26,7 @@ def main(args):
                         constraints=MetroConstraints(city),
                         nr_stations=args.nr_stations,
                         starting_loc=args.starting_loc,
-                        obs_type='location_vid')
+                        obs_type='location_vector')
 
         return env
 
@@ -49,7 +49,6 @@ def main(args):
         alpha_per=0.6,
         min_priority=0.01,
         per=False,
-        gpi_pd=False,
         use_gpi=True,
         gradient_updates=args.gradient_updates,
         target_net_update_freq=args.target_update_freq,
@@ -73,7 +72,9 @@ def main(args):
         num_eval_weights_for_front=args.num_eval_weights_for_front,
         # known_pareto_front=env.unwrapped.pareto_front(gamma=0.98),
         weight_selection_algo='gpi-ls',
-        timesteps_per_iter=args.timesteps_per_iter
+        timesteps_per_iter=args.timesteps_per_iter,
+        eval_freq=args.eval_freq,
+        eval_mo_freq=args.eval_mo_freq
     )
 
 
@@ -120,6 +121,8 @@ if __name__ == "__main__":
         args.learning_rate = 1e-5
         args.target_update_freq = 100
         args.gradient_updates = 5
+        args.eval_freq = 100
+        args.eval_mo_freq = 100
     elif args.env == 'margins':
         args.city_path = Path(f"./envs/mo-tndp/cities/margins_5x5")
         args.nr_stations = 9
@@ -173,17 +176,19 @@ if __name__ == "__main__":
         args.ref_point = np.array([0] * args.nr_groups)
         args.max_return=np.array([1] * args.nr_groups)
         args.pf_plot_limits = None
-        args.net_arch = [128, 128]
-        args.batch_size = 32
-        args.timesteps_per_iter = 1000
-        args.total_timesteps = 10000
-        args.epsilon_decay_steps = 3000
+        args.net_arch = [256, 256, 256, 256]
+        args.batch_size = 128
+        args.timesteps_per_iter = 10000
+        args.total_timesteps = 200000
+        args.epsilon_decay_steps = 100000
         args.num_eval_weights_for_front = 100
-        args.buffer_size = 5000
-        args.learning_starts = 1000
-        args.learning_rate = 1e-2
-        args.target_update_freq = 100
-        args.gradient_updates = 1
+        args.buffer_size = 1000000
+        args.learning_starts = 100
+        args.learning_rate = 3e-4
+        args.target_update_freq = 200
+        args.gradient_updates = 10
+        args.eval_freq = 10000
+        args.eval_mo_freq = 10000
     elif args.env == 'dst':
         args.gym_env = 'DeepSeaTreasure-v0'
         args.project_name = "DST"
