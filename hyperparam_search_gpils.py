@@ -171,7 +171,7 @@ if __name__ == "__main__":
         args.env_id = 'motndp_xian-v0'
         args.city_path = Path(f"./envs/mo-tndp/cities/xian")
         args.total_timesteps = 30000
-        args.nr_station = 20
+        args.nr_stations = 20
         args.project_name = "MORL-TNDP"
         args.groups_file = f"price_groups_{args.nr_groups}.txt"
         args.ignore_existing_lines = True
