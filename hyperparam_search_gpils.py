@@ -101,7 +101,7 @@ def train(seed, args, config):
             print(f"Seed {seed}. Training agent...")
             algo.train(
                 total_timesteps=args.total_timesteps,
-                ref_point=np.array([0, 0]),
+                ref_point=args.ref_point,
                 eval_env=eval_env,
                 weight_selection_algo='gpi-ls',
                 num_eval_weights_for_front=args.num_eval_weights_for_front,

@@ -68,7 +68,7 @@ def main(args):
     agent.train(
         total_timesteps=args.total_timesteps,
         eval_env=eval_env,
-        ref_point=np.array([0, 0]),
+        ref_point=args.ref_point,
         num_eval_weights_for_front=args.num_eval_weights_for_front,
         # known_pareto_front=env.unwrapped.pareto_front(gamma=0.98),
         weight_selection_algo='gpi-ls',
