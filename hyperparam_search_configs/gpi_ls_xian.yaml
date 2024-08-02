@@ -1,0 +1,19 @@
+method: bayes
+metric:
+  goal: maximize
+  name: eval/hypervolume
+parameters:
+  net_arch:
+    value: [128, 128]
+  learning_rate:
+    values: [0.00001, 0.0001, 0.001, 0.01, 0.1]
+  batch_size:
+    values: [16, 32, 64, 128, 256]
+  buffer_size:
+    values: [256, 512, 2048, 4096, 8192]
+  learning_starts:
+    value: 50
+  target_net_update_freq:
+    values: [10, 20, 50, 100, 500]
+  gradient_updates:
+    values: [1, 2, 4, 8, 10]
