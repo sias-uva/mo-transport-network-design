@@ -177,6 +177,7 @@ if __name__ == "__main__":
         args.ignore_existing_lines = True
         args.experiment_name = "GPI-LS-Xian"
         args.ref_point = np.array([0] * args.nr_groups)
+        args.starting_loc = (9, 19)
         args.timesteps_per_iter = 1000
         args.epsilon_decay_steps = 25000
         args.num_eval_weights_for_front = 100
