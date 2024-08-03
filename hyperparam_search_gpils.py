@@ -178,11 +178,11 @@ if __name__ == "__main__":
         args.experiment_name = "GPI-LS-Xian"
         args.ref_point = np.array([0] * args.nr_groups)
         args.starting_loc = (9, 19)
-        args.timesteps_per_iter = 1000
-        args.epsilon_decay_steps = 25000
+        args.timesteps_per_iter = 5000
+        args.epsilon_decay_steps = 20000
         args.num_eval_weights_for_front = 100
-        args.eval_freq = 1000
-        args.eval_mo_freq = 1000
+        args.eval_freq = 5000
+        args.eval_mo_freq = 5000
 
     # Create an array of seeds to use for the sweep
     seeds = [args.seed + i for i in range(args.num_seeds)]
