@@ -10,7 +10,6 @@ plt.rcParams.update({'font.size': 18})
 from pymoo.indicators.hv import HV
 from morl_baselines.common.performance_indicators import hypervolume
 
-#%%
 def read_json(file_path):
     with open(file_path, 'r') as file:
         json_content = json.load(file)
@@ -25,12 +24,13 @@ def gini(x, normalized=True):
         gi = gi * (n / (n - 1))
     return gi
 
+#%%
 xian_result_dirs = read_json('./result_dirs_xian.txt')
 xian_result_dirs_new = read_json('./result_dirs_xian_new.txt')
 amsterdam_result_dirs = read_json('./result_dirs_ams.txt')
 amsterdam_result_dirs_new = read_json('./result_dirs_ams_new.txt')
 
-all_objectives = amsterdam_result_dirs_new
+all_objectives = xian_result_dirs_new
 
 all_results = pd.DataFrame()
 REQ_SEEDS = 3 # to control if a model was not run for sufficient seeds
@@ -93,7 +93,8 @@ for oidx, objective in enumerate(all_objectives):
 #%%
 # Plot Total Efficiency, Gini Index, Sen Welfare for PCN vs LCN (ND, OPTMAX, NDMEAN)
 fig, axs = plt.subplots(4, 1, figsize=(10, 12))
-pcnvlcn = all_results[all_results['model'].isin(['PCN', 'LCN_ND', 'LCN_OPTMAX', 'LCN_NDMEAN'])]
+pcnvlcn = all_results[all_results['model'].isin(['PCN', 'GPILS', 'LCN_ND', 'LCN_OPTMAX', 'LCN_NDMEAN'])]
+pcnvlcn.loc[pcnvlcn['model'] == 'GPILS', 'model'] = 'GPI-LS'
 pcnvlcn.loc[pcnvlcn['model'] == 'LCN_ND', 'model'] = 'LCN'
 pcnvlcn.loc[pcnvlcn['model'] == 'LCN_OPTMAX', 'model'] = 'LCN-Redist'
 pcnvlcn.loc[pcnvlcn['model'] == 'LCN_NDMEAN', 'model'] = 'LCN-Mean'
@@ -148,6 +149,7 @@ sen_welfare.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.
 #%%
 ## Same but only hv and sen_welfare
 fig, axs = plt.subplots(2, 1, figsize=(7, 6))
+
 pcnvlcn = all_results[all_results['model'].isin(['PCN', 'LCN_ND'])]
 pcnvlcn.loc[pcnvlcn['model'] == 'LCN_ND', 'model'] = 'LCN'
 
@@ -171,30 +173,33 @@ axs[1].set_ylabel(None)
 
 fig.tight_layout()
 #%%
-## Boxplot but only gini and sen_welfare
-# fig, axs = plt.subplots(2, 1, figsize=(7, 6))
-# pcnvlcn = all_results[all_results['model'].isin(['PCN', 'LCN_ND'])]
-# pcnvlcn.loc[pcnvlcn['model'] == 'LCN_ND', 'model'] = 'LCN'
+## Boxplot but only sen_welfare and cardinality
+fig, axs = plt.subplots(2, 1, figsize=(7, 6))
+pcnvlcn = all_results[all_results['model'].isin(['PCN', 'LCN_ND'])]
+pcnvlcn.loc[pcnvlcn['model'] == 'LCN_ND', 'model'] = 'LCN'
 
-# hv = pcnvlcn[pcnvlcn['metric'] == 'hv']
-# hv['value'] = hv.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
-# hv['value'] = hv['value'].fillna(0)
 
-# hvboxplot = sns.boxplot(data=hv, x="nr_groups", y="value", hue="model", ax=axs[0], legend=True, linewidth=LINEWIDTH)
-# hvboxplot.legend_.set_title(None)
-# hvboxplot.legend(fontsize=14)
-# axs[0].set_title('Normalized Hypervolume')
-# axs[0].set_xlabel(None)
-# axs[0].set_ylabel(None)
+sen_welfare = pcnvlcn[pcnvlcn['metric'] == 'sen_welfare']
+sen_welfare['value'] = sen_welfare.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
+sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[0], legend=False, linewidth=LINEWIDTH)
+axs[0].set_title('Normalized Sen Welfare')
+axs[0].set_xlabel('Number of Groups')
+axs[0].set_ylabel(None)
 
-# sen_welfare = pcnvlcn[pcnvlcn['metric'] == 'sen_welfare']
-# sen_welfare['value'] = sen_welfare.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
-# sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[1], legend=False, linewidth=LINEWIDTH)
-# axs[1].set_title('Normalized Sen Welfare')
-# axs[1].set_xlabel('Number of Groups')
-# axs[1].set_ylabel(None)
 
-# fig.tight_layout()
+cardinality = pcnvlcn[pcnvlcn['metric'] == 'cardinality']
+# cardinality['value'] = cardinality.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
+cardinality['value'] = cardinality['value'].fillna(0)
+
+hvboxplot = sns.boxplot(data=cardinality, x="nr_groups", y="value", hue="model", ax=axs[1], legend=True, linewidth=LINEWIDTH)
+hvboxplot.legend_.set_title(None)
+hvboxplot.legend(fontsize=14)
+axs[1].set_title('Cardinality')
+axs[1].set_xlabel(None)
+axs[1].set_ylabel(None)
+
+
+fig.tight_layout()
 
 #%% Plot Total Efficiency, Gini Index, Sen Welfare for lambda-LCN (0.0-1.0)
 NR_GROUPS_TO_PLOT = 3
@@ -312,103 +317,81 @@ fig.tight_layout()
 # ax.scatter([0.003]*3, [0.003]*3, [0.003]*3, alpha=0.5, c='Red', s=50, label='Equality')
 # ax.legend()
 
-# %% MANUAL PLOT
-# RUN IN DOWNLOADS
+#%%
+import wandb
 
-# lines = pd.read_csv('./wandb_export_2024-04-09T10 45 56.775+02 00.csv')
-# fig, ax = plt.subplots(figsize=(10, 5))
-# lines.plot(ax=ax, color=["#BFBFBF", "#1A85FF", "#E66100", "#D41159"], linewidth=3)
-# ax.set_xlabel('Steps (NOT training steps)')
-# ax.set_ylabel('Median Sen Welfare')
+api = wandb.Api()
 
-# #%% all lines, 2 objectives
-# # RUN IN DOWNLOADS
-# def generate_results(filenames):
-#     lines = pd.DataFrame()
-#     for results in filenames:
-#         hv = pd.read_csv(results)
-#         hv.columns = ['step', f'hv_{results}', 'hv_min', 'hv_max']
-#         lines[f'hv_{results}'] = hv[f'hv_{results}']
-    
-#     lines['mean'] = lines.mean(axis=1)
-#     lines['ub'] = lines['mean'] + 1.96 * lines.sem(axis=1)
-#     lines['lb'] = lines['mean'] - 1.96 * lines.sem(axis=1)
-    
-#     return lines
-    
-# fig, ax = plt.subplots(figsize=(10, 5))
-# pcn_results = generate_results(['pcn_2_42.csv', 'pcn_2_1234.csv', 'pcn_2_3405.csv'])
-# pcn_results['mean'].plot(ax=ax, color=["#BFBFBF"], linewidth=3, label='PCN')
-# ax.fill_between(pcn_results.index, pcn_results['lb'], pcn_results['ub'], facecolor='#BFBFBF', alpha=0.1)
+# Replace with your project and run details
+project_name = "MORL-TNDP"
+REQ_SEEDS = 3 # to control if a model was not run for sufficient seeds
 
-# lcn_results = generate_results(['lcn_2_42.csv', 'lcn_2_1234.csv', 'lcn_2_3405.csv'])
-# lcn_results['mean'].plot(ax=ax, color=["#1A85FF"], linewidth=3, label='LCN')
-# ax.fill_between(lcn_results.index, lcn_results['lb'], lcn_results['ub'], facecolor='#1A85FF', alpha=0.1)
+xian_result_runs = read_json('./result_dirs_xian_wandb.txt')
 
-# lcn_optmax_results = generate_results(['lcn_2_optmax_42.csv', 'lcn_2_optmax_1234.csv', 'lcn_2_optmax_3405.csv'])
-# lcn_optmax_results['mean'].plot(ax=ax, color=["#E66100"], linewidth=3, label='LCN_optmax')
-# ax.fill_between(lcn_optmax_results.index, lcn_optmax_results['lb'], lcn_optmax_results['ub'], facecolor='#E66100', alpha=0.1)
+all_objectives = xian_result_runs
+all_results = pd.DataFrame()
 
+for oidx, objective in enumerate(all_objectives):
+    nr_groups = objective['nr_groups']
+    ref_point = np.array([0] * nr_groups)
+    models_to_plot = pd.DataFrame(objective['models'])
 
-# lcn_ndmean_results = generate_results(['lcn_2_ndmean_42.csv', 'lcn_2_ndmean_1234.csv', 'lcn_2_ndmean_3405.csv'])
-# lcn_ndmean_results['mean'].plot(ax=ax, color=["#D41159"], linewidth=3, label='LCN_ndmean')
-# ax.fill_between(lcn_ndmean_results.index, lcn_ndmean_results['lb'], lcn_ndmean_results['ub'], facecolor='#D41159', alpha=0.1)
+    results_by_objective = {}
+    groups = None
+    for i, model_name in enumerate(models_to_plot['name'].unique()):
+        models = models_to_plot[models_to_plot['name'] == model_name].to_dict('records')
+        if len(models[0]['run_ids']) < REQ_SEEDS:
+            print(f"!WARNING! {objective['nr_groups']} nrgroups, {model_name} does not have enough seeds (has {len(models[0]['run_ids'])}, while {REQ_SEEDS} are required)")
 
-# plt.legend()
+        for j, model in enumerate(models):
+            # Read the content of the output file
+            results_by_objective[model_name] = {'gini': [], 'total_efficiency': [], 'avg_efficiency': [], 'hv': [], 'sen_welfare': [], 'nash_welfare': [], 'avg_per_group': [], 'cardinality': []}
+            for i in range(len(model['run_ids'])):
+                if model['run_ids'][i] == '':
+                    print(f"WARNING - Empty run id in {model_name}")
+                    continue
+                
+                run = api.run(f"{project_name}/{model['run_ids'][i]}")
+                                
+                front_artifact = api.artifact(f'{project_name}/run-{model["run_ids"][i]}-evalfront:latest')
+                local_path = f'./artifacts/{front_artifact.name}'
+                if not os.path.exists(local_path):
+                    front_artifact.download()
+                    
+                with open(f"{local_path}/eval/front.table.json", "r") as file:
+                    fronts = json.load(file)['data']
+                groups = len(fronts[0])
+                if groups != nr_groups:
+                    print(f"!ERROR! {objective['nr_groups']} nrgroups, {model_name} has {groups} groups, while {nr_groups} are required")
 
-# #% all lines, 5 objectives    
-# fig, ax = plt.subplots(figsize=(10, 5))
-# pcn_results = generate_results(['pcn_5_42.csv', 'pcn_5_1234.csv'])
-# pcn_results['mean'].plot(ax=ax, color=["#BFBFBF"], linewidth=3, label='PCN')
-# ax.fill_between(pcn_results.index, pcn_results['lb'], pcn_results['ub'], facecolor='#BFBFBF', alpha=0.1)
-
-# lcn_results = generate_results(['lcn_5_42.csv', 'lcn_5_1234.csv'])
-# lcn_results['mean'].plot(ax=ax, color=["#1A85FF"], linewidth=3, label='LCN')
-# ax.fill_between(lcn_results.index, lcn_results['lb'], lcn_results['ub'], facecolor='#1A85FF', alpha=0.1)
-
-# lcn_optmax_results = generate_results(['lcn_5_optmax_42.csv', 'lcn_5_optmax_1234.csv'])
-# lcn_optmax_results['mean'].plot(ax=ax, color=["#E66100"], linewidth=3, label='LCN_optmax')
-# ax.fill_between(lcn_optmax_results.index, lcn_optmax_results['lb'], lcn_optmax_results['ub'], facecolor='#E66100', alpha=0.1)
-
-
-# lcn_ndmean_results = generate_results(['lcn_5_ndmean_42.csv', 'lcn_5_ndmean_1234.csv'])
-# lcn_ndmean_results['mean'].plot(ax=ax, color=["#D41159"], linewidth=3, label='LCN_ndmean')
-# ax.fill_between(lcn_ndmean_results.index, lcn_ndmean_results['lb'], lcn_ndmean_results['ub'], facecolor='#D41159', alpha=0.1)
-
-# plt.legend()
-# # %%
-# x = np.array([[0.0044, 0.0045, 0.0062, 0.0061, 0.0044, 0.0053], 
-#               [0.0023, 0.0055, 0.0053, 0.0066, 0.0054, 0.0036],
-#               [0.0026, 0.0061, 0.0061, 0.0008, 0.0025, 0.0022],
-#               [0.0023, 0.0055, 0.0075, 0.0066, 0.0031, 0.0027],
-#               [0.0026, 0.0061, 0.0039, 0.0084, 0.0037, 0.0037],
-#               [0.0026, 0.0061, 0.0039, 0.0081, 0.0026, 0.0051],
-#               [0.0026, 0.0061, 0.0061, 0.0077, 0.0017, 0.0051]
-#              ])
-
-# np.round(x.sum() * (1 - gini(x)), 2)
-
-#%% MANUAL Plot for the DC Paper
-# from matplotlib.ticker import FormatStrFormatter
-# plt.rcParams.update({'font.size': 16})
-
-# hv = pd.read_csv('./hypervolume.csv')
-# sw = pd.read_csv('./sen_welfare.csv')
-# front = pd.read_csv('./front.csv')
-
-# fig, axs = plt.subplots(1, 3, figsize=(17, 5))
-# hv.plot(ax=axs[0], x='Step', y='hypervolume', linewidth=3, color='#88D18A', legend=False)
-# axs[0].set_xlabel('Step')
-# axs[0].set_title('Hypervolume')
-
-# sw.plot(ax=axs[1], x='Step', y='sen_welfare_median', linewidth=3, color='#A833B9', legend=False)
-# axs[1].set_xlabel('Step')
-# axs[1].set_title('Sen Welfare')
+                gini_index = gini(np.array(fronts))
+                total_efficiency = np.sum(fronts, axis=1)
+                avg_efficiency = np.mean(fronts, axis=1)
+                hv = hypervolume(ref_point, fronts)
+                nash_welfare = np.prod(fronts, axis=1)
+                
+                results_by_objective[model_name]['fronts'] = fronts
+                results_by_objective[model_name]['total_efficiency'] = results_by_objective[model_name]['total_efficiency'] + total_efficiency.tolist()
+                results_by_objective[model_name]['avg_efficiency'] = results_by_objective[model_name]['avg_efficiency'] + avg_efficiency.tolist()
+                results_by_objective[model_name]['hv'] = results_by_objective[model_name]['hv'] + [hv]
+                results_by_objective[model_name]['gini'] = results_by_objective[model_name]['gini'] + gini_index.tolist()
+                results_by_objective[model_name]['sen_welfare'] = results_by_objective[model_name]['sen_welfare'] + (total_efficiency * (1-gini_index)).tolist()
+                results_by_objective[model_name]['nash_welfare'] = results_by_objective[model_name]['nash_welfare'] + nash_welfare.tolist()
+                results_by_objective[model_name]['avg_per_group'] = results_by_objective[model_name]['avg_per_group'] + np.mean(fronts, axis=0).tolist()
+                results_by_objective[model_name]['cardinality'] = results_by_objective[model_name]['cardinality'] + [run.summary['eval/cardinality']]
+                    
+        # results_by_objective[model_name]['lambda'] = model['lambda'] if 'lambda' in model else ''
+    # Quite a hacky way to get the results in a dataframe, but didn't have time to do it properly (thanks copilot)
+    # Convert all_results to a dataframe, with columns 'model', 'metric', 'value', and each row is a different value and not a list
+    # results_by_objective = pd.DataFrame([(name, metric, value) for name in results_by_objective.keys() for metric in results_by_objective[name].keys() for value in results_by_objective[name][metric]], columns=['model', 'metric', 'value'])
+    # Convert all_results to a dataframe, with columns 'model', 'lambda; 'metric', 'value', and each row is a different value and not a list
+    results_by_objective = pd.DataFrame([(name, model['lambda'] if 'lambda' in model else None, metric, value) for name in results_by_objective.keys() 
+                                         for metric in results_by_objective[name].keys() 
+                                         for value in results_by_objective[name][metric]], columns=['model', 'lambda', 'metric', 'value'])
+    results_by_objective['nr_groups'] = nr_groups
+    results_by_objective['lambda'] = results_by_objective[results_by_objective['model'].str.contains('Lambda')]['model'].str.split('_').str[-1].astype(float)
+    results_by_objective.loc[results_by_objective['model'].str.contains('Lambda'), 'model'] = 'LCN_Lambda'
+    all_results = pd.concat([all_results, results_by_objective])
 
 
-# front.plot(kind='scatter', ax=axs[2], x='objective_1', y='objective_2', s=100)
-# axs[2].set_title('Pareto Front')
-# axs[2].set_xlabel('group 1')
-# axs[2].set_ylabel('group 2')
-# plt.gca().ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
 # %%
