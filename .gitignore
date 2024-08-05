@@ -163,3 +163,4 @@ wandb/*
 results/*
 
 weights/*
+artifacts/*
