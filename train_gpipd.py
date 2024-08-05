@@ -90,6 +90,18 @@ if __name__ == "__main__":
     # Episode horizon -- used as a proxy of both the budget and the number of stations (stations are not really costed)
     parser.add_argument('--nr_stations', type=int, required=True)
     parser.add_argument('--seed', default=42, type=int)
+    
+    parser.add_argument('--hidden_dim', default=64, type=int)
+    parser.add_argument('--nr_layers', default=2, type=int)
+    parser.add_argument('--batch_size', default=128, type=int)
+    parser.add_argument('--timesteps_per_iter', default=5000, type=int)
+    parser.add_argument('--total_timesteps', default=30000, type=int)
+    parser.add_argument('--epsilon_decay_steps', default=20000, type=int)
+    parser.add_argument('--buffer_size', default=4096, type=int)
+    parser.add_argument('--learning_rate', default=1e-3, type=float)
+    parser.add_argument('--target_update_freq', default=20, type=int)
+    parser.add_argument('--gradient_updates', default=2, type=int)
+
 
     args = parser.parse_args()
     print(args)
@@ -110,6 +122,7 @@ if __name__ == "__main__":
         args.ref_point = np.array([0, 0])
         args.max_return=np.array([1, 1])
         args.pf_plot_limits = [0, 0.5]
+        # Override everything with the best settings for the dilemma environment.
         args.net_arch = [64, 64]
         args.batch_size = 32
         args.timesteps_per_iter = 100
@@ -144,28 +157,6 @@ if __name__ == "__main__":
         args.ref_point = np.array([0] * args.nr_groups)
         args.max_return=np.array([1] * args.nr_groups)
         args.pf_plot_limits = None
-    # if args.env == 'amsterdam_10x10':
-    #     args.city_path = Path(f"./envs/mo-tndp/cities/amsterdam_10x10")
-    #     args.nr_stations = 10
-    #     args.gym_env = 'motndp_amsterdam_10x10-v0'
-    #     args.project_name = "MORL-TNDP"
-    #     args.groups_file = "groups.txt"
-    #     args.ignore_existing_lines = True
-    #     args.experiment_name = "GPI-LS-Amsterdam_10x10"
-    #     args.ref_point = np.array([0, 0])
-    #     args.max_return=np.array([1, 1])
-    #     args.pf_plot_limits = [0, 0.5]
-    #     args.net_arch = [64, 64]
-    #     args.batch_size = 32
-    #     args.timesteps_per_iter = 100
-    #     args.total_timesteps = 3000
-    #     args.epsilon_decay_steps = 1500
-    #     args.num_eval_weights_for_front = 100
-    #     args.buffer_size = 5000
-    #     args.learning_starts = 100
-    #     args.learning_rate = 1e-5
-    #     args.target_update_freq = 100
-    #     args.gradient_updates = 1
     elif args.env == 'xian':
         args.city_path = Path(f"./envs/mo-tndp/cities/xian")
         args.gym_env = 'motndp_xian-v0'
@@ -176,19 +167,13 @@ if __name__ == "__main__":
         args.ref_point = np.array([0] * args.nr_groups)
         args.max_return=np.array([1] * args.nr_groups)
         args.pf_plot_limits = None
-        args.net_arch = [256, 256, 256, 256]
-        args.batch_size = 128
-        args.timesteps_per_iter = 10000
-        args.total_timesteps = 200000
-        args.epsilon_decay_steps = 100000
+        args.starting_loc_x = 9
+        args.starting_loc_y = 19
         args.num_eval_weights_for_front = 100
-        args.buffer_size = 1000000
         args.learning_starts = 100
-        args.learning_rate = 3e-4
-        args.target_update_freq = 200
-        args.gradient_updates = 10
-        args.eval_freq = 10000
-        args.eval_mo_freq = 10000
+        args.eval_freq = args.timesteps_per_iter
+        args.eval_mo_freq = args.timesteps_per_iter
+        args.net_arch = [args.hidden_dim] * args.nr_layers
     elif args.env == 'dst':
         args.gym_env = 'DeepSeaTreasure-v0'
         args.project_name = "DST"
