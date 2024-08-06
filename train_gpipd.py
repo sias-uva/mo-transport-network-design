@@ -157,6 +157,13 @@ if __name__ == "__main__":
         args.ref_point = np.array([0] * args.nr_groups)
         args.max_return=np.array([1] * args.nr_groups)
         args.pf_plot_limits = None
+        args.starting_loc_x = 9
+        args.starting_loc_y = 19
+        args.num_eval_weights_for_front = 100
+        args.learning_starts = 100
+        args.eval_freq = args.timesteps_per_iter
+        args.eval_mo_freq = args.timesteps_per_iter
+        args.net_arch = [args.hidden_dim] * args.nr_layers
     elif args.env == 'xian':
         args.city_path = Path(f"./envs/mo-tndp/cities/xian")
         args.gym_env = 'motndp_xian-v0'
