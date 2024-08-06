@@ -327,9 +327,27 @@ project_name = "MORL-TNDP"
 REQ_SEEDS = 3 # to control if a model was not run for sufficient seeds
 
 xian_result_runs = read_json('./result_dirs_xian_wandb.txt')
+ams_result_runs = read_json('./result_dirs_ams_wandb.txt')
 
-all_objectives = xian_result_runs
+all_objectives = ams_result_runs
+
 all_results = pd.DataFrame()
+hv_over_time = pd.DataFrame()
+
+def average_per_step(hvs_by_seed):
+    # Determine the maximum length of the sublists
+    max_length = max(len(sublist) for sublist in hvs_by_seed)
+    
+    # Pad shorter sublists with zeros
+    padded_hvs_by_seed = [sublist + [sublist[-1]] * (max_length - len(sublist)) for sublist in hvs_by_seed]
+    
+    # Calculate the average per step
+    averages = []
+    for i in range(max_length):
+        step_values = [sublist[i] for sublist in padded_hvs_by_seed]
+        averages.append(sum(step_values) / len(hvs_by_seed))
+    
+    return averages
 
 for oidx, objective in enumerate(all_objectives):
     nr_groups = objective['nr_groups']
@@ -343,6 +361,7 @@ for oidx, objective in enumerate(all_objectives):
         if len(models[0]['run_ids']) < REQ_SEEDS:
             print(f"!WARNING! {objective['nr_groups']} nrgroups, {model_name} does not have enough seeds (has {len(models[0]['run_ids'])}, while {REQ_SEEDS} are required)")
 
+        hvs_by_seed = []
         for j, model in enumerate(models):
             # Read the content of the output file
             results_by_objective[model_name] = {'gini': [], 'total_efficiency': [], 'avg_efficiency': [], 'hv': [], 'sen_welfare': [], 'nash_welfare': [], 'avg_per_group': [], 'cardinality': []}
@@ -379,6 +398,23 @@ for oidx, objective in enumerate(all_objectives):
                 results_by_objective[model_name]['nash_welfare'] = results_by_objective[model_name]['nash_welfare'] + nash_welfare.tolist()
                 results_by_objective[model_name]['avg_per_group'] = results_by_objective[model_name]['avg_per_group'] + np.mean(fronts, axis=0).tolist()
                 results_by_objective[model_name]['cardinality'] = results_by_objective[model_name]['cardinality'] + [run.summary['eval/cardinality']]
+                
+                history = []
+                for row in run.scan_history(keys=['global_step', 'eval/hypervolume']):
+                    history.append(row)
+
+                # Convert to DataFrame
+                history = pd.DataFrame(history)
+                hv_values = history[history['eval/hypervolume'] > 0]['eval/hypervolume'].tolist()
+                # if len(hv_values) > 0:
+                hvs_by_seed.append(hv_values)
+                # else:
+                    # print(f"WARNING - No hypervolume values in {model_name}, {nr_groups} - {model['run_ids'][i]}")
+                ### 
+        if len(hvs_by_seed) > 0:
+            averages = average_per_step(hvs_by_seed)
+            hv_over_time = pd.concat([hv_over_time, pd.DataFrame({f"{model_name}_{nr_groups}_hv": averages})])
+
                     
         # results_by_objective[model_name]['lambda'] = model['lambda'] if 'lambda' in model else ''
     # Quite a hacky way to get the results in a dataframe, but didn't have time to do it properly (thanks copilot)
@@ -395,3 +431,27 @@ for oidx, objective in enumerate(all_objectives):
 
 
 # %%
+plt.rcParams.update({'font.size': 36})
+fig, axs = plt.subplots(3, 3, figsize=(50, 20))
+LINEWIDTH = 8
+for i in range(9):
+    row = i // 3
+    col = i % 3
+    
+    group = i + 2
+    
+    axs[row, col].plot(hv_over_time[f'PCN_{group}_hv'], label='PCN', linewidth=LINEWIDTH)
+    # axs[row, col].plot(hv_over_time[f'GPILS_{group}_hv'], label='GPILS')
+    axs[row, col].plot(hv_over_time[f'LCN_ND_{group}_hv'], label='LCN_ND', linewidth=LINEWIDTH)
+    axs[row, col].plot(hv_over_time[f'LCN_OPTMAX_{group}_hv'], label='LCN_OPTMAX', linewidth=LINEWIDTH)
+    axs[row, col].plot(hv_over_time[f'LCN_NDMEAN_{group}_hv'], label='LCN_NDMEAN', linewidth=LINEWIDTH)
+    
+    
+    # axs[row, col].set_title(group)
+    axs[row, col].set_xlabel('Step')
+    axs[row, col].set_ylabel('Hypervolume')
+    axs[row, col].set_title(f'{group} Groups')
+    
+
+fig.legend(['PCN', 'LCN_ND', 'LCN_OPTMAX', 'LCN_NDMEAN'], loc='lower center', ncol=4)
+fig.tight_layout()
