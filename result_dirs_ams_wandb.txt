@@ -1,0 +1,92 @@
+[
+   {
+      "nr_groups": 2,
+      "models": [
+         {"name": "PCN", "run_ids": ["r0cdpik5", "f5q959l4", "d0zs17ch"]},
+         {"name": "GPILS", "run_ids": ["qs6rehi7", "r1qi87g3", "o81x9s9l"]},
+         {"name": "LCN_ND","run_ids": ["myt4jer0", "83nab6z0", "63os5a6f"]},
+         {"name": "LCN_OPTMAX", "run_ids": ["3o1jfndi", "9uhboc14", "psqi3t45"]},
+         {"name": "LCN_NDMEAN", "run_ids": ["gmm9jycz", "vium9ewd", "tit4eb82"]}
+      ]
+   },
+   {
+      "nr_groups": 3,
+      "models": [
+         {"name": "PCN", "run_ids": ["2qcur345", "pp5enijg", "9rcmohbm"]},
+         {"name": "GPILS", "run_ids": ["", "", ""]},
+         {"name": "LCN_ND","run_ids": ["u3knecig", "ipqmwhiv", "wo2cxguy"]},
+         {"name": "LCN_OPTMAX", "run_ids": ["rhzfcppk", "eeh9xbim", "zvog4r0j"]},
+         {"name": "LCN_NDMEAN", "run_ids": ["iadwvblq", "q1udf8gg", "ytzekqhe"]}
+      ]
+   },
+   {
+      "nr_groups": 4,
+      "models": [
+         {"name": "PCN", "run_ids": ["2f8lcab7", "nlxntpfe", "1i3x9sc7"]},
+         {"name": "GPILS", "run_ids": ["", "", ""]},
+         {"name": "LCN_ND", "run_ids": ["cob1zqxd", "um5carc6", "u2kn3gnb"]},
+         {"name": "LCN_OPTMAX", "run_ids": ["n5lgatkx", "82okn2y3", "8u3qdagu"]},
+         {"name": "LCN_NDMEAN", "run_ids": ["ujj2c4rl", "xr5t9ufe", "ke19p4hm"]}
+      ]
+   },
+   {
+      "nr_groups": 5,
+      "models": [
+         {"name": "PCN", "run_ids": ["tlwb4xj1", "rpmh2ibh", "52nfhvtn"]},
+         {"name": "GPILS", "run_ids": ["", "", ""]},
+         {"name": "LCN_ND","run_ids": ["wqjt43w6", "ox01jrzb", "j13ft97h"]},
+         {"name": "LCN_OPTMAX", "run_ids": ["vtajx9dp", "n6p6j2aq", "lfphu2md"]},
+         {"name": "LCN_NDMEAN", "run_ids": ["881nouh9", "vmi9unc4", "q10c8aa0"]}
+      ]
+   },
+   {
+      "nr_groups": 6,
+      "models": [
+         {"name": "PCN", "run_ids": ["4gwh2juf", "3078iylu", "hlkbd6c7"]},
+         {"name": "GPILS", "run_ids": ["", "", ""]},
+         {"name": "LCN_ND","run_ids": ["nb96ats9", "tf46n7rn", "im8cvf6w"]},
+         {"name": "LCN_OPTMAX", "run_ids": ["ir6ekalg", "2f35pm8h", "q6bhnzqi"]},
+         {"name": "LCN_NDMEAN", "run_ids": ["vhzvy6zp", "9k28e8i3", "69wxktia"]}
+      ]
+   },
+   {
+      "nr_groups": 7,
+      "models": [
+         {"name": "PCN", "run_ids": ["d1ynvtl4", "07igpilx", "clewfdc2"]},
+         {"name": "GPILS", "run_ids": ["", "", ""]},
+         {"name": "LCN_ND","run_ids": ["jwjduh5a", "5u17y3pd", "rs3xdtes"]},
+         {"name": "LCN_OPTMAX", "run_ids": ["484jjv4x", "iywxgzaj", "i8m76qfo"]},
+         {"name": "LCN_NDMEAN", "run_ids": ["gw86hjvr", "yak8si71", "l0csmt3v"]}
+      ]
+   },
+   {
+      "nr_groups": 8,
+      "models": [
+         {"name": "PCN", "run_ids": ["g8m7ifhx", "e51wnu7c", "stvtfdy9"]},
+         {"name": "GPILS", "run_ids": ["", "", ""]},
+         {"name": "LCN_ND","run_ids": ["1hi40eef", "v39bggnd", "cid5api6"]},
+         {"name": "LCN_OPTMAX", "run_ids": ["qklvqdqp", "2ks3cdm8", "bpz3f8ct"]},
+         {"name": "LCN_NDMEAN", "run_ids": ["xnlqzkm7", "y29ajvo2", "cntbtofa"]}
+      ]
+   },
+   {
+      "nr_groups": 9,
+      "models": [
+         {"name": "PCN", "run_ids": ["5ue668z6", "gl1bd2w4", "dnq3ccsf"]},
+         {"name": "GPILS", "run_ids": ["", "", ""]},
+         {"name": "LCN_ND","run_ids": ["7ss9xhck", "32jxlty3", "6txwm6ui"]},
+         {"name": "LCN_OPTMAX", "run_ids": ["dxfff5r9", "4jh3z93n", "les73dj2"]},
+         {"name": "LCN_NDMEAN", "run_ids": ["w83h6pxb", "rcbxai7x", "jd9ifn10"]}
+      ]
+   },
+   {
+      "nr_groups": 10,
+      "models": [
+         {"name": "PCN", "run_ids": ["1cj3su3l", "0py3ng6d", "08pjvmyl"]},
+         {"name": "GPILS", "run_ids": ["", "", ""]},
+         {"name": "LCN_ND","run_ids": ["1af7ptti", "v6wscsgq", "fdwlnn6j"]},
+         {"name": "LCN_OPTMAX", "run_ids": ["nz7xyb97", "6nv7on6k", "ii7yynic"]},
+         {"name": "LCN_NDMEAN", "run_ids": ["1mosfxu7", "my2s84te", "2vkux7i6"]}
+      ]
+   }
+]
