@@ -202,15 +202,15 @@ def load_all_results_from_wadb(all_objectives):
                     ### 
             if len(hvs_by_seed) > 0:
                 averages = average_per_step(hvs_by_seed)
-                hv_over_time = pd.concat([hv_over_time, pd.DataFrame({f"{model_name}_{nr_groups}_hv": averages})])
+                hv_over_time = pd.concat([hv_over_time, pd.DataFrame({f"{model_name}_{nr_groups}": averages})])
             
             if len(eum_by_seed) > 0:
                 averages = average_per_step(eum_by_seed)
-                eum_over_time = pd.concat([eum_over_time, pd.DataFrame({f"{model_name}_{nr_groups}_eum": averages})])
+                eum_over_time = pd.concat([eum_over_time, pd.DataFrame({f"{model_name}_{nr_groups}": averages})])
                 
             if len(sw_by_seed) > 0:
                 averages = average_per_step(sw_by_seed)
-                sw_over_time = pd.concat([sw_over_time, pd.DataFrame({f"{model_name}_{nr_groups}_sw": averages})])
+                sw_over_time = pd.concat([sw_over_time, pd.DataFrame({f"{model_name}_{nr_groups}": averages})])
 
 
                         
@@ -229,8 +229,8 @@ def load_all_results_from_wadb(all_objectives):
         
     return all_results, hv_over_time, eum_over_time, sw_over_time
 
-ams_results, ams_hv_over_time, ams_eum_over_time, sw_over_time = load_all_results_from_wadb(read_json('./result_dirs_ams_wandb.txt'))
-xian_results, xian_hv_over_time, xian_eum_over_time, sw_over_time = load_all_results_from_wadb(read_json('./result_dirs_xian_wandb.txt'))
+ams_results, ams_hv_over_time, ams_eum_over_time, ams_sw_over_time = load_all_results_from_wadb(read_json('./result_dirs_ams_wandb.txt'))
+xian_results, xian_hv_over_time, xian_eum_over_time, xian_sw_over_time = load_all_results_from_wadb(read_json('./result_dirs_xian_wandb.txt'))
 
 #%%
 
@@ -485,74 +485,52 @@ axs[1].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 # fig.suptitle(f'λ-LCN with {NR_GROUPS_TO_PLOT} groups', fontsize=20)
 # fig.text(0.5, 0.95, 'Gray Horizontal Line indicates the best solution found by PCN', ha='center', va='center', fontsize=14, color='gray')
 fig.tight_layout()
-
-# %% Plot EUM for all objectives
-plt.rcParams.update({'font.size': 36})
-fig, axs = plt.subplots(3, 3, figsize=(50, 20))
-colors = ["#BFBFBF", "#1A85FF", "#E66100", "#D41159"]
-sns.set_palette(sns.color_palette(colors))
-LINEWIDTH = 8
-for i in range(9):
-    row = i // 3
-    col = i % 3
-    
-    group = i + 2
-    
-    axs[row, col].plot(eum_over_time[f'PCN_{group}_hv'], label='PCN', linewidth=LINEWIDTH)
-    # axs[row, col].plot(eum_over_time[f'GPILS_{group}_hv'], label='GPILS', linewidth=LINEWIDTH)
-    axs[row, col].plot(eum_over_time[f'LCN_ND_{group}_hv'], label='LCN_ND', linewidth=LINEWIDTH)
-    axs[row, col].plot(eum_over_time[f'LCN_OPTMAX_{group}_hv'], label='LCN_OPTMAX', linewidth=LINEWIDTH)
-    axs[row, col].plot(eum_over_time[f'LCN_NDMEAN_{group}_hv'], label='LCN_NDMEAN', linewidth=LINEWIDTH)
-    
-    
-    # axs[row, col].set_title(group)
-    axs[row, col].set_xlabel('Step')
-    axs[row, col].set_ylabel('EUM')
-    axs[row, col].set_title(f'{group} Groups')
-    
-
-fig.legend(['PCN', 'LCN', 'LCN-Redist', 'LCN-Mean'], loc='lower center', ncol=4)
-fig.tight_layout()
-
 # %% Plot EUM for 3, 6, 9 objectives
-groups = [3, 6, 9]
-figsize = (40, 15)
 
-# groups = range(2, 11)
-# figsize = (60, 20)
+def plot_over_time_results(ams_metric, xian_metric, groups, figsize, ylabel, linewidth=8, font_size=36):
+    plt.rcParams.update({'font.size': font_size})
+    fig = plt.figure(constrained_layout=True, figsize=figsize)
+    colors = ["#BFBFBF", "#1A85FF", "#E66100", "#D41159"]
+    sns.set_palette(sns.color_palette(colors))
+    LINEWIDTH = linewidth
 
-plt.rcParams.update({'font.size': 36})
-fig = plt.figure(constrained_layout=True, figsize=figsize)
-colors = ["#BFBFBF", "#1A85FF", "#E66100", "#D41159"]
-sns.set_palette(sns.color_palette(colors))
-LINEWIDTH = 8
+    subfigs = fig.subfigures(nrows=2, ncols=1, wspace=0.4, hspace=0.1)  # Add spacing between subfigures
+    subfigs[0].suptitle(f"Xi'an")
+    subfigs[1].suptitle(f"Amsterdam")
 
-subfigs = fig.subfigures(nrows=2, ncols=1, wspace=0.4, hspace=0.1)  # Add spacing between subfigures
-subfigs[0].suptitle(f"Xi'an")
-subfigs[1].suptitle(f"Amsterdam")
-
-axs_xian = subfigs[0].subplots(nrows=1, ncols=len(groups))
-axs_ams = subfigs[1].subplots(nrows=1, ncols=len(groups))
-axs_xian[0].set_ylabel('EUM')
-axs_ams[0].set_ylabel('EUM')
-for i, group in enumerate(groups):
-    axs_xian[i].plot(xian_eum_over_time[f'PCN_{group}_eum'], label='PCN', linewidth=LINEWIDTH)
-    axs_xian[i].plot(xian_eum_over_time[f'LCN_ND_{group}_eum'], label='LCN_ND', linewidth=LINEWIDTH)
-    axs_xian[i].plot(xian_eum_over_time[f'LCN_OPTMAX_{group}_eum'], label='LCN_OPTMAX', linewidth=LINEWIDTH)
-    axs_xian[i].plot(xian_eum_over_time[f'LCN_NDMEAN_{group}_eum'], label='LCN_NDMEAN', linewidth=LINEWIDTH)
+    axs_xian = subfigs[0].subplots(nrows=1, ncols=len(groups))
+    axs_ams = subfigs[1].subplots(nrows=1, ncols=len(groups))
+    axs_xian[0].set_ylabel(ylabel)
+    axs_ams[0].set_ylabel(ylabel)
+    for i, group in enumerate(groups):
+        axs_xian[i].plot(xian_metric[f'PCN_{group}'], label='PCN', linewidth=LINEWIDTH)
+        axs_xian[i].plot(xian_metric[f'LCN_ND_{group}'], label='LCN_ND', linewidth=LINEWIDTH)
+        axs_xian[i].plot(xian_metric[f'LCN_OPTMAX_{group}'], label='LCN_OPTMAX', linewidth=LINEWIDTH)
+        axs_xian[i].plot(xian_metric[f'LCN_NDMEAN_{group}'], label='LCN_NDMEAN', linewidth=LINEWIDTH)
     
-    axs_xian[i].set_xlabel('Step')
-    axs_xian[i].set_title(f'{group} Objectives')
-    axs_xian[i].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+        axs_xian[i].set_xlabel('Step')
+        axs_xian[i].set_title(f'{group} Objectives')
+        axs_xian[i].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     
-    axs_ams[i].plot(ams_eum_over_time[f'PCN_{group}_eum'], label='PCN', linewidth=LINEWIDTH)
-    axs_ams[i].plot(ams_eum_over_time[f'LCN_ND_{group}_eum'], label='LCN_ND', linewidth=LINEWIDTH)
-    axs_ams[i].plot(ams_eum_over_time[f'LCN_OPTMAX_{group}_eum'], label='LCN_OPTMAX', linewidth=LINEWIDTH)
-    axs_ams[i].plot(ams_eum_over_time[f'LCN_NDMEAN_{group}_eum'], label='LCN_NDMEAN', linewidth=LINEWIDTH)
+        axs_ams[i].plot(ams_metric[f'PCN_{group}'], label='PCN', linewidth=LINEWIDTH)
+        axs_ams[i].plot(ams_metric[f'LCN_ND_{group}'], label='LCN_ND', linewidth=LINEWIDTH)
+        axs_ams[i].plot(ams_metric[f'LCN_OPTMAX_{group}'], label='LCN_OPTMAX', linewidth=LINEWIDTH)
+        axs_ams[i].plot(ams_metric[f'LCN_NDMEAN_{group}'], label='LCN_NDMEAN', linewidth=LINEWIDTH)
     
-    axs_ams[i].set_xlabel('Step')
-    axs_ams[i].set_title(f'{group} Objectives')
-    axs_ams[i].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+        axs_ams[i].set_xlabel('Step')
+        axs_ams[i].set_title(f'{group} Objectives')
+        axs_ams[i].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
-subfigs[1].legend(['PCN', 'LCN', 'LCN-Redist', 'LCN-Mean'], loc='lower center', ncol=4, bbox_to_anchor=(0.5, -0.2))
+    subfigs[1].legend(['PCN', 'LCN', 'LCN-Redist', 'LCN-Mean'], loc='lower center', ncol=4, bbox_to_anchor=(0.5, -0.2))
+
+
+# Plot EUM for 3, 6, 9 objectives
+# plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 6, 9], (40, 15), 'EUM')
+# Plot EUM for all objectives
+# plot_over_time_results(ams_eum_over_time, xian_eum_over_time, range(2, 11), (50, 15), 'EUM')
+plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [2, 10], (15, 8), 'EUM', linewidth=4, font_size=22)
+
+# Plot SW for 3, 6, 9 objectives
+# plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 6, 9], (40, 15), 'Sen Welfare')
+plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [2, 10], (15, 8), 'Sen Welfare', linewidth=4, font_size=22)
 # %%
