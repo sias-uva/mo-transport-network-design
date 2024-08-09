@@ -57,7 +57,8 @@ def main(args):
         log=True,
         project_name="MORL-TNDP",
         experiment_name=args.experiment_name,
-        action_mask_dim=8
+        action_mask_dim=8,
+        seed = args.seed
     )
     
     if args.starting_loc is None:
