@@ -297,6 +297,7 @@ sen_welfare.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.
 fig, axs = plt.subplots(3, 1, figsize=(8, 8))
 colors = ["#BFBFBF", "#FFF2E5", "#1A85FF"]
 sns.set_palette(sns.color_palette(colors))
+plt.rcParams.update({'font.size': 16})
 LINEWIDTH = 1.5
 
 pcnvlcn = results_to_plot[results_to_plot['model'].isin(['PCN', 'GPILS', 'LCN_ND'])]
@@ -313,6 +314,7 @@ hvboxplot = sns.boxplot(data=hv, x="nr_groups", y="value", hue="model", ax=axs[0
 axs[0].set_title('Normalized Hypervolume')
 axs[0].set_xlabel(None)
 axs[0].set_ylabel(None)
+axs[0].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
 eum = pcnvlcn[pcnvlcn['metric'] == 'eum']
 eum['value'] = eum.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
@@ -320,6 +322,7 @@ sns.boxplot(data=eum, x="nr_groups", y="value", hue="model", ax=axs[1], legend=F
 axs[1].set_title('Normalized EUM')
 axs[1].set_ylabel(None)
 axs[1].set_xlabel(None)
+axs[1].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
 sen_welfare = pcnvlcn[pcnvlcn['metric'] == 'sen_welfare']
 sen_welfare['value'] = sen_welfare.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
@@ -327,6 +330,7 @@ eumboxplot = sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model"
 axs[2].set_title('Normalized Sen Welfare')
 axs[2].set_ylabel(None)
 axs[2].set_xlabel('Number of Groups')
+axs[2].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
 eumboxplot.legend(fontsize=14, loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=3)
 eumboxplot.legend_.set_title(None)
@@ -338,6 +342,7 @@ fig.tight_layout()
 fig, axs = plt.subplots(3, 1, figsize=(8, 8))
 colors = ["#1A85FF", "#E66100", "#D41159", "#BFBFBF"]
 sns.set_palette(sns.color_palette(colors))
+plt.rcParams.update({'font.size': 16})
 
 all_lcn = results_to_plot[results_to_plot['model'].isin(['LCN_ND', 'LCN_OPTMAX', 'LCN_NDMEAN'])]
 all_lcn.loc[all_lcn['model'] == 'LCN_ND', 'model'] = 'LCN'
@@ -528,9 +533,9 @@ def plot_over_time_results(ams_metric, xian_metric, groups, figsize, ylabel, lin
 # plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 6, 9], (40, 15), 'EUM')
 # Plot EUM for all objectives
 # plot_over_time_results(ams_eum_over_time, xian_eum_over_time, range(2, 11), (50, 15), 'EUM')
-plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [2, 10], (15, 8), 'EUM', linewidth=4, font_size=22)
+plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 10], (15, 8), 'EUM', linewidth=4, font_size=22)
 
 # Plot SW for 3, 6, 9 objectives
 # plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 6, 9], (40, 15), 'Sen Welfare')
-plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [2, 10], (15, 8), 'Sen Welfare', linewidth=4, font_size=22)
+plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 10], (15, 8), 'Sen Welfare', linewidth=4, font_size=22)
 # %%
