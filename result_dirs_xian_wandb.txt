@@ -34,7 +34,7 @@
       "nr_groups": 4,
       "models": [
          {"name": "PCN", "run_ids": ["qbuuq6q8", "2at5lov2", "gbj6ckmj"]},
-         {"name": "GPILS", "run_ids": ["", "", ""]},
+         {"name": "GPILS", "run_ids": ["x3l5w6dd", "haktfs8z", "889g8631"]},
          {"name": "LCN_ND", "run_ids": ["3ojby8mh", "g3u9sp8q", "ps8da75y"]},
          {"name": "LCN_OPTMAX", "run_ids": ["d51gyhnn", "cdplbyvi", "ly5opir7"]},
          {"name": "LCN_NDMEAN", "run_ids": ["085gredt", "2wtc493b", "ai9jqbjq"]}
