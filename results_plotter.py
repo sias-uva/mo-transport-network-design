@@ -94,12 +94,13 @@ def gini(x, normalized=True):
 
 
 
+
 #%% LOAD DATA FROM W&B
 api = wandb.Api()
 
 # Replace with your project and run details
 project_name = "MORL-TNDP"
-REQ_SEEDS = 3 # to control if a model was not run for sufficient seeds
+REQ_SEEDS = 5 # to control if a model was not run for sufficient seeds
 
 def average_per_step(hvs_by_seed):
     # Determine the maximum length of the sublists
@@ -116,7 +117,7 @@ def average_per_step(hvs_by_seed):
     
     return averages
 
-def load_all_results_from_wadb(all_objectives):
+def load_all_results_from_wadb(all_objectives, env_name=None):
     all_results = pd.DataFrame()
     hv_over_time = pd.DataFrame()
     eum_over_time = pd.DataFrame()
@@ -138,6 +139,7 @@ def load_all_results_from_wadb(all_objectives):
             eum_by_seed = []
             sw_by_seed = []
             for j, model in enumerate(models):
+                print(f"Processing {env_name} {model_name} ({nr_groups}) - {model['run_ids']}")
                 # Read the content of the output file
                 results_by_objective[model_name] = {'gini': [], 'total_efficiency': [], 'avg_efficiency': [], 'hv': [], 'sen_welfare': [], 'nash_welfare': [], 'avg_per_group': [], 'cardinality': [], 'eum': []}
                 for i in range(len(model['run_ids'])):
@@ -146,6 +148,16 @@ def load_all_results_from_wadb(all_objectives):
                         continue
                     
                     run = api.run(f"{project_name}/{model['run_ids'][i]}")
+                    
+                    if 'lcn_lambda' in run.config and run.config['lcn_lambda'] is not None:
+                        run_algo = f"{run.config['algo']}-Lambda-{run.config['lcn_lambda']}"
+                    elif 'distance_ref' in run.config and run.config['distance_ref'] is not None:
+                        run_algo = f"{run.config['algo']}-{run.config['distance_ref']}"
+                    else:
+                        run_algo = run.config['algo']
+                        
+                    if run_algo != model_name:
+                        print(f"!ERROR! {model_name} has algo {model_name}, while {run_algo} is required")
                                     
                     front_artifact = api.artifact(f'{project_name}/run-{model["run_ids"][i]}-evalfront:latest')
                     local_path = f'./artifacts/{front_artifact.name}'
@@ -199,18 +211,19 @@ def load_all_results_from_wadb(all_objectives):
                     else:
                         print(f"WARNING - No SW values in {model_name}, {nr_groups} - {model['run_ids'][i]}")
 
-                    ### 
+                    ###
+            model_name_adj = model_name.replace(f'-{env_name}', '')
             if len(hvs_by_seed) > 0:
                 averages = average_per_step(hvs_by_seed)
-                hv_over_time = pd.concat([hv_over_time, pd.DataFrame({f"{model_name}_{nr_groups}": averages})])
+                hv_over_time = pd.concat([hv_over_time, pd.DataFrame({f"{model_name_adj}_{nr_groups}": averages})])
             
             if len(eum_by_seed) > 0:
                 averages = average_per_step(eum_by_seed)
-                eum_over_time = pd.concat([eum_over_time, pd.DataFrame({f"{model_name}_{nr_groups}": averages})])
+                eum_over_time = pd.concat([eum_over_time, pd.DataFrame({f"{model_name_adj}_{nr_groups}": averages})])
                 
             if len(sw_by_seed) > 0:
                 averages = average_per_step(sw_by_seed)
-                sw_over_time = pd.concat([sw_over_time, pd.DataFrame({f"{model_name}_{nr_groups}": averages})])
+                sw_over_time = pd.concat([sw_over_time, pd.DataFrame({f"{model_name_adj}_{nr_groups}": averages})])
 
 
                         
@@ -222,15 +235,16 @@ def load_all_results_from_wadb(all_objectives):
         results_by_objective = pd.DataFrame([(name, model['lambda'] if 'lambda' in model else None, metric, value) for name in results_by_objective.keys() 
                                             for metric in results_by_objective[name].keys() 
                                             for value in results_by_objective[name][metric]], columns=['model', 'lambda', 'metric', 'value'])
+        results_by_objective['model'] = results_by_objective['model'].str.replace(f'-{env_name}', '')
         results_by_objective['nr_groups'] = nr_groups
-        results_by_objective['lambda'] = results_by_objective[results_by_objective['model'].str.contains('Lambda')]['model'].str.split('_').str[-1].astype(float)
+        results_by_objective['lambda'] = results_by_objective[results_by_objective['model'].str.contains('Lambda')]['model'].str.split('-').str[-1].astype(float)
         results_by_objective.loc[results_by_objective['model'].str.contains('Lambda'), 'model'] = 'LCN_Lambda'
         all_results = pd.concat([all_results, results_by_objective])
         
     return all_results, hv_over_time, eum_over_time, sw_over_time
 
-ams_results, ams_hv_over_time, ams_eum_over_time, ams_sw_over_time = load_all_results_from_wadb(read_json('./result_dirs_ams_wandb.txt'))
-xian_results, xian_hv_over_time, xian_eum_over_time, xian_sw_over_time = load_all_results_from_wadb(read_json('./result_dirs_xian_wandb.txt'))
+ams_results, ams_hv_over_time, ams_eum_over_time, ams_sw_over_time = load_all_results_from_wadb(read_json('./result_dirs_ams_wandb.txt'), 'Amsterdam')
+xian_results, xian_hv_over_time, xian_eum_over_time, xian_sw_over_time = load_all_results_from_wadb(read_json('./result_dirs_xian_wandb.txt'), 'Xian')
 
 #%%
 
@@ -239,11 +253,10 @@ results_to_plot = xian_results
 
 # Plot Total Efficiency, Gini Index, Sen Welfare for PCN vs LCN (ND, OPTMAX, NDMEAN)
 fig, axs = plt.subplots(4, 1, figsize=(10, 12))
-pcnvlcn = results_to_plot[results_to_plot['model'].isin(['PCN', 'GPILS', 'LCN_ND', 'LCN_OPTMAX', 'LCN_NDMEAN'])]
-pcnvlcn.loc[pcnvlcn['model'] == 'GPILS', 'model'] = 'GPI-LS'
-pcnvlcn.loc[pcnvlcn['model'] == 'LCN_ND', 'model'] = 'LCN'
-pcnvlcn.loc[pcnvlcn['model'] == 'LCN_OPTMAX', 'model'] = 'LCN-Redist'
-pcnvlcn.loc[pcnvlcn['model'] == 'LCN_NDMEAN', 'model'] = 'LCN-Mean'
+pcnvlcn = results_to_plot[results_to_plot['model'].isin(['PCN', 'GPI-LS', 'LCN-nondominated', 'LCN-optimal_max', 'LCN-nondominated_mean'])]
+pcnvlcn.loc[pcnvlcn['model'] == 'LCN-nondominated', 'model'] = 'LCN'
+pcnvlcn.loc[pcnvlcn['model'] == 'LCN-optimal_max', 'model'] = 'LCN-Redist'
+pcnvlcn.loc[pcnvlcn['model'] == 'LCN-nondominated_mean', 'model'] = 'LCN-Mean'
 
 colors = ["#BFBFBF", "#1A85FF", "#E66100", "#D41159"]
 sns.set_palette(sns.color_palette(colors))
@@ -295,14 +308,13 @@ sen_welfare.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.
 #%%
 ## Same but only hv and sen_welfare
 fig, axs = plt.subplots(3, 1, figsize=(8, 8))
-colors = ["#BFBFBF", "#FFF2E5", "#1A85FF"]
+colors = ["#FFF2E5", "#BFBFBF", "#1A85FF"]
 sns.set_palette(sns.color_palette(colors))
 plt.rcParams.update({'font.size': 16})
 LINEWIDTH = 1.5
 
-pcnvlcn = results_to_plot[results_to_plot['model'].isin(['PCN', 'GPILS', 'LCN_ND'])]
-pcnvlcn.loc[pcnvlcn['model'] == 'LCN_ND', 'model'] = 'LCN'
-pcnvlcn.loc[pcnvlcn['model'] == 'GPILS', 'model'] = 'GPI-LS'
+pcnvlcn = results_to_plot[results_to_plot['model'].isin(['GPI-LS', 'PCN', 'LCN-nondominated'])]
+pcnvlcn.loc[pcnvlcn['model'] == 'LCN-nondominated', 'model'] = 'LCN'
 
 hv = pcnvlcn[pcnvlcn['metric'] == 'hv']
 hv['value'] = hv.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
@@ -344,10 +356,10 @@ colors = ["#1A85FF", "#E66100", "#D41159", "#BFBFBF"]
 sns.set_palette(sns.color_palette(colors))
 plt.rcParams.update({'font.size': 16})
 
-all_lcn = results_to_plot[results_to_plot['model'].isin(['LCN_ND', 'LCN_OPTMAX', 'LCN_NDMEAN'])]
-all_lcn.loc[all_lcn['model'] == 'LCN_ND', 'model'] = 'LCN'
-all_lcn.loc[all_lcn['model'] == 'LCN_OPTMAX', 'model'] = 'LCN-Redist'
-all_lcn.loc[all_lcn['model'] == 'LCN_NDMEAN', 'model'] = 'LCN-Mean'
+all_lcn = results_to_plot[results_to_plot['model'].isin(['LCN-nondominated', 'LCN-optimal_max', 'LCN-nondominated_mean'])]
+all_lcn.loc[all_lcn['model'] == 'LCN-nondominated', 'model'] = 'LCN'
+all_lcn.loc[all_lcn['model'] == 'LCN-optimal_max', 'model'] = 'LCN-Redist'
+all_lcn.loc[all_lcn['model'] == 'LCN-nondominated_mean', 'model'] = 'LCN-Mean'
 
 hv = all_lcn[all_lcn['metric'] == 'hv']
 hv['value'] = hv.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
@@ -509,18 +521,18 @@ def plot_over_time_results(ams_metric, xian_metric, groups, figsize, ylabel, lin
     axs_ams[0].set_ylabel(ylabel)
     for i, group in enumerate(groups):
         axs_xian[i].plot(xian_metric[f'PCN_{group}'], label='PCN', linewidth=LINEWIDTH)
-        axs_xian[i].plot(xian_metric[f'LCN_ND_{group}'], label='LCN_ND', linewidth=LINEWIDTH)
-        axs_xian[i].plot(xian_metric[f'LCN_OPTMAX_{group}'], label='LCN_OPTMAX', linewidth=LINEWIDTH)
-        axs_xian[i].plot(xian_metric[f'LCN_NDMEAN_{group}'], label='LCN_NDMEAN', linewidth=LINEWIDTH)
+        axs_xian[i].plot(xian_metric[f'LCN-nondominated_{group}'], label='LCN_ND', linewidth=LINEWIDTH)
+        axs_xian[i].plot(xian_metric[f'LCN-optimal_max_{group}'], label='LCN_OPTMAX', linewidth=LINEWIDTH)
+        axs_xian[i].plot(xian_metric[f'LCN-nondominated_mean_{group}'], label='LCN_NDMEAN', linewidth=LINEWIDTH)
     
         axs_xian[i].set_xlabel('Step')
         axs_xian[i].set_title(f'{group} Objectives')
         axs_xian[i].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     
         axs_ams[i].plot(ams_metric[f'PCN_{group}'], label='PCN', linewidth=LINEWIDTH)
-        axs_ams[i].plot(ams_metric[f'LCN_ND_{group}'], label='LCN_ND', linewidth=LINEWIDTH)
-        axs_ams[i].plot(ams_metric[f'LCN_OPTMAX_{group}'], label='LCN_OPTMAX', linewidth=LINEWIDTH)
-        axs_ams[i].plot(ams_metric[f'LCN_NDMEAN_{group}'], label='LCN_NDMEAN', linewidth=LINEWIDTH)
+        axs_ams[i].plot(ams_metric[f'LCN-nondominated_{group}'], label='LCN_ND', linewidth=LINEWIDTH)
+        axs_ams[i].plot(ams_metric[f'LCN-optimal_max_{group}'], label='LCN_OPTMAX', linewidth=LINEWIDTH)
+        axs_ams[i].plot(ams_metric[f'LCN-nondominated_mean_{group}'], label='LCN_NDMEAN', linewidth=LINEWIDTH)
     
         axs_ams[i].set_xlabel('Step')
         axs_ams[i].set_title(f'{group} Objectives')
@@ -538,4 +550,10 @@ plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 10], (15, 8), 
 # Plot SW for 3, 6, 9 objectives
 # plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 6, 9], (40, 15), 'Sen Welfare')
 plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 10], (15, 8), 'Sen Welfare', linewidth=4, font_size=22)
+# %%
+
+fig, ax = plt.subplots(figsize=(7, 6))
+xian_eum_lambda_lcn = xian_sw_over_time[['LCN_Lambda_0.0_3', 'LCN_Lambda_0.3_3', 'LCN_Lambda_0.6_3', 'LCN_Lambda_0.9_3']]
+xian_eum_lambda_lcn.plot(ax=ax, linewidth=4, colormap='Blues')
+
 # %%
