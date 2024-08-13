@@ -13,7 +13,7 @@ from morl_baselines.multi_policy.lcn.lcn_dst import LCNDST
 
 def main(args):
     def make_env(gym_env):
-        if gym_env == 'deep-sea-treasure-v0':
+        if gym_env == 'deep-sea-treasure-concave-v0':
             return mo_gym.make(gym_env)
         
         city = City(
@@ -31,7 +31,7 @@ def main(args):
 
     env = make_env(args.gym_env)
     
-    if args.gym_env == 'deep-sea-treasure-v0':
+    if args.gym_env == 'deep-sea-treasure-concave-v0':
         agent = LCNDST(
             env,
             scaling_factor=args.scaling_factor,
@@ -169,12 +169,13 @@ if __name__ == "__main__":
         args.max_return=np.array([1] * args.nr_groups)
         args.pf_plot_limits = None
     elif args.env == 'dst':
-        args.gym_env = 'deep-sea-treasure-v0'
+        args.gym_env = 'deep-sea-treasure-concave-v0'
         args.project_name = "DST"
         args.experiment_name = "LCN-DST"
         args.scaling_factor = np.array([0.1, 0.1, 0.01])
         args.ref_point = np.array([0.0, -200.0])
-        args.max_return=np.array([23.7, -1])
+        args.max_return=np.array([124, -1])
+        args.pf_plot_limits = None
 
     if args.starting_loc_x is not None and args.starting_loc_y is not None:
         args.starting_loc = (args.starting_loc_x, args.starting_loc_y)

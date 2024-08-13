@@ -193,7 +193,6 @@ if __name__ == "__main__":
     parser.add_argument('--distance_ref', default='nondominated', type=str, choices=['nondominated', 'optimal_max', 'nondominated_mean', 'interpolate', 'interpolate2', 'interpolate3'], help='controls the reference point for calculating the distance of every solution to the optimal point.')
     parser.add_argument('--lcn_lambda', default=None, type=float, help='value between 0 and 1. Controls the size of the front to explore. lambda -> 1: full pareto front. lambda -> 0 full lorenz front.')
 
-
     args = parser.parse_args()
     
     if args.env == 'dilemma':
@@ -245,7 +244,7 @@ if __name__ == "__main__":
         args.eval_freq = 5000
         args.eval_mo_freq = 5000
     elif args.env == 'dst':
-        args.env_id = 'deep-sea-treasure-v0'
+        args.env_id = 'deep-sea-treasure-concave-v0'
         args.project_name = "DST"
         args.experiment_name = "LCN-DST"
         args.total_timesteps = 100000
@@ -256,7 +255,7 @@ if __name__ == "__main__":
         # args.starting_loc = (9, 19)
         args.scaling_factor = np.array([0.1, 0.1, 0.01])
         args.ref_point = np.array([0.0, -200.0])
-        args.max_return=np.array([23.7, -1])
+        args.max_return=np.array([124, -1])
         args.num_step_episodes = 10
         args.cd_threshold = .2
 
