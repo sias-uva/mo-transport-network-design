@@ -24,6 +24,9 @@ from motndp.constraints import MetroConstraints
 from morl_baselines.multi_policy.gpi_pd.gpi_pd_tndp import GPILS
 
 from gymnasium.envs.registration import register
+
+from morl_baselines.multi_policy.lcn.lcn import LCNTNDPModel
+from morl_baselines.multi_policy.lcn.lcn_dst import LCNDST
 register(
     id="motndp_dilemma-v0",
     entry_point="motndp.motndp:MOTNDP",
@@ -109,6 +112,45 @@ def train(seed, args, config):
                 eval_freq=args.eval_freq,
                 eval_mo_freq=args.eval_mo_freq,
             )
+        elif args.algo == 'lcn_dst':
+            print(f": Seed {seed}. Instantiating {args.algo} on {args.env_id}")
+            
+            def make_env(gym_env):
+                return mo_gym.make(gym_env)
+            
+            env = make_env(args.env_id)
+            eval_env = make_env(args.env_id)
+
+            # Launch the agent training
+            print(f"Seed {seed}. Training agent...")
+            
+            algo = LCNDST(
+                env,
+                scaling_factor=args.scaling_factor,
+                learning_rate=config['learning_rate'],
+                batch_size=config['batch_size'],
+                nr_layers=args.nr_layers,
+                hidden_dim=config['hidden_dim'],
+                distance_ref=args.distance_ref,
+                lcn_lambda=args.lcn_lambda,
+                seed=args.seed,
+                model_class=LCNTNDPModel,
+                wandb_entity=args.wandb_entity,
+            )
+            
+            print(f"Seed {seed}. Training agent...")
+            algo.train(
+                total_timesteps=args.total_timesteps,
+                eval_env=eval_env,
+                ref_point=args.ref_point,
+                num_er_episodes=config['num_er_episodes'],
+                num_step_episodes=args.num_step_episodes,
+                max_buffer_size=config['max_buffer_size'],
+                num_model_updates=config['num_model_updates'],
+                max_return=args.max_return,
+                cd_threshold=args.cd_threshold,
+            )
+            
             
 def main(args, seeds):
     config_file = os.path.join(args.config_path)
@@ -148,6 +190,9 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, help="Random seed to start from, seeds will be in [seed, seed+num-seeds)", default=10)
     parser.add_argument("--config-path", type=str, help="path of config file.")
     parser.add_argument('--nr_groups', default=2, type=int)
+    parser.add_argument('--distance_ref', default='nondominated', type=str, choices=['nondominated', 'optimal_max', 'nondominated_mean', 'interpolate', 'interpolate2', 'interpolate3'], help='controls the reference point for calculating the distance of every solution to the optimal point.')
+    parser.add_argument('--lcn_lambda', default=None, type=float, help='value between 0 and 1. Controls the size of the front to explore. lambda -> 1: full pareto front. lambda -> 0 full lorenz front.')
+
 
     args = parser.parse_args()
     
@@ -199,7 +244,23 @@ if __name__ == "__main__":
         args.num_eval_weights_for_front = 100
         args.eval_freq = 5000
         args.eval_mo_freq = 5000
+    elif args.env == 'dst':
+        args.env_id = 'deep-sea-treasure-v0'
+        args.project_name = "DST"
+        args.experiment_name = "LCN-DST"
+        args.total_timesteps = 100000
+        args.nr_stations = 0
+        args.nr_layers = 1
+        # args.groups_file = f"price_groups_{args.nr_groups}.txt"
+        # args.ignore_existing_lines = True
+        # args.starting_loc = (9, 19)
+        args.scaling_factor = np.array([0.1, 0.1, 0.01])
+        args.ref_point = np.array([0.0, -200.0])
+        args.max_return=np.array([23.7, -1])
+        args.num_step_episodes = 10
+        args.cd_threshold = .2
 
+        
     # Create an array of seeds to use for the sweep
     seeds = [args.seed + i for i in range(args.num_seeds)]
 

@@ -1,0 +1,17 @@
+method: bayes
+metric:
+  goal: maximize
+  name: eval/hypervolume
+parameters:
+  hidden_dim:
+    values: [64, 128]
+  learning_rate:
+    values: [0.1, 0.2, 0.01, 0.001]
+  batch_size:
+    values: [32, 64, 128, 256]
+  num_er_episodes:
+    values: [50, 100, 200, 500]
+  max_buffer_size:
+    values: [50, 100, 200, 500, 1000, 2000]
+  num_model_updates:
+    values: [1, 3, 5, 10]
