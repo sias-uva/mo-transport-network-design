@@ -553,7 +553,7 @@ plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 10], (15, 8), 'S
 # %%
 
 fig, ax = plt.subplots(figsize=(7, 6))
-xian_eum_lambda_lcn = xian_sw_over_time[['LCN_Lambda_0.0_3', 'LCN_Lambda_0.3_3', 'LCN_Lambda_0.6_3', 'LCN_Lambda_0.9_3']]
+xian_eum_lambda_lcn = xian_sw_over_time[['LCN-Lambda-0_3', 'LCN-Lambda-0.3_3', 'LCN-Lambda-0.6_3', 'LCN-Lambda-0.9_3']]
 xian_eum_lambda_lcn.plot(ax=ax, linewidth=4, colormap='Blues')
 
 # %%
