@@ -25,76 +25,6 @@ def gini(x, normalized=True):
         gi = gi * (n / (n - 1))
     return gi
 
-#%% DEPRECATED LOADING FROM OFFLINE FILES
-# xian_result_dirs = read_json('./result_dirs_xian.txt')
-# xian_result_dirs_new = read_json('./result_dirs_xian_new.txt')
-# amsterdam_result_dirs = read_json('./result_dirs_ams.txt')
-# amsterdam_result_dirs_new = read_json('./result_dirs_ams_new.txt')
-
-# all_objectives = xian_result_dirs_new
-
-# all_results = pd.DataFrame()
-# REQ_SEEDS = 3 # to control if a model was not run for sufficient seeds
-# for oidx, objective in enumerate(all_objectives):
-#     nr_groups = objective['nr_groups']
-#     ref_point = np.array([0] * nr_groups)
-#     models_to_plot = pd.DataFrame(objective['models'])
-
-#     results_by_objective = {}
-#     groups = None
-#     for i, model_name in enumerate(models_to_plot['name'].unique()):
-#         models = models_to_plot[models_to_plot['name'] == model_name].to_dict('records')
-#         if len(models[0]['dirs']) < REQ_SEEDS:
-#             print(f"!WARNING! {objective['nr_groups']} nrgroups, {model_name} does not have enough seeds (has {len(models[0]['dirs'])}, while {REQ_SEEDS} are required)")
-
-#         for j, model in enumerate(models):
-#             # metrics = pd.read_csv(f"./results/{model['dir']}/metrics.csv")
-#             # Read the content of the output file
-#             results_by_objective[model_name] = {'gini': [], 'total_efficiency': [], 'avg_efficiency': [], 'hv': [], 'sen_welfare': [], 'nash_welfare': [], 'avg_per_group': []}
-#             for i in range(len(model['dirs'])):
-#                 # Check if the output file exists
-#                 if not os.path.exists(f"./results/{model['dirs'][i]}/output.txt"):
-#                     print(f"!WARNING! {model_name} - {model['dirs'][i]} does not have output.txt file")
-#                     continue
-
-#                 with open(f"./results/{model['dirs'][i]}/output.txt", "r") as file:
-#                     output = file.read()
-#                     fronts = json.loads(output)['best_front_r']
-#                     groups = len(fronts[0])
-#                     if groups != nr_groups:
-#                         print(f"!ERROR! {objective['nr_groups']} nrgroups, {model_name} has {groups} groups, while {nr_groups} are required")
-
-#                     gini_index = gini(np.array(fronts))
-#                     total_efficiency = np.sum(fronts, axis=1)
-#                     avg_efficiency = np.mean(fronts, axis=1)
-#                     hv = hypervolume(ref_point, fronts)
-#                     nash_welfare = np.prod(fronts, axis=1)
-#                     results_by_objective[model_name]['fronts'] = fronts
-#                     results_by_objective[model_name]['total_efficiency'] = results_by_objective[model_name]['total_efficiency'] + total_efficiency.tolist()
-#                     results_by_objective[model_name]['avg_efficiency'] = results_by_objective[model_name]['avg_efficiency'] + avg_efficiency.tolist()
-#                     results_by_objective[model_name]['hv'] = results_by_objective[model_name]['hv'] + [hv]
-#                     results_by_objective[model_name]['gini'] = results_by_objective[model_name]['gini'] + gini_index.tolist()
-#                     results_by_objective[model_name]['sen_welfare'] = results_by_objective[model_name]['sen_welfare'] + (total_efficiency * (1-gini_index)).tolist()
-#                     results_by_objective[model_name]['nash_welfare'] = results_by_objective[model_name]['nash_welfare'] + nash_welfare.tolist()
-#                     results_by_objective[model_name]['avg_per_group'] = results_by_objective[model_name]['avg_per_group'] + np.mean(fronts, axis=0).tolist()
-                    
-#         # results_by_objective[model_name]['lambda'] = model['lambda'] if 'lambda' in model else ''
-#     # Quite a hacky way to get the results in a dataframe, but didn't have time to do it properly (thanks copilot)
-#     # Convert all_results to a dataframe, with columns 'model', 'metric', 'value', and each row is a different value and not a list
-#     # results_by_objective = pd.DataFrame([(name, metric, value) for name in results_by_objective.keys() for metric in results_by_objective[name].keys() for value in results_by_objective[name][metric]], columns=['model', 'metric', 'value'])
-#     # Convert all_results to a dataframe, with columns 'model', 'lambda; 'metric', 'value', and each row is a different value and not a list
-#     results_by_objective = pd.DataFrame([(name, model['lambda'] if 'lambda' in model else None, metric, value) for name in results_by_objective.keys() 
-#                                          for metric in results_by_objective[name].keys() 
-#                                          for value in results_by_objective[name][metric]], columns=['model', 'lambda', 'metric', 'value'])
-#     results_by_objective['nr_groups'] = nr_groups
-#     results_by_objective['lambda'] = results_by_objective[results_by_objective['model'].str.contains('Lambda')]['model'].str.split('_').str[-1].astype(float)
-#     results_by_objective.loc[results_by_objective['model'].str.contains('Lambda'), 'model'] = 'LCN_Lambda'
-#     all_results = pd.concat([all_results, results_by_objective])
-    
-
-
-
-
 #%% LOAD DATA FROM W&B
 api = wandb.Api()
 
@@ -243,8 +173,8 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
         
     return all_results, hv_over_time, eum_over_time, sw_over_time
 
-ams_results, ams_hv_over_time, ams_eum_over_time, ams_sw_over_time = load_all_results_from_wadb(read_json('./result_dirs_ams_wandb.txt'), 'Amsterdam')
-xian_results, xian_hv_over_time, xian_eum_over_time, xian_sw_over_time = load_all_results_from_wadb(read_json('./result_dirs_xian_wandb.txt'), 'Xian')
+ams_results, ams_hv_over_time, ams_eum_over_time, ams_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_ams.txt'), 'Amsterdam')
+xian_results, xian_hv_over_time, xian_eum_over_time, xian_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_xian.txt'), 'Xian')
 
 #%%
 

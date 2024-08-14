@@ -1,0 +1,11 @@
+[
+   {
+      "nr_groups": "DeepSeaTreasure",
+      "models": [
+         {"name": "PCN-DST", "run_ids": ["8efxhxw4", "v6x0kh9e", "efaac9vm", "5pz4jbe3", "l2h6913j"]},
+         {"name": "GPI-LS-DST", "run_ids": [""]},
+         {"name": "LCN-DST-nondominated","run_ids": [""]},
+         {"name": "LCN-DST-nondominated_mean", "run_ids": [""]}
+      ]
+   }
+]
