@@ -53,6 +53,7 @@
    {
       "nr_groups": 6,
       "models": [
+         {"name": "GPI-LS-Xian", "run_ids": ["50qz83ry", "kjgg23er", "iwkbcfz6", "mwqgjsho", "97xe0rhi"]},
          {"name": "PCN-Xian", "run_ids": ["ksjbsz1h", "de7kvxz6", "dp8m652d", "v2l3mehk", "v3h98n0p"]},
          {"name": "LCN-Xian-nondominated","run_ids": ["0422mz48", "zbw3mypb", "m9obq6yz", "orpsqz54", "p522wohp"]},
          {"name": "LCN-Xian-optimal_max", "run_ids": ["zmn8qwdb", "xyp8orsy", "lfd5b9fl", "4547v31l", "gfct1ffs"]},
