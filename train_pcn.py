@@ -8,12 +8,16 @@ import numpy as np
 import torch
 import envs
 import argparse
+from morl_baselines.multi_policy.pcn.pcn import PCN, BasePCNModel, DiscreteActionsDefaultModel
 from morl_baselines.multi_policy.pcn.pcn_tndp import PCNTNDP, PCNTNDPModel
 
 def main(args):
-    def make_env():
+    def make_env(gym_env):
+        if gym_env == 'deep-sea-treasure-concave-v0':
+            return mo_gym.make(gym_env)
+        
         city = City(
-            args.city_path, 
+            args.city_path,
             groups_file=args.groups_file,
             ignore_existing_lines=args.ignore_existing_lines
         )
@@ -25,43 +29,69 @@ def main(args):
 
         return env
 
-    env = make_env()
+    env = make_env(args.gym_env)
+    
+    if args.gym_env == 'deep-sea-treasure-concave-v0':
+        agent = PCN(
+            env,
+            scaling_factor=args.scaling_factor,
+            learning_rate=args.lr,
+            batch_size=args.batch_size,
+            project_name=args.project_name,
+            experiment_name=args.experiment_name,
+            log=not args.no_log,
+            seed=args.seed,
+            hidden_dim=args.hidden_dim,
+            model_class=DiscreteActionsDefaultModel
+        )
+    else:
+        agent = PCNTNDP(
+            env,
+            scaling_factor=args.scaling_factor,
+            learning_rate=args.lr,
+            batch_size=args.batch_size,
+            project_name="MORL-TNDP",
+            experiment_name=args.experiment_name,
+            log=not args.no_log,
+            seed=args.seed,
+            nr_layers=args.nr_layers,
+            hidden_dim=args.hidden_dim,
+            model_class=PCNTNDPModel
+        )
 
-    agent = PCNTNDP(
-        env,
-        scaling_factor=args.scaling_factor,
-        learning_rate=args.lr,
-        batch_size=args.batch_size,
-        project_name="MORL-TNDP",
-        experiment_name=args.experiment_name,
-        log=not args.no_log,
-        seed=args.seed,
-        nr_layers=args.nr_layers,
-        hidden_dim=args.hidden_dim,
-        model_class=PCNTNDPModel
-    )
-
-    if args.starting_loc is None:
-        print('NOTE: Training is running with random starting locations.')
+        if args.starting_loc is None:
+            print('NOTE: Training is running with random starting locations.')
 
     save_dir = Path(f"./results/pcn_{args.env}_{datetime.datetime.today().strftime('%Y%m%d_%H_%M_%S.%f')}")
-    agent.train(
-        total_timesteps=args.timesteps,
-        eval_env=make_env(),
-        ref_point=args.ref_point,
-        num_er_episodes=args.num_er_episodes,
-        num_step_episodes=args.num_step_episodes,
-        max_buffer_size=args.max_buffer_size,
-        num_model_updates=args.num_model_updates,
-        starting_loc=args.starting_loc,
-        nr_stations=args.nr_stations,
-        max_return=args.max_return,
-        save_dir=save_dir,
-        pf_plot_limits=args.pf_plot_limits,
-        n_policies=args.num_policies,
-        cd_threshold=args.cd_threshold,
-        # known_pareto_front=env.unwrapped.pareto_front(gamma=1.0),
-    )
+    if args.gym_env == 'deep-sea-treasure-concave-v0':
+        agent.train(
+            total_timesteps=args.timesteps,
+            eval_env=make_env(args.gym_env),
+            ref_point=args.ref_point,
+            num_er_episodes=args.num_er_episodes,
+            num_step_episodes=args.num_step_episodes,
+            max_buffer_size=args.max_buffer_size,
+            num_model_updates=args.num_model_updates,
+            max_return=args.max_return,
+        )
+    else:
+        agent.train(
+            total_timesteps=args.timesteps,
+            eval_env=make_env(args.gym_env),
+            ref_point=args.ref_point,
+            num_er_episodes=args.num_er_episodes,
+            num_step_episodes=args.num_step_episodes,
+            max_buffer_size=args.max_buffer_size,
+            num_model_updates=args.num_model_updates,
+            starting_loc=args.starting_loc,
+            nr_stations=args.nr_stations,
+            max_return=args.max_return,
+            save_dir=save_dir,
+            pf_plot_limits=args.pf_plot_limits,
+            n_policies=args.num_policies,
+            cd_threshold=args.cd_threshold,
+            # known_pareto_front=env.unwrapped.pareto_front(gamma=1.0),
+        )
 
 
 if __name__ == "__main__":
@@ -150,6 +180,14 @@ if __name__ == "__main__":
         args.ref_point = np.array([0] * args.nr_groups)
         args.max_return=np.array([1] * args.nr_groups)
         # args.pf_plot_limits = [0, 0.015]
+        args.pf_plot_limits = None
+    elif args.env == 'dst':
+        args.gym_env = 'deep-sea-treasure-concave-v0'
+        args.project_name = "DST"
+        args.experiment_name = "PCN-DST"
+        args.scaling_factor = np.array([0.1, 0.1, 0.01])
+        args.ref_point = np.array([0.0, -200.0])
+        args.max_return=np.array([124, -1])
         args.pf_plot_limits = None
     
     if args.starting_loc_x is not None and args.starting_loc_y is not None:
