@@ -9,6 +9,7 @@ import torch
 import envs
 import argparse
 from morl_baselines.multi_policy.gpi_pd.gpi_pd_tndp import GPILS
+from morl_baselines.multi_policy.gpi_pd.gpi_pd import GPILS as GPILSDST
 
 def main(args):
     def make_env(gym_env):
@@ -33,33 +34,61 @@ def main(args):
     env = make_env(args.gym_env)
     eval_env = make_env(args.gym_env)
     
-    agent = GPILS(
-        env,
-        num_nets=1,
-        max_grad_norm=None,
-        learning_rate=args.learning_rate,
-        gamma=1,
-        batch_size=args.batch_size,
-        net_arch=args.net_arch,
-        buffer_size=int(args.buffer_size),
-        initial_epsilon=1.0,
-        final_epsilon=0.05,
-        epsilon_decay_steps=args.epsilon_decay_steps,
-        learning_starts=args.learning_starts,
-        alpha_per=0.6,
-        min_priority=0.01,
-        per=False,
-        use_gpi=True,
-        gradient_updates=args.gradient_updates,
-        target_net_update_freq=args.target_update_freq,
-        tau=1,
-        real_ratio=0.5,
-        log=True,
-        project_name="MORL-TNDP",
-        experiment_name=args.experiment_name,
-        action_mask_dim=8,
-        seed = args.seed
-    )
+    if args.gym_env == 'deep-sea-treasure-concave-v0':
+        agent = GPILSDST(
+            env,
+            num_nets=1,
+            max_grad_norm=None,
+            learning_rate=args.learning_rate,
+            gamma=1,
+            batch_size=args.batch_size,
+            net_arch=args.net_arch,
+            buffer_size=int(args.buffer_size),
+            initial_epsilon=1.0,
+            final_epsilon=0.05,
+            epsilon_decay_steps=args.epsilon_decay_steps,
+            learning_starts=args.learning_starts,
+            alpha_per=0.6,
+            min_priority=0.01,
+            per=False,
+            use_gpi=True,
+            gradient_updates=args.gradient_updates,
+            target_net_update_freq=args.target_update_freq,
+            tau=1,
+            real_ratio=0.5,
+            log=True,
+            project_name="DST",
+            # experiment_name=args.experiment_name,
+            seed = args.seed
+        )
+    else:
+        agent = GPILS(
+            env,
+            num_nets=1,
+            max_grad_norm=None,
+            learning_rate=args.learning_rate,
+            gamma=1,
+            batch_size=args.batch_size,
+            net_arch=args.net_arch,
+            buffer_size=int(args.buffer_size),
+            initial_epsilon=1.0,
+            final_epsilon=0.05,
+            epsilon_decay_steps=args.epsilon_decay_steps,
+            learning_starts=args.learning_starts,
+            alpha_per=0.6,
+            min_priority=0.01,
+            per=False,
+            use_gpi=True,
+            gradient_updates=args.gradient_updates,
+            target_net_update_freq=args.target_update_freq,
+            tau=1,
+            real_ratio=0.5,
+            log=True,
+            project_name="MORL-TNDP",
+            experiment_name=args.experiment_name,
+            action_mask_dim=8,
+            seed = args.seed
+        )
     
     if args.starting_loc is None:
         print('NOTE: Training is running with random starting locations.')
@@ -189,6 +218,11 @@ if __name__ == "__main__":
         args.ref_point = np.array([0, 0])
         args.max_return=np.array([1, 1])
         args.pf_plot_limits = [0, 0.5]
+        args.net_arch = [args.hidden_dim] * args.nr_layers
+        args.learning_starts = 50
+        args.num_eval_weights_for_front = 100
+        args.eval_freq = args.timesteps_per_iter
+        args.eval_mo_freq = args.timesteps_per_iter
 
     if args.starting_loc_x is not None and args.starting_loc_y is not None:
         args.starting_loc = (args.starting_loc_x, args.starting_loc_y)
