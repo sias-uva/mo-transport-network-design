@@ -12,7 +12,7 @@ from morl_baselines.multi_policy.gpi_pd.gpi_pd_tndp import GPILS
 
 def main(args):
     def make_env(gym_env):
-        if gym_env == 'dst':
+        if gym_env == 'deep-sea-treasure-concave-v0':
             return mo_gym.make(gym_env)
         
         city = City(
@@ -183,7 +183,7 @@ if __name__ == "__main__":
         args.eval_mo_freq = args.timesteps_per_iter
         args.net_arch = [args.hidden_dim] * args.nr_layers
     elif args.env == 'dst':
-        args.gym_env = 'DeepSeaTreasure-v0'
+        args.gym_env = 'deep-sea-treasure-concave-v0'
         args.project_name = "DST"
         args.experiment_name = "GPI-LS-DST"
         args.ref_point = np.array([0, 0])
