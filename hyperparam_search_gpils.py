@@ -22,6 +22,7 @@ from motndp.city import City
 from motndp.constraints import MetroConstraints
 
 from morl_baselines.multi_policy.gpi_pd.gpi_pd_tndp import GPILS
+from morl_baselines.multi_policy.gpi_pd.gpi_pd import GPILS as GPILSDST
 
 from gymnasium.envs.registration import register
 
@@ -48,6 +49,22 @@ import yaml
 import wandb
 
 def train(seed, args, config):
+    def make_env(gym_env):
+        if gym_env == 'deep-sea-treasure-concave-v0':
+            return mo_gym.make(gym_env)
+        
+        city = City(
+            args.city_path,
+            groups_file=args.groups_file,
+            ignore_existing_lines=args.ignore_existing_lines
+        )
+        
+        env = mo_gym.make(args.gym_env, 
+                        city=city, 
+                        constraints=MetroConstraints(city),
+                        nr_stations=args.nr_stations)
+
+        return env
     # Reset the wandb environment variables
     # reset_wandb_env()
 
@@ -58,50 +75,51 @@ def train(seed, args, config):
         if args.algo == 'gpi_ls_discrete':
             print(f": Seed {seed}. Instantiating {args.algo} on {args.env_id}")
             
-            def make_env(gym_env):
-                if gym_env == 'dst':
-                    return mo_gym.make(gym_env)
-                city = City(
-                    args.city_path,
-                    groups_file=args.groups_file,
-                    ignore_existing_lines=args.ignore_existing_lines
-                )
-                
-                env = mo_gym.make(args.env_id, 
-                                city=city,
-                                constraints=MetroConstraints(city),
-                                nr_stations=args.nr_stations,
-                                starting_loc=args.starting_loc,
-                                obs_type='location_vector')
-                return env
-            
             env = make_env(args.env_id)
             eval_env = make_env(args.env_id)
 
             # Launch the agent training
             print(f"Seed {seed}. Training agent...")
-                
-            algo = GPILS(
-                env,
-                num_nets=1,
-                max_grad_norm=None,
-                gamma=1,
-                initial_epsilon=1.0,
-                final_epsilon=0.05,
-                alpha_per=0.6,
-                min_priority=0.01,
-                per=False,
-                use_gpi=True,
-                tau=1,
-                real_ratio=0.5,
-                log=True,
-                experiment_name=args.experiment_name,
-                action_mask_dim=8,
-                wandb_entity=args.wandb_entity,
-                **config,
-            )
             
-            print(f"Seed {seed}. Training agent...")
+            if args.env_id == 'deep-sea-treasure-concave-v0':
+                algo = GPILSDST(
+                    env,
+                    num_nets=1,
+                    max_grad_norm=None,
+                    gamma=1,
+                    initial_epsilon=1.0,
+                    final_epsilon=0.05,
+                    alpha_per=0.6,
+                    min_priority=0.01,
+                    per=False,
+                    use_gpi=True,
+                    tau=1,
+                    real_ratio=0.5,
+                    log=True,
+                    wandb_entity=args.wandb_entity,
+                    **config,
+                )
+            else:
+                algo = GPILS(
+                    env,
+                    num_nets=1,
+                    max_grad_norm=None,
+                    gamma=1,
+                    initial_epsilon=1.0,
+                    final_epsilon=0.05,
+                    alpha_per=0.6,
+                    min_priority=0.01,
+                    per=False,
+                    use_gpi=True,
+                    tau=1,
+                    real_ratio=0.5,
+                    log=True,
+                    experiment_name=args.experiment_name,
+                    action_mask_dim=8,
+                    wandb_entity=args.wandb_entity,
+                    **config,
+                )
+            
             algo.train(
                 total_timesteps=args.total_timesteps,
                 ref_point=args.ref_point,
@@ -243,6 +261,18 @@ if __name__ == "__main__":
         args.num_eval_weights_for_front = 100
         args.eval_freq = 5000
         args.eval_mo_freq = 5000
+    elif args.env == 'dst-gpils':
+        args.env_id = 'deep-sea-treasure-concave-v0'
+        args.total_timesteps = 100000
+        args.nr_stations = 0
+        args.project_name = "DST"
+        args.experiment_name = "GPI-LS-DST"
+        args.ref_point = np.array([0.0, -200.0])
+        args.timesteps_per_iter = 5000
+        args.epsilon_decay_steps = 80000
+        args.num_eval_weights_for_front = 100
+        args.eval_freq = 5000
+        args.eval_mo_freq = 5000
     elif args.env == 'dst':
         args.env_id = 'deep-sea-treasure-concave-v0'
         args.project_name = "DST"
@@ -258,7 +288,7 @@ if __name__ == "__main__":
         args.max_return=np.array([124, -1])
         args.num_step_episodes = 10
         args.cd_threshold = .2
-
+    
         
     # Create an array of seeds to use for the sweep
     seeds = [args.seed + i for i in range(args.num_seeds)]
