@@ -4,8 +4,7 @@
       "models": [
          {"name": "PCN-DST", "run_ids": ["8efxhxw4", "v6x0kh9e", "efaac9vm", "5pz4jbe3", "l2h6913j"]},
          {"name": "GPI-LS-DST", "run_ids": [""]},
-         {"name": "LCN-DST-nondominated","run_ids": [""]},
-         {"name": "LCN-DST-nondominated_mean", "run_ids": [""]}
+         {"name": "LCN-DST-nondominated","run_ids": ["6hixz7u8", "c8vjxvzk", "zmrysfve", "43srrg8r", "wgq32h0o"]}
       ]
    }
 ]

@@ -29,7 +29,6 @@ def gini(x, normalized=True):
 api = wandb.Api()
 
 # Replace with your project and run details
-project_name = "MORL-TNDP"
 REQ_SEEDS = 5 # to control if a model was not run for sufficient seeds
 
 def average_per_step(hvs_by_seed):
@@ -48,6 +47,11 @@ def average_per_step(hvs_by_seed):
     return averages
 
 def load_all_results_from_wadb(all_objectives, env_name=None):
+    if env_name == 'DST':
+        project_name = 'DST'
+    else:
+        project_name = 'MORL-TNDP'
+        
     all_results = pd.DataFrame()
     hv_over_time = pd.DataFrame()
     eum_over_time = pd.DataFrame()
@@ -55,7 +59,10 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
 
     for oidx, objective in enumerate(all_objectives):
         nr_groups = objective['nr_groups']
-        ref_point = np.array([0] * nr_groups)
+        if env_name == 'DST':
+            ref_point = np.array([0.0, -200.0])
+        else:
+            ref_point = np.array([0] * nr_groups)
         models_to_plot = pd.DataFrame(objective['models'])
 
         results_by_objective = {}
@@ -111,14 +118,19 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
                     results_by_objective[model_name]['avg_efficiency'] = results_by_objective[model_name]['avg_efficiency'] + avg_efficiency.tolist()
                     results_by_objective[model_name]['hv'] = results_by_objective[model_name]['hv'] + [hv]
                     results_by_objective[model_name]['gini'] = results_by_objective[model_name]['gini'] + gini_index.tolist()
-                    results_by_objective[model_name]['sen_welfare'] = results_by_objective[model_name]['sen_welfare'] + (total_efficiency * (1-gini_index)).tolist()
+                    if env_name != 'DST':
+                        results_by_objective[model_name]['sen_welfare'] = results_by_objective[model_name]['sen_welfare'] + (total_efficiency * (1-gini_index)).tolist()
                     results_by_objective[model_name]['nash_welfare'] = results_by_objective[model_name]['nash_welfare'] + nash_welfare.tolist()
                     results_by_objective[model_name]['avg_per_group'] = results_by_objective[model_name]['avg_per_group'] + np.mean(fronts, axis=0).tolist()
                     results_by_objective[model_name]['cardinality'] = results_by_objective[model_name]['cardinality'] + [run.summary['eval/cardinality']]
                     results_by_objective[model_name]['eum'] = results_by_objective[model_name]['eum'] + [run.summary['eval/eum']]
 
+                    if env_name == 'DST':
+                        keys_to_load = ['global_step', 'eval/hypervolume', 'eval/eum']
+                    else:
+                        keys_to_load = ['global_step', 'eval/hypervolume', 'eval/eum', 'eval/sen_welfare_median']
                     history = []
-                    for row in run.scan_history(keys=['global_step', 'eval/hypervolume', 'eval/eum', 'eval/sen_welfare_median']):
+                    for row in run.scan_history(keys=keys_to_load):
                         history.append(row)
 
                     # Convert to DataFrame
@@ -134,12 +146,13 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
                         eum_by_seed.append(eum_values)
                     else:
                         print(f"WARNING - No EUM values in {model_name}, {nr_groups} - {model['run_ids'][i]}")
-                        
-                    sw_values = history[history['eval/sen_welfare_median'] > 0]['eval/sen_welfare_median'].tolist()
-                    if len(sw_values) > 0:
-                        sw_by_seed.append(sw_values)
-                    else:
-                        print(f"WARNING - No SW values in {model_name}, {nr_groups} - {model['run_ids'][i]}")
+                    
+                    if env_name != 'DST':
+                        sw_values = history[history['eval/sen_welfare_median'] > 0]['eval/sen_welfare_median'].tolist()
+                        if len(sw_values) > 0:
+                            sw_by_seed.append(sw_values)
+                        else:
+                            print(f"WARNING - No SW values in {model_name}, {nr_groups} - {model['run_ids'][i]}")
 
                     ###
             model_name_adj = model_name.replace(f'-{env_name}', '')
@@ -173,13 +186,14 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
         
     return all_results, hv_over_time, eum_over_time, sw_over_time
 
-ams_results, ams_hv_over_time, ams_eum_over_time, ams_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_ams.txt'), 'Amsterdam')
-xian_results, xian_hv_over_time, xian_eum_over_time, xian_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_xian.txt'), 'Xian')
+# ams_results, ams_hv_over_time, ams_eum_over_time, ams_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_ams.txt'), 'Amsterdam')
+# xian_results, xian_hv_over_time, xian_eum_over_time, xian_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_xian.txt'), 'Xian')
 
+dst_results, dst_hv_over_time, dst_eum_over_time, dst_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_dst.txt'), 'DST')
 #%%
 
 # Change this to the results you want to plot
-results_to_plot = xian_results
+results_to_plot = dst_results
 
 # Plot Total Efficiency, Gini Index, Sen Welfare for PCN vs LCN (ND, OPTMAX, NDMEAN)
 fig, axs = plt.subplots(4, 1, figsize=(10, 12))
@@ -229,8 +243,8 @@ axs[3].set_ylabel(None)
 fig.tight_layout()
 
 # %% Show the mean and SE of the values for the table
-sen_welfare.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
-# hv.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
+# sen_welfare.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
+hv.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
 # eff.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
 # gini_.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
 
