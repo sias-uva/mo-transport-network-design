@@ -186,24 +186,32 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
         
     return all_results, hv_over_time, eum_over_time, sw_over_time
 
-# ams_results, ams_hv_over_time, ams_eum_over_time, ams_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_ams.txt'), 'Amsterdam')
-# xian_results, xian_hv_over_time, xian_eum_over_time, xian_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_xian.txt'), 'Xian')
+ams_results, ams_hv_over_time, ams_eum_over_time, ams_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_ams.txt'), 'Amsterdam')
+xian_results, xian_hv_over_time, xian_eum_over_time, xian_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_xian.txt'), 'Xian')
 
 dst_results, dst_hv_over_time, dst_eum_over_time, dst_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_dst.txt'), 'DST')
 #%%
 
 # Change this to the results you want to plot
-results_to_plot = dst_results
+results_to_plot = xian_results
 
 # Plot Total Efficiency, Gini Index, Sen Welfare for PCN vs LCN (ND, OPTMAX, NDMEAN)
-fig, axs = plt.subplots(4, 1, figsize=(10, 12))
-pcnvlcn = results_to_plot[results_to_plot['model'].isin(['PCN', 'GPI-LS', 'LCN-nondominated', 'LCN-optimal_max', 'LCN-nondominated_mean'])]
+fig, axs = plt.subplots(5, 1, figsize=(12, 12))
+pcnvlcn = results_to_plot[results_to_plot['model'].isin(['GPI-LS', 'PCN', 'LCN-nondominated', 'LCN-optimal_max', 'LCN-nondominated_mean'])]
 pcnvlcn.loc[pcnvlcn['model'] == 'LCN-nondominated', 'model'] = 'LCN'
 pcnvlcn.loc[pcnvlcn['model'] == 'LCN-optimal_max', 'model'] = 'LCN-Redist'
 pcnvlcn.loc[pcnvlcn['model'] == 'LCN-nondominated_mean', 'model'] = 'LCN-Mean'
 
-colors = ["#BFBFBF", "#1A85FF", "#E66100", "#D41159"]
+colors = ["#FFF2E5", '#BFBFBF', "#1A85FF", "#E66100", "#D41159"]
 sns.set_palette(sns.color_palette(colors))
+palette = {
+    'GPI-LS': colors[0],
+    'PCN': colors[1],
+    'LCN': colors[2],
+    'LCN-Redist': colors[3],
+    'LCN-Mean': colors[4]
+}
+
 LINEWIDTH = 1.5
 
 hv = pcnvlcn[pcnvlcn['metric'] == 'hv']
@@ -212,34 +220,50 @@ hv = pcnvlcn[pcnvlcn['metric'] == 'hv']
 hv['value'] = hv.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
 hv['value'] = hv['value'].fillna(0)
 
-hvboxplot = sns.boxplot(data=hv, x="nr_groups", y="value", hue="model", ax=axs[0], legend=False, linewidth=LINEWIDTH)
+hvboxplot = sns.boxplot(data=hv, x="nr_groups", y="value", hue="model", palette=palette, ax=axs[0], legend=None, linewidth=LINEWIDTH)
 # hvboxplot.legend_.set_title(None)
 # hvboxplot.legend(fontsize=12)
 axs[0].set_title('Normalized Hypervolume')
 axs[0].set_xlabel(None)
 axs[0].set_ylabel(None)
+axs[0].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+
+eum = pcnvlcn[pcnvlcn['metric'] == 'eum']
+# eum['value'] = eum.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
+eum['value'] = eum['value'].fillna(0)
+
+sns.boxplot(data=eum, x="nr_groups", y="value", hue="model", ax=axs[1], legend=False, linewidth=LINEWIDTH)
+axs[1].set_title('EUM')
+axs[1].set_xlabel(None)
+axs[1].set_ylabel(None)
+axs[1].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
 eff = pcnvlcn[pcnvlcn['metric'] == 'total_efficiency']
 eff['value'] = eff.groupby('nr_groups')['value'].transform(lambda x: x / x.max())
-bxplot = sns.boxplot(data=eff, x="nr_groups", y="value", hue="model", ax=axs[1], legend='brief', linewidth=LINEWIDTH)
-bxplot.legend_.set_title(None)
-bxplot.legend(fontsize=12)
-axs[1].set_title('Total Efficiency')
-axs[1].set_xlabel(None)
-axs[1].set_ylabel(None)
-
-gini_ = pcnvlcn[pcnvlcn['metric'] == 'gini']
-sns.boxplot(data=gini_, x="nr_groups", y="value", hue="model", ax=axs[2], legend=None, linewidth=LINEWIDTH)
-axs[2].set_title('Gini')
+bxplot = sns.boxplot(data=eff, x="nr_groups", y="value", hue="model", ax=axs[2], legend=False, linewidth=LINEWIDTH)
+# bxplot.legend_.set_title(None)
+# bxplot.legend(fontsize=12)
+axs[2].set_title('Total Efficiency')
 axs[2].set_xlabel(None)
 axs[2].set_ylabel(None)
+axs[2].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+
+gini_ = pcnvlcn[pcnvlcn['metric'] == 'gini']
+sns.boxplot(data=gini_, x="nr_groups", y="value", hue="model", ax=axs[3], legend=None, linewidth=LINEWIDTH)
+axs[3].set_title('Gini')
+axs[3].set_xlabel(None)
+axs[3].set_ylabel(None)
+axs[3].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
 sen_welfare = pcnvlcn[pcnvlcn['metric'] == 'sen_welfare']
 sen_welfare['value'] = sen_welfare.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
-sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[3], legend=False, linewidth=LINEWIDTH)
-axs[3].set_title('Normalized Sen Welfare (Efficiency * (1 - Gini))')
-axs[3].set_xlabel('Number of Groups')
-axs[3].set_ylabel(None)
+swbxplot = sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[4], legend='brief', linewidth=LINEWIDTH)
+swbxplot.legend_.set_title(None)
+axs[4].legend(fontsize=12, loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=5)
+axs[4].set_title('Normalized Sen Welfare (Efficiency * (1 - Gini))')
+axs[4].set_xlabel('Number of Groups')
+axs[4].set_ylabel(None)
+axs[4].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 fig.tight_layout()
 
 # %% Show the mean and SE of the values for the table
