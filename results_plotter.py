@@ -516,6 +516,7 @@ def plot_over_time_results(ams_metric, xian_metric, groups, figsize, ylabel, lin
 plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 10], (15, 8), 'EUM', linewidth=4, font_size=22)
 
 # Plot SW for 3, 6, 9 objectives
+# plot_over_time_results(ams_sw_over_time, xian_sw_over_time, range(2, 11), (50, 15), 'Sen Welfare')
 # plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 6, 9], (40, 15), 'Sen Welfare')
 plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 10], (15, 8), 'Sen Welfare', linewidth=4, font_size=22)
 # %%
