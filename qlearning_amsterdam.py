@@ -16,10 +16,10 @@ import envs
 alpha = 0.4
 gamma = 0.8
 epsilon = 1
-max_epsilon = 0.2
-min_epsilon = 0.2
+max_epsilon = 1.0
+min_epsilon = 0.05
 e_decay = 0.004
-train_episodes = 5000
+train_episodes = 500
 
 # exploration_episodes = 500
 
@@ -110,7 +110,7 @@ def train(env: gymnasium.Env, city: City, alpha: float, gamma: float, epsilon: f
                 action = policy[episode_step]
             # exploit
             elif exp_exp_tradeoff > epsilon:
-                action = np.argmax(Q[state_index, :] * info['action_mask'])
+                action = np.argmax(Q[state_index, :] - 10000000 * (1-info['action_mask']))
             # explore
             else:
                 action = env.action_space.sample(mask=info['action_mask'])
@@ -268,7 +268,7 @@ if __name__ == '__main__':
             while True:
                 state_index = city.grid_to_vector(state['location'][None, :]).item()
                 locations.append(state['location'].tolist())
-                action = np.argmax(Q[state_index,:] * info['action_mask'])
+                action = np.argmax(Q[state_index, :] - 10000000 * (1-info['action_mask']))
                 new_state, reward, done, _, info = env.step(action)
                 reward = reward.sum()
                 episode_reward += reward      
