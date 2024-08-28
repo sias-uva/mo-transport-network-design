@@ -1,4 +1,3 @@
-import io
 from pathlib import Path
 import random
 import time
@@ -11,7 +10,6 @@ import torch
 import envs
 import argparse
 import wandb
-import tempfile
 
 from morl_baselines.common.utils import linearly_decaying_value
 
@@ -297,7 +295,7 @@ def main(args):
         initial_epsilon=args.initial_epsilon,
         final_epsilon=args.final_epsilon,
         epsilon_decay_steps=args.epsilon_decay_steps,
-        train_episodes=args.train_episdes,
+        train_episodes=args.train_episodes,
         test_episodes=args.test_episdes,
         nr_stations=args.nr_stations,
         seed=args.seed,
@@ -322,7 +320,7 @@ if __name__ == "__main__":
     parser.add_argument('--initial_epsilon', default=1.0, type=float)
     parser.add_argument('--final_epsilon', default=0.0, type=float)
     parser.add_argument('--epsilon_decay_steps', default=400, type=float)
-    parser.add_argument('--train_episdes', default=500, type=int)
+    parser.add_argument('--train_episodes', default=500, type=int)
     parser.add_argument('--test_episdes', default=1, type=int)
     parser.add_argument('--no_log', action='store_true', default=False)
     parser.add_argument('--seed', default=42, type=int)
