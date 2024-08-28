@@ -1,6 +1,8 @@
-import datetime
+import io
 from pathlib import Path
 import random
+import time
+from matplotlib import pyplot as plt
 import mo_gymnasium as mo_gym
 from motndp.city import City
 from motndp.constraints import MetroConstraints
@@ -8,6 +10,8 @@ import numpy as np
 import torch
 import envs
 import argparse
+import wandb
+import tempfile
 
 from morl_baselines.common.utils import linearly_decaying_value
 
@@ -24,9 +28,13 @@ class QLearningTNDP:
         test_episodes, 
         nr_stations, 
         seed, 
-        policy = None
+        policy = None,
+        wandb_project_name=None,
+        wandb_experiment_name=None,
+        log: bool = True
     ):
         self.env = env
+        self.env_id = env.unwrapped.spec.id
         self.alpha = alpha
         self.gamma = gamma
         self.initial_epsilon = initial_epsilon
@@ -37,10 +45,54 @@ class QLearningTNDP:
         self.nr_stations = nr_stations
         self.seed = seed
         self.policy = policy
+        self.wandb_project_name = wandb_project_name
+        self.wandb_experiment_name = wandb_experiment_name
+        self.log = log
+        
+        if log:
+            self.setup_wandb()
+        
+    def get_config(self) -> dict:
+        """Get configuration of QLearning."""
+        return {
+            "env_id": self.env_id,
+            "alpha": self.alpha,
+            "gamma": self.gamma,
+            "initial_epsilon": self.initial_epsilon,
+            "final_epsilon": self.final_epsilon,
+            "epsilon_decay_steps": self.epsilon_decay_steps,
+            "train_episodes": self.train_episodes,
+            "test_episodes": self.test_episodes,
+            "nr_stations": self.nr_stations,
+            "seed": self.seed,
+            "policy": self.policy
+        }
+        
+    def highlight_cells(self, cells, ax, **kwargs):
+        """Highlights a cell in a grid plot. https://stackoverflow.com/questions/56654952/how-to-mark-cells-in-matplotlib-pyplot-imshow-drawing-cell-borders
+        """
+        for cell in cells:
+            (y, x) = cell
+            rect = plt.Rectangle((x-.5, y-.5), 1,1, fill=False, **kwargs)
+            ax.add_patch(rect)
+        return rect
+
+    
+    def setup_wandb(self, entity=None, group=None):
+        wandb.init(
+            project=self.wandb_project_name,
+            entity=entity,
+            config=self.get_config(),
+            name=f"{self.env_id}__{self.wandb_experiment_name}__{self.seed}__{int(time.time())}",
+            save_code=True,
+            group=group,
+        )
+        
+        wandb.define_metric("*", step_metric="episode")
 
 
-    def train(self, starting_loc):
-        Q = np.zeros((self.env.observation_space.n, self.env.action_space.n))
+    def train(self, starting_loc=None):
+        self.Q = np.zeros((self.env.observation_space.n, self.env.action_space.n))
         
         rewards = []
         avg_rewards = []
@@ -64,7 +116,7 @@ class QLearningTNDP:
                 exp_exp_tradeoff = random.uniform(0, 1)
                 # exploit
                 if exp_exp_tradeoff > epsilon:
-                    loc = tuple(self.env.city.vector_to_grid(np.unravel_index(Q.argmax(), Q.shape)[0]))
+                    loc = tuple(self.env.city.vector_to_grid(np.unravel_index(self.Q.argmax(), self.Q.shape)[0]))
                 # explore
                 else:
                     loc = None
@@ -77,7 +129,7 @@ class QLearningTNDP:
             actual_starting_locs.add((state['location'][0], state['location'][1]))
             episode_reward = 0
             episode_step = 0
-            while True:            
+            while True:
                 state_index = self.env.city.grid_to_vector(state['location'][None, :]).item()
 
                 # Exploration-exploitation trade-off 
@@ -88,7 +140,7 @@ class QLearningTNDP:
                     action = self.policy[episode_step]
                 # exploit
                 elif exp_exp_tradeoff > epsilon:
-                    action = np.argmax(Q[state_index, :] - 10000000 * (1-info['action_mask']))
+                    action = np.argmax(self.Q[state_index, :] - 10000000 * (1-info['action_mask']))
                 # explore
                 else:
                     action = self.env.action_space.sample(mask=info['action_mask'])
@@ -100,7 +152,7 @@ class QLearningTNDP:
 
                 # Update Q-Table
                 new_state_gid = self.env.city.grid_to_vector(new_state['location'][None, :]).item()
-                Q[state_index, action] = Q[state_index, action] + self.alpha * (reward + self.gamma * np.max(Q[new_state_gid, :]) - Q[state_index, action])
+                self.Q[state_index, action] = self.Q[state_index, action] + self.alpha * (reward + self.gamma * np.max(self.Q[new_state_gid, :]) - self.Q[state_index, action])
                 episode_reward += reward
 
                 training_step += 1
@@ -110,9 +162,7 @@ class QLearningTNDP:
 
                 if done:
                     break
-            #Cutting down on exploration by reducing the epsilon
-            epsilon = linearly_decaying_value(self.initial_epsilon, self.epsilon_decay_steps, episode, 0, self.final_epsilon)
-
+            
             if episode_reward > best_episode_reward:
                 best_episode_reward = episode_reward
                 best_episode_segment = info['segments']
@@ -122,10 +172,47 @@ class QLearningTNDP:
             # Save the average reward over the last 10 episodes
             avg_rewards.append(np.average(rewards[-10:]))
             epsilons.append(epsilon)
+            
+            if self.log:
+                wandb.log(
+                    {
+                        "episode": episode,
+                        "reward": episode_reward,
+                        "average_reward": avg_rewards[-1],
+                        "training_step": training_step,
+                        "epsilon": epsilon,
+                        "best_episode_reward": best_episode_reward,
+                    })
 
             print(f'episode: {episode}, reward: {episode_reward} average rewards of last 10 episodes: {avg_rewards[-1]}')
+            
+            #Cutting down on exploration by reducing the epsilon
+            epsilon = linearly_decaying_value(self.initial_epsilon, self.epsilon_decay_steps, episode, 0, self.final_epsilon)
         
-        return Q, rewards, avg_rewards, epsilons, best_episode_reward, best_episode_segment, actual_starting_locs
+        # Log the final Q-table
+        final_Q_table = Path(f"./q_tables/{wandb.run.id}.npy")
+        np.save(final_Q_table, self.Q)
+        wandb.save(final_Q_table.as_posix())
+        
+        # Log the Q-table as an image
+        fig, ax = plt.subplots(figsize=(10, 5))
+        Q_actions = self.Q.argmax(axis=1).reshape(self.env.city.grid_x_size, self.env.city.grid_y_size)
+        Q_values = self.Q.max(axis=1).reshape(self.env.city.grid_x_size, self.env.city.grid_y_size)
+        im = ax.imshow(Q_values, label='Q values', cmap='Blues', alpha=0.5)
+        markers = ['\\uparrow', '\\nearrow', '\\rightarrow', '\\searrow', '\\downarrow', '\\swarrow', '\\leftarrow', '\\nwarrow']
+        for a in range(8):
+            cells = np.nonzero((Q_actions == a) & (Q_values > 0))
+            ax.scatter(cells[1], cells[0], c='red', marker=rf"${markers[a]}$", s=10,)
+        
+        fig.colorbar(im)
+        fig.suptitle('Q values and best actions')
+        self.highlight_cells(actual_starting_locs, ax=ax, color='limegreen')
+        wandb.log({"Q-table": wandb.Image(fig)})
+        plt.close(fig)
+        
+        wandb.finish()
+        return self.Q, rewards, avg_rewards, epsilons, best_episode_reward, best_episode_segment, actual_starting_locs
+
 
 
 def main(args):
@@ -155,7 +242,9 @@ def main(args):
         train_episodes=args.train_episdes,
         test_episodes=args.test_episdes,
         nr_stations=args.nr_stations,
-        seed=args.seed
+        seed=args.seed,
+        wandb_project_name=args.project_name,
+        wandb_experiment_name=args.experiment_name
     )
     agent.train(args.starting_loc)
 
@@ -186,6 +275,8 @@ if __name__ == "__main__":
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     random.seed(args.seed)
+    
+    Path("./q_tables").mkdir(parents=True, exist_ok=True)
     
     args.project_name = "TNDP-RL"
 
