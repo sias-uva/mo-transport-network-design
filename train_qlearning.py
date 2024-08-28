@@ -17,17 +17,17 @@ from morl_baselines.common.utils import linearly_decaying_value
 
 class QLearningTNDP:
     def __init__(
-        self, 
-        env, 
+        self,
+        env,
         alpha: float,
-        gamma: float,  
-        initial_epsilon, 
-        final_epsilon, 
-        epsilon_decay_steps, 
-        train_episodes, 
-        test_episodes, 
-        nr_stations, 
-        seed, 
+        gamma: float,
+        initial_epsilon,
+        final_epsilon,
+        epsilon_decay_steps,
+        train_episodes,
+        test_episodes,
+        nr_stations,
+        seed,
         policy = None,
         wandb_project_name=None,
         wandb_experiment_name=None,
@@ -76,6 +76,27 @@ class QLearningTNDP:
             rect = plt.Rectangle((x-.5, y-.5), 1,1, fill=False, **kwargs)
             ax.add_patch(rect)
         return rect
+    
+    def gen_line_plot_grid(self, lines):
+        """Generates a grid_x_max * grid_y_max grid where each grid is valued by the frequency it appears in the generated lines.
+        Essentially creates a grid of the given line to plot later on.
+
+        Args:
+            line (list): list of generated lines of the model
+            grid_x_max (int): nr of lines in the grid
+            grid_y_mask (int): nr of columns in the grid
+        """
+        data = np.zeros((self.env.city.grid_x_size, self.env.city.grid_y_size))
+
+        for line in lines:
+            # line_g = city.vector_to_grid(line)
+
+            for station in line:
+                data[station[0], station[1]] += 1
+        
+        data = data/len(lines)
+
+        return data
 
     
     def setup_wandb(self, entity=None, group=None):
@@ -189,31 +210,68 @@ class QLearningTNDP:
             #Cutting down on exploration by reducing the epsilon
             epsilon = linearly_decaying_value(self.initial_epsilon, self.epsilon_decay_steps, episode, 0, self.final_epsilon)
         
-        # Log the final Q-table
-        final_Q_table = Path(f"./q_tables/{wandb.run.id}.npy")
-        np.save(final_Q_table, self.Q)
-        wandb.save(final_Q_table.as_posix())
+        if self.log:
+            # Log the final Q-table
+            final_Q_table = Path(f"./q_tables/{wandb.run.id}.npy")
+            np.save(final_Q_table, self.Q)
+            wandb.save(final_Q_table.as_posix())
+            
+            # Log the Q-table as an image
+            fig, ax = plt.subplots(figsize=(10, 5))
+            Q_actions = self.Q.argmax(axis=1).reshape(self.env.city.grid_x_size, self.env.city.grid_y_size)
+            Q_values = self.Q.max(axis=1).reshape(self.env.city.grid_x_size, self.env.city.grid_y_size)
+            im = ax.imshow(Q_values, label='Q values', cmap='Blues', alpha=0.5)
+            markers = ['\\uparrow', '\\nearrow', '\\rightarrow', '\\searrow', '\\downarrow', '\\swarrow', '\\leftarrow', '\\nwarrow']
+            for a in range(8):
+                cells = np.nonzero((Q_actions == a) & (Q_values > 0))
+                ax.scatter(cells[1], cells[0], c='red', marker=rf"${markers[a]}$", s=10,)
+            
+            fig.colorbar(im)
+            fig.suptitle('Q values and best actions')
+            self.highlight_cells(actual_starting_locs, ax=ax, color='limegreen')
+            wandb.log({"Q-table": wandb.Image(fig)})
+            plt.close(fig)
+            
+            if self.test_episodes > 0:
+                self.test(self.test_episodes, starting_loc)
         
-        # Log the Q-table as an image
-        fig, ax = plt.subplots(figsize=(10, 5))
-        Q_actions = self.Q.argmax(axis=1).reshape(self.env.city.grid_x_size, self.env.city.grid_y_size)
-        Q_values = self.Q.max(axis=1).reshape(self.env.city.grid_x_size, self.env.city.grid_y_size)
-        im = ax.imshow(Q_values, label='Q values', cmap='Blues', alpha=0.5)
-        markers = ['\\uparrow', '\\nearrow', '\\rightarrow', '\\searrow', '\\downarrow', '\\swarrow', '\\leftarrow', '\\nwarrow']
-        for a in range(8):
-            cells = np.nonzero((Q_actions == a) & (Q_values > 0))
-            ax.scatter(cells[1], cells[0], c='red', marker=rf"${markers[a]}$", s=10,)
-        
-        fig.colorbar(im)
-        fig.suptitle('Q values and best actions')
-        self.highlight_cells(actual_starting_locs, ax=ax, color='limegreen')
-        wandb.log({"Q-table": wandb.Image(fig)})
-        plt.close(fig)
-        
-        wandb.finish()
+            wandb.finish()
         return self.Q, rewards, avg_rewards, epsilons, best_episode_reward, best_episode_segment, actual_starting_locs
 
 
+    def test(self, test_episodes, starting_loc=None):
+        total_rewards = 0
+        generated_lines = []
+        if starting_loc:
+            test_starting_loc = starting_loc
+        else:
+            test_starting_loc = tuple(self.env.city.vector_to_grid(np.unravel_index(self.Q.argmax(), self.Q.shape)[0]))
+            
+        for episode in range(test_episodes):
+            state, info = self.env.reset(loc=test_starting_loc)
+            episode_reward = 0
+            locations = []
+            while True:
+                state_index = self.env.city.grid_to_vector(state['location'][None, :]).item()
+                locations.append(state['location'].tolist())
+                action = np.argmax(self.Q[state_index, :] - 10000000 * (1-info['action_mask']))
+                new_state, reward, done, _, info = self.env.step(action)
+                reward = reward.sum()
+                episode_reward += reward      
+                state = new_state    
+                if done:
+                    break
+            total_rewards += episode_reward
+            generated_lines.append(locations)
+            
+        if self.log:
+            plot_grid = self.gen_line_plot_grid(np.array(generated_lines))
+            fig, ax = plt.subplots(figsize=(5, 5))
+            ax.imshow(plot_grid)
+            self.highlight_cells([test_starting_loc], ax=ax, color='limegreen')
+            fig.suptitle(f'Average Generated line \n reward: {episode_reward}')
+            wandb.log({"Average-Generated-Line": wandb.Image(fig)})
+            plt.close(fig)
 
 def main(args):
     def make_env(gym_env):
