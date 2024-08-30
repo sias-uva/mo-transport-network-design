@@ -1,3 +1,4 @@
+## OUTDATED FILE, USE hyperparam_search_gpils.py INSTEAD
 # It's a script that's not necessary to train and evaluate the PCN, but it's useful to perform grid-search on hyper-parameters.
 import argparse
 from itertools import product
