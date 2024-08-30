@@ -284,7 +284,8 @@ def main(args):
                         city=city, 
                         constraints=MetroConstraints(city),
                         nr_stations=args.nr_stations,
-                        od_type=args.od_type)
+                        od_type=args.od_type,
+                        chained_reward=args.chained_reward,)
 
         return env
 
@@ -328,6 +329,7 @@ if __name__ == "__main__":
     parser.add_argument('--no_log', action='store_true', default=False)
     parser.add_argument('--ignore_existing_lines', action='store_true', default=False)
     parser.add_argument('--od_type', default='pct', type=str, choices=['pct', 'abs'])
+    parser.add_argument('--chained_reward', action='store_true', default=False)
     parser.add_argument('--seed', default=42, type=int)
 
     args = parser.parse_args()
