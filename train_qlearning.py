@@ -54,6 +54,7 @@ class QLearningTNDP:
         """Get configuration of QLearning."""
         return {
             "env_id": self.env_id,
+            "od_type": self.env.od_type,
             "alpha": self.alpha,
             "gamma": self.gamma,
             "initial_epsilon": self.initial_epsilon,
@@ -151,7 +152,7 @@ class QLearningTNDP:
             while True:
                 state_index = self.env.city.grid_to_vector(state['location'][None, :]).item()
 
-                # Exploration-exploitation trade-off 
+                # Exploration-exploitation trade-off
                 exp_exp_tradeoff = random.uniform(0, 1)
 
                 # follow predetermined policy (set above)
@@ -247,16 +248,16 @@ class QLearningTNDP:
             
         for episode in range(test_episodes):
             state, info = self.env.reset(loc=test_starting_loc)
+            locations = [state['location'].tolist()]
             episode_reward = 0
-            locations = []
             while True:
                 state_index = self.env.city.grid_to_vector(state['location'][None, :]).item()
-                locations.append(state['location'].tolist())
                 action = np.argmax(self.Q[state_index, :] - 10000000 * (1-info['action_mask']))
                 new_state, reward, done, _, info = self.env.step(action)
+                locations.append(new_state['location'].tolist())
                 reward = reward.sum()
-                episode_reward += reward      
-                state = new_state    
+                episode_reward += reward
+                state = new_state
                 if done:
                     break
             total_rewards += episode_reward
@@ -282,7 +283,8 @@ def main(args):
         env = mo_gym.make(gym_env, 
                         city=city, 
                         constraints=MetroConstraints(city),
-                        nr_stations=args.nr_stations)
+                        nr_stations=args.nr_stations,
+                        od_type=args.od_type)
 
         return env
 
@@ -298,6 +300,7 @@ def main(args):
         train_episodes=args.train_episodes,
         test_episodes=args.test_episdes,
         nr_stations=args.nr_stations,
+        policy=args.policy,
         seed=args.seed,
         wandb_project_name=args.project_name,
         wandb_experiment_name=args.experiment_name
@@ -323,6 +326,8 @@ if __name__ == "__main__":
     parser.add_argument('--train_episodes', default=500, type=int)
     parser.add_argument('--test_episdes', default=1, type=int)
     parser.add_argument('--no_log', action='store_true', default=False)
+    parser.add_argument('--ignore_existing_lines', action='store_true', default=False)
+    parser.add_argument('--od_type', default='pct', type=str, choices=['pct', 'abs'])
     parser.add_argument('--seed', default=42, type=int)
 
     args = parser.parse_args()
@@ -342,30 +347,29 @@ if __name__ == "__main__":
         args.nr_stations = 9
         args.gym_env = 'motndp_dilemma-v0'
         args.groups_file = "groups.txt"
-        args.ignore_existing_lines = True
+        args.ignore_existing_lines = args.ignore_existing_lines
         args.experiment_name = "Q-Learning-Dilemma"
     elif args.env == 'margins':
         args.city_path = Path(f"./envs/mo-tndp/cities/margins_5x5")
         args.nr_stations = 9
         args.gym_env = 'motndp_margins-v0'
         args.groups_file = f"groups.txt"
-        args.ignore_existing_lines = True
+        args.ignore_existing_lines = args.ignore_existing_lines
         args.experiment_name = "Q-Learning-Margins"
     elif args.env == 'amsterdam':
         args.city_path = Path(f"./envs/mo-tndp/cities/amsterdam")
         args.nr_stations = 10
         args.gym_env = 'motndp_amsterdam-v0'
         args.groups_file = f"price_groups_{args.nr_groups}.txt"
-        args.ignore_existing_lines = True
+        args.ignore_existing_lines = args.ignore_existing_lines
         args.experiment_name = "Q-Learning-Amsterdam"
     elif args.env == 'xian':
         args.city_path = Path(f"./envs/mo-tndp/cities/xian")
         args.nr_stations = 20
         args.gym_env = 'motndp_xian-v0'
         args.groups_file = f"price_groups_{args.nr_groups}.txt"
-        args.ignore_existing_lines = True
+        args.ignore_existing_lines = args.ignore_existing_lines
         args.experiment_name = "Q-Learning-Xian"
-        
     if args.starting_loc_x is not None and args.starting_loc_y is not None:
         args.starting_loc = (args.starting_loc_x, args.starting_loc_y)
     else:
