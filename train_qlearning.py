@@ -368,7 +368,7 @@ if __name__ == "__main__":
         args.experiment_name = "Q-Learning-Amsterdam"
     elif args.env == 'xian':
         args.city_path = Path(f"./envs/mo-tndp/cities/xian")
-        args.nr_stations = 20
+        args.nr_stations = 45
         args.gym_env = 'motndp_xian-v0'
         args.groups_file = f"price_groups_{args.nr_groups}.txt"
         args.ignore_existing_lines = args.ignore_existing_lines
