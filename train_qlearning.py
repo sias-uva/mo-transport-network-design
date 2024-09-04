@@ -299,7 +299,7 @@ def main(args):
         final_epsilon=args.final_epsilon,
         epsilon_decay_steps=args.epsilon_decay_steps,
         train_episodes=args.train_episodes,
-        test_episodes=args.test_episdes,
+        test_episodes=args.test_episodes,
         nr_stations=args.nr_stations,
         policy=args.policy,
         seed=args.seed,
@@ -319,13 +319,14 @@ if __name__ == "__main__":
     parser.add_argument('--starting_loc_x', default=None, type=int)
     parser.add_argument('--starting_loc_y', default=None, type=int)
     parser.add_argument('--nr_stations', type=int)
+    parser.add_argument('--policy', default=None, type=str, help="WARNING: set manually, does not currently convert string to list. A list of action as manual policy for the agent.")
     parser.add_argument('--alpha', default=0.4, type=float)
     parser.add_argument('--gamma', default=0.8, type=float)
     parser.add_argument('--initial_epsilon', default=1.0, type=float)
     parser.add_argument('--final_epsilon', default=0.0, type=float)
     parser.add_argument('--epsilon_decay_steps', default=400, type=float)
     parser.add_argument('--train_episodes', default=500, type=int)
-    parser.add_argument('--test_episdes', default=1, type=int)
+    parser.add_argument('--test_episodes', default=1, type=int)
     parser.add_argument('--no_log', action='store_true', default=False)
     parser.add_argument('--ignore_existing_lines', action='store_true', default=False)
     parser.add_argument('--od_type', default='pct', type=str, choices=['pct', 'abs'])
