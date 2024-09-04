@@ -267,18 +267,24 @@ class QLearningTNDP:
             fig, ax = plt.subplots(figsize=(5, 5))
             ax.imshow(self.env.city.agg_od_mx())
             
+            if not args.ignore_existing_lines:
+                for i, l in enumerate(self.env.city.existing_lines):
+                    station_locs = self.env.city.vector_to_grid(l)
+                    ax.plot(station_locs[:, 1], station_locs[:, 0], '-o', color='#A1A9FF', label='Existing lines' if i == 0 else None)
+            
             # If the test episodes are only 1, we can plot the line directly, with connected points
             if len(generated_lines) == 1:
                 station_locs = np.array(generated_lines[0])
-                ax.plot(station_locs[:, 1], station_locs[:, 0], '-or')
+                ax.plot(station_locs[:, 1], station_locs[:, 0], '-or', label='Generated line')
             # If the test episodes are more than 1, we can plot the average line
             else:
                 plot_grid = self.gen_line_plot_grid(np.array(generated_lines))
                 station_locs = plot_grid.nonzero()
-                ax.plot(station_locs[1], station_locs[0], 'ok')
+                ax.plot(station_locs[1], station_locs[0], 'ok', label='Generated line')
 
             self.highlight_cells([test_starting_loc], ax=ax, color='red')
             fig.suptitle(f'Average Generated line \n reward: {episode_reward}')
+            fig.legend(loc='lower center', ncol=2)
             wandb.log({"Average-Generated-Line": wandb.Image(fig)})
             plt.close(fig)
 
