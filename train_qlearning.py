@@ -29,6 +29,8 @@ class QLearningTNDP:
         policy = None,
         wandb_project_name=None,
         wandb_experiment_name=None,
+        wandb_run_id=None,
+        Q_table=None,
         log: bool = True
     ):
         self.env = env
@@ -45,10 +47,20 @@ class QLearningTNDP:
         self.policy = policy
         self.wandb_project_name = wandb_project_name
         self.wandb_experiment_name = wandb_experiment_name
+        self.wandb_run_id = wandb_run_id
+        if Q_table is not None:
+            self.Q = Q_table # Q_table to start with or evaluate
         self.log = log
         
         if log:
-            self.setup_wandb()
+            if not wandb_run_id:
+                self.setup_wandb()
+            else:
+                wandb.init(
+                    project=self.wandb_project_name,
+                    id=self.wandb_run_id,
+                    resume=True,
+                )
         
     def get_config(self) -> dict:
         """Get configuration of QLearning."""
@@ -64,7 +76,9 @@ class QLearningTNDP:
             "test_episodes": self.test_episodes,
             "nr_stations": self.nr_stations,
             "seed": self.seed,
-            "policy": self.policy
+            "policy": self.policy,
+            "chained_reward": self.env.chained_reward,
+            "ignore_existing_lines": self.env.city.ignore_existing_lines,
         }
         
     def highlight_cells(self, cells, ax, **kwargs):
@@ -181,6 +195,8 @@ class QLearningTNDP:
                 state = new_state
 
                 if done:
+                    print('segments:', self.env.all_sat_od_pairs)
+                    print('line', self.env.covered_cells_vid)
                     break
             
             if episode_reward > best_episode_reward:
@@ -249,10 +265,12 @@ class QLearningTNDP:
         for episode in range(test_episodes):
             state, info = self.env.reset(loc=test_starting_loc)
             locations = [state['location'].tolist()]
+            actions = []
             episode_reward = 0
             while True:
                 state_index = self.env.city.grid_to_vector(state['location'][None, :]).item()
                 action = np.argmax(self.Q[state_index, :] - 10000000 * (1-info['action_mask']))
+                actions.append(action)
                 new_state, reward, done, _, info = self.env.step(action)
                 locations.append(new_state['location'].tolist())
                 reward = reward.sum()
@@ -287,6 +305,9 @@ class QLearningTNDP:
             fig.legend(loc='lower center', ncol=2)
             wandb.log({"Average-Generated-Line": wandb.Image(fig)})
             plt.close(fig)
+            
+        print(f'Average reward over {test_episodes} episodes: {total_rewards/test_episodes}')
+        print(f'Actions of last episode: {actions}')
 
 def main(args):
     def make_env(gym_env):
@@ -304,25 +325,69 @@ def main(args):
                         chained_reward=args.chained_reward,)
 
         return env
-
-    env = make_env(args.gym_env)
     
-    agent = QLearningTNDP(
-        env,
-        alpha=args.alpha,
-        gamma=args.gamma,
-        initial_epsilon=args.initial_epsilon,
-        final_epsilon=args.final_epsilon,
-        epsilon_decay_steps=args.epsilon_decay_steps,
-        train_episodes=args.train_episodes,
-        test_episodes=args.test_episodes,
-        nr_stations=args.nr_stations,
-        policy=args.policy,
-        seed=args.seed,
-        wandb_project_name=args.project_name,
-        wandb_experiment_name=args.experiment_name
-    )
-    agent.train(args.starting_loc)
+    if args.evaluate_model is not None:
+        api = wandb.Api()
+
+        run = api.run(f"TNDP-RL/{args.evaluate_model}")
+        run.file(f"q_tables/{args.evaluate_model}.npy").download(replace=True)
+        
+        import json
+        run_config = json.loads(run.json_config)
+        
+        city = City(
+            args.city_path,
+            groups_file=args.groups_file,
+            ignore_existing_lines=run_config['ignore_existing_lines']['value']
+        )
+        
+        env = mo_gym.make(run_config['env_id']['value'], 
+                        city=city, 
+                        constraints=MetroConstraints(city),
+                        nr_stations=args.nr_stations,
+                        od_type=run_config['od_type']['value'],
+                        chained_reward=run_config['chained_reward']['value'],)
+        
+        # Load the Q-table  
+        Q = np.load(f"q_tables/{args.evaluate_model}.npy")
+        agent = QLearningTNDP(
+            env,
+            alpha=args.alpha,
+            gamma=args.gamma,
+            initial_epsilon=args.initial_epsilon,
+            final_epsilon=args.final_epsilon,
+            epsilon_decay_steps=args.epsilon_decay_steps,
+            train_episodes=args.train_episodes,
+            test_episodes=args.test_episodes,
+            nr_stations=args.nr_stations,
+            policy=None,
+            seed=args.seed,
+            wandb_project_name=args.project_name,
+            wandb_experiment_name=args.experiment_name,
+            wandb_run_id=args.evaluate_model,
+            Q_table=Q,
+        )
+        
+        agent.test(args.test_episodes, starting_loc=args.starting_loc)
+
+    else:
+        env = make_env(args.gym_env)
+        agent = QLearningTNDP(
+            env,
+            alpha=args.alpha,
+            gamma=args.gamma,
+            initial_epsilon=args.initial_epsilon,
+            final_epsilon=args.final_epsilon,
+            epsilon_decay_steps=args.epsilon_decay_steps,
+            train_episodes=args.train_episodes,
+            test_episodes=args.test_episodes,
+            nr_stations=args.nr_stations,
+            policy=args.policy,
+            seed=args.seed,
+            wandb_project_name=args.project_name,
+            wandb_experiment_name=args.experiment_name
+        )
+        agent.train(args.starting_loc)
 
 
 if __name__ == "__main__":
@@ -348,6 +413,7 @@ if __name__ == "__main__":
     parser.add_argument('--od_type', default='pct', type=str, choices=['pct', 'abs'])
     parser.add_argument('--chained_reward', action='store_true', default=False)
     parser.add_argument('--seed', default=42, type=int)
+    parser.add_argument('--evaluate_model', default=None, type=str, help="Wandb run ID for model to evaluate. Will load the Q table and run --test_episodes. Note that starting_loc will be set to the one with the max Q.") 
 
     args = parser.parse_args()
     print(args)
@@ -383,12 +449,21 @@ if __name__ == "__main__":
         args.ignore_existing_lines = args.ignore_existing_lines
         args.experiment_name = "Q-Learning-Amsterdam"
     elif args.env == 'xian':
+        # Xian pre-defined
         args.city_path = Path(f"./envs/mo-tndp/cities/xian")
         args.nr_stations = 45
         args.gym_env = 'motndp_xian-v0'
         args.groups_file = f"price_groups_{args.nr_groups}.txt"
         args.ignore_existing_lines = args.ignore_existing_lines
         args.experiment_name = "Q-Learning-Xian"
+        # args.od_type = 'abs'
+        # args.policy = [5, 5, 5, 6, 6, 6, 6, 6, 4, 6, 4, 4, 6, 6, 6, 6, 6, 6, 4, 4, 4, 6, 4, 6, 6, 6, 6, 4, 4, 6, 6, 4, 6, 4, 4, 4, 4, 4, 4, 4, 4, 6, 6, 6, 6, 6]
+        # args.policy = [0, 2, 1, 0, 0, 0, 6, 6, 0, 0, 0, 0, 6, 6, 0, 0, 6, 0, 6, 6, 4, 6, 6, 4, 4, 4, 5, 6, 6, 4, 4, 6, 4, 6, 6, 4, 4, 3, 2, 3, 2, 4, 2, 2]
+        # args.policy = [2, 4, 2, 2, 0, 0, 1, 2, 2, 1, 0, 2, 0, 0, 6, 6, 5, 5, 6, 4, 6, 6, 4, 6, 4, 6, 4, 4, 6, 6, 6, 7, 6, 0, 0, 1, 2, 1, 2, 0, 0, 6, 6, 0]
+        # if args.policy is not None:
+        #     args.starting_loc_x = 19
+        #     args.starting_loc_y = 11
+
     if args.starting_loc_x is not None and args.starting_loc_y is not None:
         args.starting_loc = (args.starting_loc_x, args.starting_loc_y)
     else:
