@@ -86,7 +86,7 @@ class QLearningTNDP:
         """
         for cell in cells:
             (y, x) = cell
-            rect = plt.Rectangle((x-.5, y-.5), 1,1, fill=False, **kwargs)
+            rect = plt.Rectangle((x-.5, y-.5), 1, 1, fill=False, linewidth=2, **kwargs)
             ax.add_patch(rect)
         return rect
     
@@ -300,7 +300,7 @@ class QLearningTNDP:
                 station_locs = plot_grid.nonzero()
                 ax.plot(station_locs[1], station_locs[0], 'ok', label='Generated line')
 
-            self.highlight_cells([test_starting_loc], ax=ax, color='red')
+            self.highlight_cells([test_starting_loc], ax=ax, color='limegreen')
             fig.suptitle(f'Average Generated line \n reward: {episode_reward}')
             fig.legend(loc='lower center', ncol=2)
             wandb.log({"Average-Generated-Line": wandb.Image(fig)})
@@ -443,7 +443,7 @@ if __name__ == "__main__":
         args.experiment_name = "Q-Learning-Margins"
     elif args.env == 'amsterdam':
         args.city_path = Path(f"./envs/mo-tndp/cities/amsterdam")
-        args.nr_stations = 10
+        args.nr_stations = args.nr_stations
         args.gym_env = 'motndp_amsterdam-v0'
         args.groups_file = f"price_groups_{args.nr_groups}.txt"
         args.ignore_existing_lines = args.ignore_existing_lines
