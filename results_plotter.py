@@ -25,6 +25,12 @@ def gini(x, normalized=True):
         gi = gi * (n / (n - 1))
     return gi
 
+def euclidean_distance_to_equality_ref_point(ref_point: np.array, fronts: np.array):    
+    # Calculate Euclidean distance between each front and equality point
+    distances = np.sqrt(np.sum((fronts - ref_point) ** 2, axis=1))
+    
+    return distances
+
 #%% LOAD DATA FROM W&B
 api = wandb.Api()
 
@@ -63,6 +69,8 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
             ref_point = np.array([0.0, -200.0])
         else:
             ref_point = np.array([0] * nr_groups)
+            # THIS IS SPECIFIC TO THE Xi'an and Amsterdam environments, where 0.1 is very large for a single transport line.
+            eq_ref_point = np.array([0.1 * nr_groups])
         models_to_plot = pd.DataFrame(objective['models'])
 
         results_by_objective = {}
@@ -75,10 +83,11 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
             hvs_by_seed = []
             eum_by_seed = []
             sw_by_seed = []
+            distances_by_seed = []
             for j, model in enumerate(models):
                 print(f"Processing {env_name} {model_name} ({nr_groups}) - {model['run_ids']}")
                 # Read the content of the output file
-                results_by_objective[model_name] = {'gini': [], 'total_efficiency': [], 'avg_efficiency': [], 'hv': [], 'sen_welfare': [], 'nash_welfare': [], 'avg_per_group': [], 'cardinality': [], 'eum': []}
+                results_by_objective[model_name] = {'gini': [], 'total_efficiency': [], 'avg_efficiency': [], 'hv': [], 'sen_welfare': [], 'nash_welfare': [], 'dist_to_eq_ref_point': [], 'avg_per_group': [], 'cardinality': [], 'eum': []}
                 for i in range(len(model['run_ids'])):
                     if model['run_ids'][i] == '':
                         print(f"WARNING - Empty run id in {model_name}")
@@ -112,7 +121,13 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
                     avg_efficiency = np.mean(fronts, axis=1)
                     hv = hypervolume(ref_point, fronts)
                     nash_welfare = np.prod(fronts, axis=1)
-
+                    
+                    has_large_point = any(np.all(front >= eq_ref_point) for front in fronts)
+                    if has_large_point:
+                        print(f"WARNING - Point > equality reference point in {model_name}, {nr_groups} - {model['run_ids'][i]}")
+                    else:
+                        dist_to_eq_ref = euclidean_distance_to_equality_ref_point(eq_ref_point, np.array(fronts))
+                                                
                     results_by_objective[model_name]['fronts'] = fronts
                     results_by_objective[model_name]['total_efficiency'] = results_by_objective[model_name]['total_efficiency'] + total_efficiency.tolist()
                     results_by_objective[model_name]['avg_efficiency'] = results_by_objective[model_name]['avg_efficiency'] + avg_efficiency.tolist()
@@ -121,6 +136,7 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
                     if env_name != 'DST':
                         results_by_objective[model_name]['sen_welfare'] = results_by_objective[model_name]['sen_welfare'] + (total_efficiency * (1-gini_index)).tolist()
                     results_by_objective[model_name]['nash_welfare'] = results_by_objective[model_name]['nash_welfare'] + nash_welfare.tolist()
+                    results_by_objective[model_name]['dist_to_eq_ref_point'] = results_by_objective[model_name]['dist_to_eq_ref_point'] + dist_to_eq_ref.tolist()
                     results_by_objective[model_name]['avg_per_group'] = results_by_objective[model_name]['avg_per_group'] + np.mean(fronts, axis=0).tolist()
                     results_by_objective[model_name]['cardinality'] = results_by_objective[model_name]['cardinality'] + [run.summary['eval/cardinality']]
                     results_by_objective[model_name]['eum'] = results_by_objective[model_name]['eum'] + [run.summary['eval/eum']]
@@ -186,10 +202,10 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
         
     return all_results, hv_over_time, eum_over_time, sw_over_time
 
-ams_results, ams_hv_over_time, ams_eum_over_time, ams_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_ams.txt'), 'Amsterdam')
+# ams_results, ams_hv_over_time, ams_eum_over_time, ams_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_ams.txt'), 'Amsterdam')
 xian_results, xian_hv_over_time, xian_eum_over_time, xian_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_xian.txt'), 'Xian')
 
-dst_results, dst_hv_over_time, dst_eum_over_time, dst_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_dst.txt'), 'DST')
+# dst_results, dst_hv_over_time, dst_eum_over_time, dst_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_dst.txt'), 'DST')
 #%%
 
 # Change this to the results you want to plot
@@ -275,11 +291,11 @@ hv.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, dd
 
 #%%
 ## Same but only hv and sen_welfare
-fig, axs = plt.subplots(3, 1, figsize=(8, 8))
+fig, axs = plt.subplots(2, 2, figsize=(16, 8))
 colors = ["#FFF2E5", "#BFBFBF", "#1A85FF"]
 sns.set_palette(sns.color_palette(colors))
-plt.rcParams.update({'font.size': 16})
-LINEWIDTH = 1.5
+plt.rcParams.update({'font.size': 18})
+LINEWIDTH = 2
 
 pcnvlcn = results_to_plot[results_to_plot['model'].isin(['GPI-LS', 'PCN', 'LCN-nondominated'])]
 pcnvlcn.loc[pcnvlcn['model'] == 'LCN-nondominated', 'model'] = 'LCN'
@@ -288,41 +304,50 @@ hv = pcnvlcn[pcnvlcn['metric'] == 'hv']
 hv['value'] = hv.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
 hv['value'] = hv['value'].fillna(0)
 
-hvboxplot = sns.boxplot(data=hv, x="nr_groups", y="value", hue="model", ax=axs[0], legend=False, linewidth=LINEWIDTH)
-# hvboxplot.legend_.set_title(None)
-# hvboxplot.legend(fontsize=14)
-axs[0].set_title('Normalized Hypervolume')
-axs[0].set_xlabel(None)
-axs[0].set_ylabel(None)
-axs[0].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+hvboxplot = sns.boxplot(data=hv, x="nr_groups", y="value", hue="model", ax=axs[0,0], legend=False, linewidth=LINEWIDTH)
+axs[0,0].set_title('Normalized Hypervolume')
+axs[0,0].set_xlabel(None)
+axs[0,0].set_ylabel(None)
+axs[0,0].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
 eum = pcnvlcn[pcnvlcn['metric'] == 'eum']
 eum['value'] = eum.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
-sns.boxplot(data=eum, x="nr_groups", y="value", hue="model", ax=axs[1], legend=False, linewidth=LINEWIDTH)
-axs[1].set_title('Normalized EUM')
-axs[1].set_ylabel(None)
-axs[1].set_xlabel(None)
-axs[1].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+sns.boxplot(data=eum, x="nr_groups", y="value", hue="model", ax=axs[0,1], legend=False, linewidth=LINEWIDTH)
+axs[0,1].set_title('Normalized EUM')
+axs[0,1].set_ylabel(None)
+axs[0,1].set_xlabel(None)
+axs[0,1].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
 sen_welfare = pcnvlcn[pcnvlcn['metric'] == 'sen_welfare']
 sen_welfare['value'] = sen_welfare.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
-eumboxplot = sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[2], legend=True, linewidth=LINEWIDTH)
-axs[2].set_title('Normalized Sen Welfare')
-axs[2].set_ylabel(None)
-axs[2].set_xlabel('Number of Groups')
-axs[2].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+swboxplot = sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[1,0], legend=False, linewidth=LINEWIDTH)
+axs[1,0].set_title('Normalized Sen Welfare')
+axs[1,0].set_ylabel(None)
+axs[1,0].set_xlabel('Number of Groups')
+axs[1,0].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
-eumboxplot.legend(fontsize=14, loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=3)
-eumboxplot.legend_.set_title(None)
+dist_to_ref = pcnvlcn[pcnvlcn['metric'] == 'dist_to_eq_ref_point']
+dist_to_ref['value'] = dist_to_ref.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
+dtrboxplot = sns.boxplot(data=dist_to_ref, x="nr_groups", y="value", hue="model", ax=axs[1,1], legend='brief', linewidth=LINEWIDTH)
+# Necessary to have a legend for it to apepar below, but then we need to remove it.
+handles, labels = dtrboxplot.get_legend_handles_labels()
+dtrboxplot.get_legend().remove()
+axs[1,1].set_title('Normalized Distance to Utopian Point (lower=better)')
+axs[1,1].set_ylabel(None)
+axs[1,1].set_xlabel('Number of Groups')
+axs[1,1].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+
+# Move legend below the entire figure
+fig.legend(handles, labels, fontsize=18, loc='center', bbox_to_anchor=(0.5, -0.02), ncol=3)
 
 fig.tight_layout()
 
 #%%
 ## Box plot of HV, Sen Welfare, EUM for all LCN models
-fig, axs = plt.subplots(3, 1, figsize=(8, 8))
+fig, axs = plt.subplots(2, 2, figsize=(16, 8))
 colors = ["#1A85FF", "#E66100", "#D41159", "#BFBFBF"]
 sns.set_palette(sns.color_palette(colors))
-plt.rcParams.update({'font.size': 16})
+plt.rcParams.update({'font.size': 18})
 
 all_lcn = results_to_plot[results_to_plot['model'].isin(['LCN-nondominated', 'LCN-optimal_max', 'LCN-nondominated_mean'])]
 all_lcn.loc[all_lcn['model'] == 'LCN-nondominated', 'model'] = 'LCN'
@@ -333,27 +358,37 @@ hv = all_lcn[all_lcn['metric'] == 'hv']
 hv['value'] = hv.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
 hv['value'] = hv['value'].fillna(0)
 
-sns.boxplot(data=hv, x="nr_groups", y="value", hue="model", ax=axs[0], legend=False, linewidth=LINEWIDTH)
-axs[0].set_title('Normalized Hypervolume')
-axs[0].set_xlabel(None)
-axs[0].set_ylabel(None)
+sns.boxplot(data=hv, x="nr_groups", y="value", hue="model", ax=axs[0,0], legend=False, linewidth=LINEWIDTH)
+axs[0,0].set_title('Normalized Hypervolume')
+axs[0,0].set_xlabel(None)
+axs[0,0].set_ylabel(None)
 
 eum = all_lcn[all_lcn['metric'] == 'eum']
 eum['value'] = eum.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
-sns.boxplot(data=eum, x="nr_groups", y="value", hue="model", ax=axs[1], legend=False, linewidth=LINEWIDTH)
-axs[1].set_title('Normalized EUM')
-axs[1].set_ylabel(None)
-axs[1].set_xlabel(None)
+sns.boxplot(data=eum, x="nr_groups", y="value", hue="model", ax=axs[0,1], legend=False, linewidth=LINEWIDTH)
+axs[0,1].set_title('Normalized EUM')
+axs[0,1].set_ylabel(None)
+axs[0,1].set_xlabel(None)
 
 sen_welfare = all_lcn[all_lcn['metric'] == 'sen_welfare']
 sen_welfare['value'] = sen_welfare.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
-eumboxplot = sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[2], legend=True, linewidth=LINEWIDTH)
-axs[2].set_title('Normalized Sen Welfare')
-axs[2].set_ylabel(None)
-axs[2].set_xlabel('Number of Groups')
+swboxplot = sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[1,0], legend=False, linewidth=LINEWIDTH)
+axs[1,0].set_title('Normalized Sen Welfare')
+axs[1,0].set_ylabel(None)
+axs[1,0].set_xlabel('Number of Groups')
 
-eumboxplot.legend(fontsize=14, loc='upper center', bbox_to_anchor=(0.5, -0.6), ncol=3)
-eumboxplot.legend_.set_title(None)
+dist_to_ref = all_lcn[all_lcn['metric'] == 'dist_to_eq_ref_point']
+dist_to_ref['value'] = dist_to_ref.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
+dtrboxplot = sns.boxplot(data=dist_to_ref, x="nr_groups", y="value", hue="model", ax=axs[1,1], legend='brief', linewidth=LINEWIDTH)
+# Necessary to have a legend for it to apepar below, but then we need to remove it.
+handles, labels = dtrboxplot.get_legend_handles_labels()
+dtrboxplot.get_legend().remove()
+axs[1,1].set_title('Normalized Distance to Utopian Point (lower=better)')
+axs[1,1].set_ylabel(None)
+axs[1,1].set_xlabel('Number of Groups')
+axs[1,1].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+
+fig.legend(handles, labels, fontsize=18, loc='center', bbox_to_anchor=(0.5, -0.02), ncol=3)
 fig.tight_layout()
 
 #%%
@@ -524,5 +559,152 @@ plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 10], (15, 8), 'S
 fig, ax = plt.subplots(figsize=(7, 6))
 xian_eum_lambda_lcn = xian_sw_over_time[['LCN-Lambda-0_3', 'LCN-Lambda-0.3_3', 'LCN-Lambda-0.6_3', 'LCN-Lambda-0.9_3']]
 xian_eum_lambda_lcn.plot(ax=ax, linewidth=4, colormap='Blues')
+
+# %% test coordinate plot
+    
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from pandas.plotting import parallel_coordinates
+import json
+import os
+from matplotlib.colors import ListedColormap
+plt.rcParams.update({'font.size': 18})
+
+cm = ListedColormap(["#848181", "#1A85FF"])
+
+def plot_parallel_coordinates(objectives, models_to_plot=[], model_labels=[], figtitle=None):
+    # Calculate number of rows needed (3 plots per row)
+    n_plots = len(objectives)
+    n_rows = (n_plots + 2) // 3  # Ceiling division to get enough rows
+    n_cols = min(3, n_plots)
+    
+    # Create figure with subplots
+    fig, axs = plt.subplots(n_rows, n_cols, figsize=(7*n_cols, 7*n_rows))
+    if n_rows == 1:
+        axs = [axs]  # Make axs 2D even if only one row
+    if n_cols == 1:
+        axs = [[ax] for ax in axs]  # Make axs 2D even if only one column
+        
+    # Add figure title if provided
+    if figtitle:
+        fig.suptitle(figtitle)
+        
+    for plot_idx, objective in enumerate(objectives):
+        row = plot_idx // 3
+        col = plot_idx % 3
+        
+        nr_groups = objective['nr_groups']
+        models = objective['models']
+        
+        # Initialize DataFrames
+        all_fronts_df = pd.DataFrame()
+        mean_per_model = pd.DataFrame()
+        cardinality_per_model = {}
+        
+        # Filter models if models_to_plot is not empty
+        if models_to_plot:
+            models = [m for m in models if m['name'] in models_to_plot]
+        
+        # Create color mapping for models
+        unique_models = [m['name'] for m in models]
+        colors = cm(np.linspace(0, 1, len(unique_models)))
+        color_map = dict(zip(unique_models, colors))
+        
+        # Create label mapping if model_labels provided
+        if model_labels:
+            label_map = dict(zip(models_to_plot, model_labels))
+        
+        for model in models:
+            model_name = model['name']
+            model_fronts_df = pd.DataFrame()
+            
+            for run_id in model['run_ids']:
+                if run_id == "":
+                    continue
+                    
+                run = api.run(f"MORL-TNDP/{run_id}")
+                front_artifact = api.artifact(f'MORL-TNDP/run-{run_id}-evalfront:latest')
+                local_path = f'./artifacts/{front_artifact.name}'
+                if not os.path.exists(local_path):
+                    front_artifact.download()
+                
+                with open(f"{local_path}/eval/front.table.json", "r") as file:
+                    fronts = json.load(file)['data']
+                
+                if len(fronts) == 0:
+                    continue
+                    
+                # Convert coordinates to DataFrame
+                df = pd.DataFrame(fronts, columns=[f'Group{i+1}' for i in range(len(fronts[0]))])
+                df['model'] = model_name
+                model_fronts_df = pd.concat([model_fronts_df, df], ignore_index=True)
+            
+            if not model_fronts_df.empty:
+                # Calculate mean for this model
+                model_mean = model_fronts_df.iloc[:, :-1].mean().to_frame().T  # Exclude 'model' column
+                model_mean['model'] = f'Mean_{model_name}'
+                mean_per_model = pd.concat([mean_per_model, model_mean], ignore_index=True)
+                
+                # Store cardinality
+                cardinality_per_model[model_name] = len(model_fronts_df)
+                
+                # Add all fronts for this model
+                all_fronts_df = pd.concat([all_fronts_df, model_fronts_df], ignore_index=True)
+        
+        if all_fronts_df.empty:
+            print(f"No data available for {nr_groups} objectives")
+            continue
+            
+        # Plot in the corresponding subplot
+        ax = axs[row][col]
+        
+        # Plot individual fronts with transparency
+        for model_name in unique_models:
+            model_data = all_fronts_df[all_fronts_df['model'] == model_name]
+            if not model_data.empty:
+                parallel_coordinates(model_data, 'model', color=color_map[model_name], alpha=0.1, ax=ax)
+        
+        # Plot mean lines with dashed style
+        for model_name in unique_models:
+            mean_data = mean_per_model[mean_per_model['model'] == f'Mean_{model_name}']
+            if not mean_data.empty:
+                parallel_coordinates(mean_data, 'model', color=color_map[model_name], linewidth=5, linestyle='--', ax=ax)
+        
+        ax.set_title(f'{nr_groups} Objectives')
+        ax.tick_params(axis='x', rotation=45)
+        ax.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+        
+        # Create custom legend with cardinality information
+        legend_elements = [plt.Line2D([0], [0], color=color_map[model], 
+                                    label=f'{label_map[model] if model_labels else model} (n={cardinality_per_model[model]})',
+                                    linewidth=2) for model in unique_models]
+        ax.legend(handles=legend_elements, loc='center', bbox_to_anchor=(0.5, -0.4), ncol=len(unique_models))
+    
+    # Remove any empty subplots
+    for row in range(n_rows):
+        for col in range(n_cols):
+            if row * 3 + col >= n_plots:
+                fig.delaxes(axs[row][col])
+    
+    plt.tight_layout()
+    plt.show()
+
+# Example usage
+run_ids_xian = read_json('./result_ids_xian.txt')
+run_ids_ams = read_json('./result_ids_ams.txt')
+# Filter run_ids to only contain nr_groups 4 and 6
+run_ids_xian = [group for group in run_ids_xian if group['nr_groups'] in [3, 6, 10]]
+run_ids_ams = [group for group in run_ids_ams if group['nr_groups'] in [3, 6, 10]]
+
+plot_parallel_coordinates(run_ids_xian,
+                          models_to_plot=['PCN-Xian', 'LCN-Xian-nondominated'],
+                          model_labels=['PCN', 'LCN'],
+                          figtitle="Xi'an")
+
+plot_parallel_coordinates(run_ids_ams,
+                          models_to_plot=['PCN-Amsterdam', 'LCN-Amsterdam-nondominated'],
+                          model_labels=['PCN', 'LCN'],
+                          figtitle='Amsterdam')
 
 # %%
