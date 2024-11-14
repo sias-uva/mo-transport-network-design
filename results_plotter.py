@@ -7,9 +7,13 @@ import numpy as np
 import json
 import seaborn as sns
 plt.rcParams.update({'font.size': 18})
+from morl_baselines.common.weights import equally_spaced_weights
 from pymoo.indicators.hv import HV
-from morl_baselines.common.performance_indicators import hypervolume
+from morl_baselines.common.performance_indicators import hypervolume, expected_utility
 import wandb
+
+# Fair weights per nr_obectives, to be used to generate the fair-expected-utility metric.
+fair_weights_dict = np.load('fair_weights_dict.npy', allow_pickle=True).item()
 
 def read_json(file_path):
     with open(file_path, 'r') as file:
@@ -87,7 +91,7 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
             for j, model in enumerate(models):
                 print(f"Processing {env_name} {model_name} ({nr_groups}) - {model['run_ids']}")
                 # Read the content of the output file
-                results_by_objective[model_name] = {'gini': [], 'total_efficiency': [], 'avg_efficiency': [], 'hv': [], 'sen_welfare': [], 'nash_welfare': [], 'dist_to_eq_ref_point': [], 'avg_per_group': [], 'cardinality': [], 'eum': []}
+                results_by_objective[model_name] = {'gini': [], 'total_efficiency': [], 'avg_efficiency': [], 'hv': [], 'sen_welfare': [], 'nash_welfare': [], 'dist_to_eq_ref_point': [], 'fair_eum': [], 'avg_per_group': [], 'cardinality': [], 'eum': []}
                 for i in range(len(model['run_ids'])):
                     if model['run_ids'][i] == '':
                         print(f"WARNING - Empty run id in {model_name}")
@@ -127,6 +131,8 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
                         print(f"WARNING - Point > equality reference point in {model_name}, {nr_groups} - {model['run_ids'][i]}")
                     else:
                         dist_to_eq_ref = euclidean_distance_to_equality_ref_point(eq_ref_point, np.array(fronts))
+                        
+                    fair_eum = expected_utility(fronts, fair_weights_dict[objective['nr_groups']])
                                                 
                     results_by_objective[model_name]['fronts'] = fronts
                     results_by_objective[model_name]['total_efficiency'] = results_by_objective[model_name]['total_efficiency'] + total_efficiency.tolist()
@@ -137,6 +143,7 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
                         results_by_objective[model_name]['sen_welfare'] = results_by_objective[model_name]['sen_welfare'] + (total_efficiency * (1-gini_index)).tolist()
                     results_by_objective[model_name]['nash_welfare'] = results_by_objective[model_name]['nash_welfare'] + nash_welfare.tolist()
                     results_by_objective[model_name]['dist_to_eq_ref_point'] = results_by_objective[model_name]['dist_to_eq_ref_point'] + dist_to_eq_ref.tolist()
+                    results_by_objective[model_name]['fair_eum'] = results_by_objective[model_name]['fair_eum'] + [fair_eum]
                     results_by_objective[model_name]['avg_per_group'] = results_by_objective[model_name]['avg_per_group'] + np.mean(fronts, axis=0).tolist()
                     results_by_objective[model_name]['cardinality'] = results_by_objective[model_name]['cardinality'] + [run.summary['eval/cardinality']]
                     results_by_objective[model_name]['eum'] = results_by_objective[model_name]['eum'] + [run.summary['eval/eum']]
@@ -202,7 +209,7 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
         
     return all_results, hv_over_time, eum_over_time, sw_over_time
 
-# ams_results, ams_hv_over_time, ams_eum_over_time, ams_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_ams.txt'), 'Amsterdam')
+ams_results, ams_hv_over_time, ams_eum_over_time, ams_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_ams.txt'), 'Amsterdam')
 xian_results, xian_hv_over_time, xian_eum_over_time, xian_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_xian.txt'), 'Xian')
 
 # dst_results, dst_hv_over_time, dst_eum_over_time, dst_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_dst.txt'), 'DST')
@@ -545,15 +552,15 @@ def plot_over_time_results(ams_metric, xian_metric, groups, figsize, ylabel, lin
 
 
 # Plot EUM for 3, 6, 9 objectives
-# plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 6, 9], (40, 15), 'EUM')
+plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 6, 10], (40, 15), 'EUM')
 # Plot EUM for all objectives
 # plot_over_time_results(ams_eum_over_time, xian_eum_over_time, range(2, 11), (50, 15), 'EUM')
-plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 10], (15, 8), 'EUM', linewidth=4, font_size=22)
+# plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 10], (15, 8), 'EUM', linewidth=4, font_size=22)
 
 # Plot SW for 3, 6, 9 objectives
 # plot_over_time_results(ams_sw_over_time, xian_sw_over_time, range(2, 11), (50, 15), 'Sen Welfare')
-# plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 6, 9], (40, 15), 'Sen Welfare')
-plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 10], (15, 8), 'Sen Welfare', linewidth=4, font_size=22)
+plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 6, 10], (40, 15), 'Sen Welfare')
+# plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 10], (15, 8), 'Sen Welfare', linewidth=4, font_size=22)
 # %%
 
 fig, ax = plt.subplots(figsize=(7, 6))
@@ -572,6 +579,42 @@ from matplotlib.colors import ListedColormap
 plt.rcParams.update({'font.size': 18})
 
 cm = ListedColormap(["#848181", "#1A85FF"])
+
+def parallel_coordinates_plot(ax, front, labels, model_names, plot_average=False, color_map=None, opacity=0.5, line_width=2, avg_line_width=4, xaxis_rotation=45):
+    """
+    Plot parallel coordinates for a given front on a specified axis.
+
+    Args:
+    - ax (matplotlib.axes.Axes): The axis on which to plot.
+    - front (list of lists or list of np.arrays): List containing the front data.
+    - labels (list): List of labels for the parallel coordinates.
+    - model_names (list): List of model names corresponding to each front.
+    - plot_average (bool, optional): Flag to indicate if the average should be plotted. Defaults to True.
+    - color_map (dict, optional): Dictionary mapping model names to colors. Defaults to None.
+    - opacity (float, optional): Opacity for the individual lines. Defaults to 0.5.
+    - linewidth (int, optional): Line width for the average lines. Defaults to 2.
+    """
+    # Convert front to DataFrame
+    front_df = pd.DataFrame(front, columns=labels)
+    front_df['model'] = model_names
+
+    # Plot individual fronts with transparency
+    for model_name in front_df['model'].unique():
+        model_data = front_df[front_df['model'] == model_name]
+        if not model_data.empty:
+            parallel_coordinates(model_data, 'model', color=color_map[model_name] if color_map else 'blue', linewidth=line_width, alpha=opacity, ax=ax)
+    
+    # Plot mean lines with dashed style if plot_average is True
+    if plot_average:
+        for model_name in front_df['model'].unique():
+            mean_data = front_df[front_df['model'] == model_name].iloc[:, :-1].mean().to_frame().T  # Exclude 'model' column
+            mean_data['model'] = f'Mean_{model_name}'
+            parallel_coordinates(mean_data, 'model', color=color_map[model_name] if color_map else 'red', linewidth=avg_line_width, linestyle='--', ax=ax)
+    
+    ax.tick_params(axis='x', rotation=xaxis_rotation)
+    ax.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    ax.set_xticks(range(len(labels)))
+    ax.set_xticklabels(labels)
 
 def plot_parallel_coordinates(objectives, models_to_plot=[], model_labels=[], figtitle=None):
     # Calculate number of rows needed (3 plots per row)
@@ -597,9 +640,9 @@ def plot_parallel_coordinates(objectives, models_to_plot=[], model_labels=[], fi
         nr_groups = objective['nr_groups']
         models = objective['models']
         
-        # Initialize DataFrames
-        all_fronts_df = pd.DataFrame()
-        mean_per_model = pd.DataFrame()
+        # Initialize lists
+        all_fronts = []
+        model_names = []
         cardinality_per_model = {}
         
         # Filter models if models_to_plot is not empty
@@ -617,7 +660,6 @@ def plot_parallel_coordinates(objectives, models_to_plot=[], model_labels=[], fi
         
         for model in models:
             model_name = model['name']
-            model_fronts_df = pd.DataFrame()
             
             for run_id in model['run_ids']:
                 if run_id == "":
@@ -635,45 +677,23 @@ def plot_parallel_coordinates(objectives, models_to_plot=[], model_labels=[], fi
                 if len(fronts) == 0:
                     continue
                     
-                # Convert coordinates to DataFrame
-                df = pd.DataFrame(fronts, columns=[f'Group{i+1}' for i in range(len(fronts[0]))])
-                df['model'] = model_name
-                model_fronts_df = pd.concat([model_fronts_df, df], ignore_index=True)
-            
-            if not model_fronts_df.empty:
-                # Calculate mean for this model
-                model_mean = model_fronts_df.iloc[:, :-1].mean().to_frame().T  # Exclude 'model' column
-                model_mean['model'] = f'Mean_{model_name}'
-                mean_per_model = pd.concat([mean_per_model, model_mean], ignore_index=True)
+                # Add all fronts for this model
+                all_fronts.extend(fronts)
+                model_names.extend([model_name] * len(fronts))
                 
                 # Store cardinality
-                cardinality_per_model[model_name] = len(model_fronts_df)
-                
-                # Add all fronts for this model
-                all_fronts_df = pd.concat([all_fronts_df, model_fronts_df], ignore_index=True)
+                cardinality_per_model[model_name] = cardinality_per_model.get(model_name, 0) + len(fronts)
         
-        if all_fronts_df.empty:
+        if not all_fronts:
             print(f"No data available for {nr_groups} objectives")
             continue
             
         # Plot in the corresponding subplot
         ax = axs[row][col]
         
-        # Plot individual fronts with transparency
-        for model_name in unique_models:
-            model_data = all_fronts_df[all_fronts_df['model'] == model_name]
-            if not model_data.empty:
-                parallel_coordinates(model_data, 'model', color=color_map[model_name], alpha=0.1, ax=ax)
-        
-        # Plot mean lines with dashed style
-        for model_name in unique_models:
-            mean_data = mean_per_model[mean_per_model['model'] == f'Mean_{model_name}']
-            if not mean_data.empty:
-                parallel_coordinates(mean_data, 'model', color=color_map[model_name], linewidth=5, linestyle='--', ax=ax)
+        parallel_coordinates_plot(ax, all_fronts, [f'Group{i+1}' for i in range(nr_groups)], model_names, plot_average=True, color_map=color_map, opacity=0.1)
         
         ax.set_title(f'{nr_groups} Objectives')
-        ax.tick_params(axis='x', rotation=45)
-        ax.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
         
         # Create custom legend with cardinality information
         legend_elements = [plt.Line2D([0], [0], color=color_map[model], 
@@ -708,3 +728,86 @@ plot_parallel_coordinates(run_ids_ams,
                           figtitle='Amsterdam')
 
 # %%
+# import numpy as np
+# from itertools import permutations
+
+# def generate_symmetric_weights(d, range_min=0.4, range_max=0.6):
+#     """
+#     Generate a list of symmetric weight vectors for a given dimension `d`.
+    
+#     Args:
+#     - d (int): The number of dimensions.
+#     - range_min (float): Minimum bound for the first weight.
+#     - range_max (float): Maximum bound for the first weight.
+    
+#     Returns:
+#     - list of numpy arrays: Each array is a weight vector that sums to 1.
+#     """
+#     if d < 2 or d > 10:
+#         raise ValueError("Dimension `d` should be between 2 and 10.")
+    
+#     # Create equally spaced values between range_min and range_max for the first component
+#     first_weights = np.linspace(range_min, range_max, num=d)
+    
+#     # Generate base weight vectors with the first weight varying
+#     weight_vectors = []
+#     for w1 in first_weights:
+#         # Remaining weight after setting the first component
+#         remaining_weight = 1 - w1
+#         # Spread the remaining weight equally across the other components
+#         other_weights = np.full(d - 1, remaining_weight / (d - 1))
+        
+#         # Create the initial weight vector
+#         base_vector = np.concatenate(([w1], other_weights))
+        
+#         # Generate all unique permutations of the base vector for symmetry
+#         for perm in set(permutations(base_vector)):
+#             weight_vectors.append(np.array(perm))
+    
+#     # Add the perfectly equal distribution vector
+#     equal_vector = np.full(d, 1 / d)
+#     weight_vectors.append(equal_vector)
+    
+#     # Remove duplicates and sort for consistency
+#     unique_weight_vectors = []
+#     for vec in weight_vectors:
+#         if not any(np.allclose(vec, uvec) for uvec in unique_weight_vectors):
+#             unique_weight_vectors.append(vec)
+    
+#     return unique_weight_vectors
+
+# weights_dict = {}
+# for d in range(2, 11):
+#     weights = generate_symmetric_weights(d)
+#     weights_dict[d] = weights
+    
+
+# np.save('fair_weights_dict.npy', weights_dict)
+
+#%%
+lambdas = [0.0, 0.2, 0.4, 1.0]
+lambda_lcn_results = results_to_plot[(results_to_plot['model'].isin(['LCN_Lambda'])) & (results_to_plot['lambda'].isin(lambdas))]
+lambda_lcn_3 = lambda_lcn_results[lambda_lcn_results['nr_groups'] == 3]
+lambda_lcn_6 = lambda_lcn_results[lambda_lcn_results['nr_groups'] == 6]
+
+fig, axs = plt.subplots(2, 2, figsize=(10, 6))
+
+# Loop through each lambda value and plot in a separate subplot
+for idx, lambda_value in enumerate(lambdas):
+    row = idx // 2
+    col = idx % 2
+    ax = axs[row, col]
+    fronts = np.array(lambda_lcn_results[(lambda_lcn_results['lambda'] == lambda_value) & (lambda_lcn_results['metric'] == 'fronts') & (lambda_lcn_results['nr_groups'] == 3)]['value'].values.tolist())
+    model_names = [f'λ={lambda_value}'] * len(fronts)
+    
+    # Plot parallel coordinates
+    parallel_coordinates_plot(ax, fronts, ['Group 1', 'Group 2', 'Group 3'], model_names, plot_average=False, color_map={f'λ={lambda_value}': '#1A85FF'}, line_width=2, avg_line_width=6, opacity=1.0, xaxis_rotation=15)
+    ax.set_title(f'λ={lambda_value}')
+    ax.set_ylim(0e-3, 9e-3)  # Set the same y-limits for all subplots
+    ax.get_legend().remove()  # Hide the legend
+
+    # Remove x-axis labels for the top row
+    if row == 0:
+        ax.set_xticklabels([])
+
+fig.tight_layout()
