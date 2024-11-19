@@ -27,7 +27,7 @@ def main(args):
                         constraints=MetroConstraints(city),
                         nr_stations=args.nr_stations,
                         starting_loc=args.starting_loc,
-                        obs_type='location_vector')
+                        state_representation='one_hot')
 
         return env
 

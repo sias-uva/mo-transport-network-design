@@ -25,7 +25,8 @@ def main(args):
         env = mo_gym.make(args.gym_env, 
                         city=city, 
                         constraints=MetroConstraints(city),
-                        nr_stations=args.nr_stations)
+                        nr_stations=args.nr_stations,
+                        state_representation='one_hot')
 
         return env
 
