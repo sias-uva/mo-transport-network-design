@@ -215,8 +215,8 @@ if __name__ == "__main__":
         args.gym_env = 'deep-sea-treasure-concave-v0'
         args.project_name = "DST"
         args.experiment_name = "GPI-LS-DST"
-        args.ref_point = np.array([0, 0])
-        args.max_return=np.array([1, 1])
+        args.ref_point = np.array([0.0, -200.0])
+        args.max_return = np.array([124, -1])
         args.pf_plot_limits = [0, 0.5]
         args.net_arch = [args.hidden_dim] * args.nr_layers
         args.learning_starts = 50
