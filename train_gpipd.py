@@ -27,7 +27,7 @@ def main(args):
                         constraints=MetroConstraints(city),
                         nr_stations=args.nr_stations,
                         starting_loc=args.starting_loc,
-                        state_representation='one_hot')
+                        state_representation='multi_binary')
 
         return env
 

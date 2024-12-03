@@ -63,7 +63,7 @@ def train(seed, args, config):
                         city=city, 
                         constraints=MetroConstraints(city),
                         nr_stations=args.nr_stations,
-                        state_representation='one_hot')
+                        state_representation='multi_binary')
 
         return env
     # Reset the wandb environment variables
