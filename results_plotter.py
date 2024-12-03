@@ -13,7 +13,7 @@ from morl_baselines.common.performance_indicators import hypervolume, expected_u
 import wandb
 
 # Fair weights per nr_obectives, to be used to generate the fair-expected-utility metric.
-fair_weights_dict = np.load('fair_weights_dict.npy', allow_pickle=True).item()
+# fair_weights_dict = np.load('fair_weights_dict.npy', allow_pickle=True).item()
 
 def read_json(file_path):
     with open(file_path, 'r') as file:
@@ -91,7 +91,7 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
             for j, model in enumerate(models):
                 print(f"Processing {env_name} {model_name} ({nr_groups}) - {model['run_ids']}")
                 # Read the content of the output file
-                results_by_objective[model_name] = {'gini': [], 'total_efficiency': [], 'avg_efficiency': [], 'hv': [], 'sen_welfare': [], 'nash_welfare': [], 'dist_to_eq_ref_point': [], 'fair_eum': [], 'avg_per_group': [], 'cardinality': [], 'eum': []}
+                results_by_objective[model_name] = {'gini': [], 'total_efficiency': [], 'avg_efficiency': [], 'hv': [], 'sen_welfare': [], 'nash_welfare': [], 'dist_to_eq_ref_point': [], 'avg_per_group': [], 'cardinality': [], 'eum': []}
                 for i in range(len(model['run_ids'])):
                     if model['run_ids'][i] == '':
                         print(f"WARNING - Empty run id in {model_name}")
@@ -112,7 +112,7 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
                     front_artifact = api.artifact(f'{project_name}/run-{model["run_ids"][i]}-evalfront:latest')
                     local_path = f'./artifacts/{front_artifact.name}'
                     if not os.path.exists(local_path):
-                        front_artifact.download()
+                        front_artifact.download(local_path)
                         
                     with open(f"{local_path}/eval/front.table.json", "r") as file:
                         fronts = json.load(file)['data']
@@ -132,8 +132,6 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
                     else:
                         dist_to_eq_ref = euclidean_distance_to_equality_ref_point(eq_ref_point, np.array(fronts))
                         
-                    fair_eum = expected_utility(fronts, fair_weights_dict[objective['nr_groups']])
-                                                
                     results_by_objective[model_name]['fronts'] = fronts
                     results_by_objective[model_name]['total_efficiency'] = results_by_objective[model_name]['total_efficiency'] + total_efficiency.tolist()
                     results_by_objective[model_name]['avg_efficiency'] = results_by_objective[model_name]['avg_efficiency'] + avg_efficiency.tolist()
@@ -143,7 +141,6 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
                         results_by_objective[model_name]['sen_welfare'] = results_by_objective[model_name]['sen_welfare'] + (total_efficiency * (1-gini_index)).tolist()
                     results_by_objective[model_name]['nash_welfare'] = results_by_objective[model_name]['nash_welfare'] + nash_welfare.tolist()
                     results_by_objective[model_name]['dist_to_eq_ref_point'] = results_by_objective[model_name]['dist_to_eq_ref_point'] + dist_to_eq_ref.tolist()
-                    results_by_objective[model_name]['fair_eum'] = results_by_objective[model_name]['fair_eum'] + [fair_eum]
                     results_by_objective[model_name]['avg_per_group'] = results_by_objective[model_name]['avg_per_group'] + np.mean(fronts, axis=0).tolist()
                     results_by_objective[model_name]['cardinality'] = results_by_objective[model_name]['cardinality'] + [run.summary['eval/cardinality']]
                     results_by_objective[model_name]['eum'] = results_by_objective[model_name]['eum'] + [run.summary['eval/eum']]
