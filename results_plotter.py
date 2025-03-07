@@ -12,6 +12,16 @@ from pymoo.indicators.hv import HV
 from morl_baselines.common.performance_indicators import hypervolume, expected_utility
 import wandb
 
+plt.rcParams.update({
+    'axes.titlesize': 24,
+    'axes.labelsize': 20,
+    'xtick.labelsize': 18,
+    'ytick.labelsize': 18,
+    'legend.fontsize': 20,
+    'font.family': 'Georgia',
+})
+
+
 # Fair weights per nr_obectives, to be used to generate the fair-expected-utility metric.
 # fair_weights_dict = np.load('fair_weights_dict.npy', allow_pickle=True).item()
 
@@ -295,10 +305,10 @@ hv.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, dd
 
 #%%
 ## Same but only hv and sen_welfare
-fig, axs = plt.subplots(2, 2, figsize=(16, 8))
+fig, axs = plt.subplots(3, 1, figsize=(8, 10))
 colors = ["#FFF2E5", "#BFBFBF", "#1A85FF"]
 sns.set_palette(sns.color_palette(colors))
-plt.rcParams.update({'font.size': 18})
+# plt.rcParams.update({'font.size': 18})
 LINEWIDTH = 2
 
 pcnvlcn = results_to_plot[results_to_plot['model'].isin(['GPI-LS', 'PCN', 'LCN-nondominated'])]
@@ -308,50 +318,52 @@ hv = pcnvlcn[pcnvlcn['metric'] == 'hv']
 hv['value'] = hv.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
 hv['value'] = hv['value'].fillna(0)
 
-hvboxplot = sns.boxplot(data=hv, x="nr_groups", y="value", hue="model", ax=axs[0,0], legend=False, linewidth=LINEWIDTH)
-axs[0,0].set_title('Normalized Hypervolume')
-axs[0,0].set_xlabel(None)
-axs[0,0].set_ylabel(None)
-axs[0,0].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+hvboxplot = sns.boxplot(data=hv, x="nr_groups", y="value", hue="model", ax=axs[0], legend=False, linewidth=LINEWIDTH)
+axs[0].set_title('Normalized Hypervolume')
+axs[0].set_xlabel(None)
+axs[0].set_ylabel(None)
+axs[0].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
 eum = pcnvlcn[pcnvlcn['metric'] == 'eum']
 eum['value'] = eum.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
-sns.boxplot(data=eum, x="nr_groups", y="value", hue="model", ax=axs[0,1], legend=False, linewidth=LINEWIDTH)
-axs[0,1].set_title('Normalized EUM')
-axs[0,1].set_ylabel(None)
-axs[0,1].set_xlabel(None)
-axs[0,1].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+sns.boxplot(data=eum, x="nr_groups", y="value", hue="model", ax=axs[1], legend=False, linewidth=LINEWIDTH)
+axs[1].set_title('Normalized EUM')
+axs[1].set_ylabel(None)
+axs[1].set_xlabel(None)
+axs[1].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
 sen_welfare = pcnvlcn[pcnvlcn['metric'] == 'sen_welfare']
 sen_welfare['value'] = sen_welfare.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
-swboxplot = sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[1,0], legend=False, linewidth=LINEWIDTH)
-axs[1,0].set_title('Normalized Sen Welfare')
-axs[1,0].set_ylabel(None)
-axs[1,0].set_xlabel('Number of Groups')
-axs[1,0].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+swboxplot = sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[2], legend='brief', linewidth=LINEWIDTH)
+axs[2].set_title('Normalized Sen Welfare')
+axs[2].set_ylabel(None)
+axs[2].set_xlabel('Number of Groups')
+axs[2].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+handles, labels = swboxplot.get_legend_handles_labels()
+swboxplot.get_legend().remove()
 
-dist_to_ref = pcnvlcn[pcnvlcn['metric'] == 'dist_to_eq_ref_point']
-dist_to_ref['value'] = dist_to_ref.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
-dtrboxplot = sns.boxplot(data=dist_to_ref, x="nr_groups", y="value", hue="model", ax=axs[1,1], legend='brief', linewidth=LINEWIDTH)
-# Necessary to have a legend for it to apepar below, but then we need to remove it.
-handles, labels = dtrboxplot.get_legend_handles_labels()
-dtrboxplot.get_legend().remove()
-axs[1,1].set_title('Normalized Distance to Utopian Point (lower=better)')
-axs[1,1].set_ylabel(None)
-axs[1,1].set_xlabel('Number of Groups')
-axs[1,1].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+# dist_to_ref = pcnvlcn[pcnvlcn['metric'] == 'dist_to_eq_ref_point']
+# dist_to_ref['value'] = dist_to_ref.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
+# dtrboxplot = sns.boxplot(data=dist_to_ref, x="nr_groups", y="value", hue="model", ax=axs[1,1], legend='brief', linewidth=LINEWIDTH)
+# # Necessary to have a legend for it to apepar below, but then we need to remove it.
+# axs[1,1].set_title('Normalized Distance to Utopian Point (lower=better)')
+# axs[1,1].set_ylabel(None)
+# axs[1,1].set_xlabel('Number of Groups')
+# axs[1,1].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
 # Move legend below the entire figure
 fig.legend(handles, labels, fontsize=18, loc='center', bbox_to_anchor=(0.5, -0.02), ncol=3)
 
 fig.tight_layout()
+fig.savefig('figures/pcn_vs_lcn_2.png', bbox_inches='tight')
+fig.savefig('figures/pcn_vs_lcn_2.pdf', bbox_inches='tight')
 
 #%%
 ## Box plot of HV, Sen Welfare, EUM for all LCN models
-fig, axs = plt.subplots(2, 2, figsize=(16, 8))
+fig, axs = plt.subplots(3, 1, figsize=(8, 10))
 colors = ["#1A85FF", "#E66100", "#D41159", "#BFBFBF"]
 sns.set_palette(sns.color_palette(colors))
-plt.rcParams.update({'font.size': 18})
+# plt.rcParams.update({'font.size': 18})
 
 all_lcn = results_to_plot[results_to_plot['model'].isin(['LCN-nondominated', 'LCN-optimal_max', 'LCN-nondominated_mean'])]
 all_lcn.loc[all_lcn['model'] == 'LCN-nondominated', 'model'] = 'LCN'
@@ -362,38 +374,42 @@ hv = all_lcn[all_lcn['metric'] == 'hv']
 hv['value'] = hv.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
 hv['value'] = hv['value'].fillna(0)
 
-sns.boxplot(data=hv, x="nr_groups", y="value", hue="model", ax=axs[0,0], legend=False, linewidth=LINEWIDTH)
-axs[0,0].set_title('Normalized Hypervolume')
-axs[0,0].set_xlabel(None)
-axs[0,0].set_ylabel(None)
+sns.boxplot(data=hv, x="nr_groups", y="value", hue="model", ax=axs[0], legend=False, linewidth=LINEWIDTH)
+axs[0].set_title('Normalized Hypervolume')
+axs[0].set_xlabel(None)
+axs[0].set_ylabel(None)
 
 eum = all_lcn[all_lcn['metric'] == 'eum']
 eum['value'] = eum.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
-sns.boxplot(data=eum, x="nr_groups", y="value", hue="model", ax=axs[0,1], legend=False, linewidth=LINEWIDTH)
-axs[0,1].set_title('Normalized EUM')
-axs[0,1].set_ylabel(None)
-axs[0,1].set_xlabel(None)
+sns.boxplot(data=eum, x="nr_groups", y="value", hue="model", ax=axs[1], legend=False, linewidth=LINEWIDTH)
+axs[1].set_title('Normalized EUM')
+axs[1].set_ylabel(None)
+axs[1].set_xlabel(None)
 
 sen_welfare = all_lcn[all_lcn['metric'] == 'sen_welfare']
 sen_welfare['value'] = sen_welfare.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
-swboxplot = sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[1,0], legend=False, linewidth=LINEWIDTH)
-axs[1,0].set_title('Normalized Sen Welfare')
-axs[1,0].set_ylabel(None)
-axs[1,0].set_xlabel('Number of Groups')
+swboxplot = sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[2], legend='brief', linewidth=LINEWIDTH)
+axs[2].set_title('Normalized Sen Welfare')
+axs[2].set_ylabel(None)
+axs[2].set_xlabel('Number of Groups')
+handles, labels = swboxplot.get_legend_handles_labels()
+swboxplot.get_legend().remove()
 
-dist_to_ref = all_lcn[all_lcn['metric'] == 'dist_to_eq_ref_point']
-dist_to_ref['value'] = dist_to_ref.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
-dtrboxplot = sns.boxplot(data=dist_to_ref, x="nr_groups", y="value", hue="model", ax=axs[1,1], legend='brief', linewidth=LINEWIDTH)
-# Necessary to have a legend for it to apepar below, but then we need to remove it.
-handles, labels = dtrboxplot.get_legend_handles_labels()
-dtrboxplot.get_legend().remove()
-axs[1,1].set_title('Normalized Distance to Utopian Point (lower=better)')
-axs[1,1].set_ylabel(None)
-axs[1,1].set_xlabel('Number of Groups')
-axs[1,1].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+# dist_to_ref = all_lcn[all_lcn['metric'] == 'dist_to_eq_ref_point']
+# dist_to_ref['value'] = dist_to_ref.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
+# dtrboxplot = sns.boxplot(data=dist_to_ref, x="nr_groups", y="value", hue="model", ax=axs[1,1], legend='brief', linewidth=LINEWIDTH)
+# # Necessary to have a legend for it to apepar below, but then we need to remove it.
+# handles, labels = dtrboxplot.get_legend_handles_labels()
+# dtrboxplot.get_legend().remove()
+# axs[1,1].set_title('Normalized Distance to Utopian Point (lower=better)')
+# axs[1,1].set_ylabel(None)
+# axs[1,1].set_xlabel('Number of Groups')
+# axs[1,1].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
 fig.legend(handles, labels, fontsize=18, loc='center', bbox_to_anchor=(0.5, -0.02), ncol=3)
 fig.tight_layout()
+fig.savefig('figures/all_lcn_results.png', bbox_inches='tight')
+fig.savefig('figures/all_lcn_results.pdf', bbox_inches='tight')
 
 #%%
 ## Boxplot but only sen_welfare and cardinality
@@ -511,16 +527,23 @@ axs[1].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 fig.tight_layout()
 # %% Plot EUM for 3, 6, 9 objectives
 
-def plot_over_time_results(ams_metric, xian_metric, groups, figsize, ylabel, linewidth=8, font_size=36):
-    plt.rcParams.update({'font.size': font_size})
+plt.rcParams.update({
+    'axes.titlesize': 24,
+    'axes.labelsize': 20,
+    'xtick.labelsize': 18,
+    'ytick.labelsize': 18,
+    'legend.fontsize': 20,
+    'font.family': 'Georgia',
+})
+def plot_over_time_results(ams_metric, xian_metric, groups, figsize, ylabel, linewidth=5):
     fig = plt.figure(constrained_layout=True, figsize=figsize)
     colors = ["#BFBFBF", "#1A85FF", "#E66100", "#D41159"]
     sns.set_palette(sns.color_palette(colors))
     LINEWIDTH = linewidth
 
     subfigs = fig.subfigures(nrows=2, ncols=1, wspace=0.4, hspace=0.1)  # Add spacing between subfigures
-    subfigs[0].suptitle(f"Xi'an")
-    subfigs[1].suptitle(f"Amsterdam")
+    subfigs[0].suptitle(f"Xi'an", fontweight='bold', fontsize=24)
+    subfigs[1].suptitle(f"Amsterdam", fontweight='bold', fontsize=24)
 
     axs_xian = subfigs[0].subplots(nrows=1, ncols=len(groups))
     axs_ams = subfigs[1].subplots(nrows=1, ncols=len(groups))
@@ -545,18 +568,24 @@ def plot_over_time_results(ams_metric, xian_metric, groups, figsize, ylabel, lin
         axs_ams[i].set_title(f'{group} Objectives')
         axs_ams[i].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
-    subfigs[1].legend(['PCN', 'LCN', 'LCN-Redist', 'LCN-Mean'], loc='lower center', ncol=4, bbox_to_anchor=(0.5, -0.2))
+    subfigs[1].legend(['PCN', 'LCN', 'LCN-Redist', 'LCN-Mean'], loc='lower center', ncol=4, bbox_to_anchor=(0.5, -0.15), fontsize=22)
+    
+    return fig
 
 
 # Plot EUM for 3, 6, 9 objectives
-plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 6, 10], (40, 15), 'EUM')
+# eum_lines = plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 6, 10], (19.2, 12), 'EUM')
+# eum_lines.savefig('figures/eum_3_6_10.png', bbox_inches='tight')
+# eum_lines.savefig('figures/eum_3_6_10.pdf', bbox_inches='tight')
 # Plot EUM for all objectives
-# plot_over_time_results(ams_eum_over_time, xian_eum_over_time, range(2, 11), (50, 15), 'EUM')
-# plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 10], (15, 8), 'EUM', linewidth=4, font_size=22)
+eum_lines = plot_over_time_results(ams_eum_over_time, xian_eum_over_time, range(2, 11), (64, 12), 'EUM')
+# plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 10], (15, 8), 'EUM', linewidth=4)
 
 # Plot SW for 3, 6, 9 objectives
 # plot_over_time_results(ams_sw_over_time, xian_sw_over_time, range(2, 11), (50, 15), 'Sen Welfare')
-plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 6, 10], (40, 15), 'Sen Welfare')
+# sw_lines = plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 6, 10], (19.2, 12), 'Sen Welfare')
+# sw_lines.savefig('figures/sw_3_6_10.png', bbox_inches='tight')
+# sw_lines.savefig('figures/sw_3_6_10.pdf', bbox_inches='tight')
 # plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 10], (15, 8), 'Sen Welfare', linewidth=4, font_size=22)
 # %%
 
@@ -787,7 +816,7 @@ lambda_lcn_results = results_to_plot[(results_to_plot['model'].isin(['LCN_Lambda
 lambda_lcn_3 = lambda_lcn_results[lambda_lcn_results['nr_groups'] == 3]
 lambda_lcn_6 = lambda_lcn_results[lambda_lcn_results['nr_groups'] == 6]
 
-fig, axs = plt.subplots(2, 2, figsize=(10, 6))
+fig, axs = plt.subplots(2, 2, figsize=(12.8, 8))
 
 # Loop through each lambda value and plot in a separate subplot
 for idx, lambda_value in enumerate(lambdas):
@@ -808,3 +837,7 @@ for idx, lambda_value in enumerate(lambdas):
         ax.set_xticklabels([])
 
 fig.tight_layout()
+fig.savefig('figures/lambda_pc_xian.png', bbox_inches='tight')
+fig.savefig('figures/lambda_pc_xian.pdf', bbox_inches='tight')
+
+# %%
