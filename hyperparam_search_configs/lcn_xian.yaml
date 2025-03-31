@@ -1,7 +1,7 @@
 method: bayes
 metric:
   goal: maximize
-  name: eval/hypervolume
+  name: eval/sen_welfare_median
 parameters:
   learning_rate:
     values: [1e-1, 1e-2]
