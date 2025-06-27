@@ -49,7 +49,7 @@ def euclidean_distance_to_equality_ref_point(ref_point: np.array, fronts: np.arr
 api = wandb.Api()
 
 # Replace with your project and run details
-REQ_SEEDS = 5 # to control if a model was not run for sufficient seeds
+REQ_SEEDS = 10 # to control if a model was not run for sufficient seeds
 
 def average_per_step(hvs_by_seed):
     # Determine the maximum length of the sublists
@@ -101,7 +101,7 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
             for j, model in enumerate(models):
                 print(f"Processing {env_name} {model_name} ({nr_groups}) - {model['run_ids']}")
                 # Read the content of the output file
-                results_by_objective[model_name] = {'gini': [], 'total_efficiency': [], 'avg_efficiency': [], 'hv': [], 'sen_welfare': [], 'nash_welfare': [], 'dist_to_eq_ref_point': [], 'avg_per_group': [], 'cardinality': [], 'eum': []}
+                results_by_objective[model_name] = {'gini': [], 'total_efficiency': [], 'avg_efficiency': [], 'hv': [], 'train_hv': [], 'sen_welfare': [], 'nash_welfare': [], 'dist_to_eq_ref_point': [], 'avg_per_group': [], 'cardinality': [], 'eum': []}
                 for i in range(len(model['run_ids'])):
                     if model['run_ids'][i] == '':
                         print(f"WARNING - Empty run id in {model_name}")
@@ -134,6 +134,7 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
                     total_efficiency = np.sum(fronts, axis=1)
                     avg_efficiency = np.mean(fronts, axis=1)
                     hv = hypervolume(ref_point, fronts)
+                    # train_hv = run.summary['train/hypervolume']
                     nash_welfare = np.prod(fronts, axis=1)
                     
                     has_large_point = any(np.all(front >= eq_ref_point) for front in fronts)
@@ -146,6 +147,7 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
                     results_by_objective[model_name]['total_efficiency'] = results_by_objective[model_name]['total_efficiency'] + total_efficiency.tolist()
                     results_by_objective[model_name]['avg_efficiency'] = results_by_objective[model_name]['avg_efficiency'] + avg_efficiency.tolist()
                     results_by_objective[model_name]['hv'] = results_by_objective[model_name]['hv'] + [hv]
+                    # results_by_objective[model_name]['train_hv'] = results_by_objective[model_name].get('train_hv', []) + [train_hv]
                     results_by_objective[model_name]['gini'] = results_by_objective[model_name]['gini'] + gini_index.tolist()
                     if env_name != 'DST':
                         results_by_objective[model_name]['sen_welfare'] = results_by_objective[model_name]['sen_welfare'] + (total_efficiency * (1-gini_index)).tolist()
@@ -216,8 +218,10 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
         
     return all_results, hv_over_time, eum_over_time, sw_over_time
 
-ams_results, ams_hv_over_time, ams_eum_over_time, ams_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_ams.txt'), 'Amsterdam')
-xian_results, xian_hv_over_time, xian_eum_over_time, xian_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_xian.txt'), 'Xian')
+# ams_results, ams_hv_over_time, ams_eum_over_time, ams_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_ams.txt'), 'Amsterdam')
+ams_results, ams_hv_over_time, ams_eum_over_time, ams_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_ams_new_code.txt'), 'Amsterdam')
+# xian_results, xian_hv_over_time, xian_eum_over_time, xian_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_xian.txt'), 'Xian')
+xian_results, xian_hv_over_time, xian_eum_over_time, xian_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_xian_new_code.txt'), 'Xian')
 
 # dst_results, dst_hv_over_time, dst_eum_over_time, dst_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_dst.txt'), 'DST')
 #%%
@@ -413,32 +417,32 @@ fig.savefig('figures/all_lcn_results.pdf', bbox_inches='tight')
 
 #%%
 ## Boxplot but only sen_welfare and cardinality
-fig, axs = plt.subplots(2, 1, figsize=(7, 6))
-pcnvlcn = results_to_plot[results_to_plot['model'].isin(['PCN', 'LCN_ND'])]
-pcnvlcn.loc[pcnvlcn['model'] == 'LCN_ND', 'model'] = 'LCN'
+# fig, axs = plt.subplots(2, 1, figsize=(7, 6))
+# pcnvlcn = results_to_plot[results_to_plot['model'].isin(['PCN', 'LCN_ND'])]
+# pcnvlcn.loc[pcnvlcn['model'] == 'LCN_ND', 'model'] = 'LCN'
 
 
-sen_welfare = pcnvlcn[pcnvlcn['metric'] == 'sen_welfare']
-sen_welfare['value'] = sen_welfare.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
-sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[0], legend=False, linewidth=LINEWIDTH)
-axs[0].set_title('Normalized Sen Welfare')
-axs[0].set_xlabel('Number of Groups')
-axs[0].set_ylabel(None)
+# sen_welfare = pcnvlcn[pcnvlcn['metric'] == 'sen_welfare']
+# sen_welfare['value'] = sen_welfare.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
+# sns.boxplot(data=sen_welfare, x="nr_groups", y="value", hue="model", ax=axs[0], legend=False, linewidth=LINEWIDTH)
+# axs[0].set_title('Normalized Sen Welfare')
+# axs[0].set_xlabel('Number of Groups')
+# axs[0].set_ylabel(None)
 
 
-cardinality = pcnvlcn[pcnvlcn['metric'] == 'cardinality']
-# cardinality['value'] = cardinality.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
-cardinality['value'] = cardinality['value'].fillna(0)
+# cardinality = pcnvlcn[pcnvlcn['metric'] == 'cardinality']
+# # cardinality['value'] = cardinality.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
+# cardinality['value'] = cardinality['value'].fillna(0)
 
-hvboxplot = sns.boxplot(data=cardinality, x="nr_groups", y="value", hue="model", ax=axs[1], legend=True, linewidth=LINEWIDTH)
-hvboxplot.legend_.set_title(None)
-hvboxplot.legend(fontsize=14)
-axs[1].set_title('Cardinality')
-axs[1].set_xlabel(None)
-axs[1].set_ylabel(None)
+# hvboxplot = sns.boxplot(data=cardinality, x="nr_groups", y="value", hue="model", ax=axs[1], legend=True, linewidth=LINEWIDTH)
+# hvboxplot.legend_.set_title(None)
+# hvboxplot.legend(fontsize=14)
+# axs[1].set_title('Cardinality')
+# axs[1].set_xlabel(None)
+# axs[1].set_ylabel(None)
 
 
-fig.tight_layout()
+# fig.tight_layout()
 
 #%% Plot Total Efficiency, Gini Index, Sen Welfare for lambda-LCN (0.0-1.0)
 NR_GROUPS_TO_PLOT = 3
@@ -535,7 +539,7 @@ plt.rcParams.update({
     'legend.fontsize': 20,
     'font.family': 'Georgia',
 })
-def plot_over_time_results(ams_metric, xian_metric, groups, figsize, ylabel, linewidth=5):
+def plot_over_time_results(ams_metric, xian_metric, groups, figsize, ylabel, nrows, ncols, linewidth=5):
     fig = plt.figure(constrained_layout=True, figsize=figsize)
     colors = ["#BFBFBF", "#1A85FF", "#E66100", "#D41159"]
     sns.set_palette(sns.color_palette(colors))
@@ -545,48 +549,69 @@ def plot_over_time_results(ams_metric, xian_metric, groups, figsize, ylabel, lin
     subfigs[0].suptitle(f"Xi'an", fontweight='bold', fontsize=24)
     subfigs[1].suptitle(f"Amsterdam", fontweight='bold', fontsize=24)
 
-    axs_xian = subfigs[0].subplots(nrows=1, ncols=len(groups))
-    axs_ams = subfigs[1].subplots(nrows=1, ncols=len(groups))
-    axs_xian[0].set_ylabel(ylabel)
-    axs_ams[0].set_ylabel(ylabel)
-    for i, group in enumerate(groups):
-        axs_xian[i].plot(xian_metric[f'PCN_{group}'], label='PCN', linewidth=LINEWIDTH)
-        axs_xian[i].plot(xian_metric[f'LCN-nondominated_{group}'], label='LCN_ND', linewidth=LINEWIDTH)
-        axs_xian[i].plot(xian_metric[f'LCN-optimal_max_{group}'], label='LCN_OPTMAX', linewidth=LINEWIDTH)
-        axs_xian[i].plot(xian_metric[f'LCN-nondominated_mean_{group}'], label='LCN_NDMEAN', linewidth=LINEWIDTH)
+    axs_xian = subfigs[0].subplots(nrows=nrows//2, ncols=ncols)
+    axs_ams = subfigs[1].subplots(nrows=nrows//2, ncols=ncols)
     
-        axs_xian[i].set_xlabel('Step')
-        axs_xian[i].set_title(f'{group} Objectives')
-        axs_xian[i].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    
-        axs_ams[i].plot(ams_metric[f'PCN_{group}'], label='PCN', linewidth=LINEWIDTH)
-        axs_ams[i].plot(ams_metric[f'LCN-nondominated_{group}'], label='LCN_ND', linewidth=LINEWIDTH)
-        axs_ams[i].plot(ams_metric[f'LCN-optimal_max_{group}'], label='LCN_OPTMAX', linewidth=LINEWIDTH)
-        axs_ams[i].plot(ams_metric[f'LCN-nondominated_mean_{group}'], label='LCN_NDMEAN', linewidth=LINEWIDTH)
-    
-        axs_ams[i].set_xlabel('Step')
-        axs_ams[i].set_title(f'{group} Objectives')
-        axs_ams[i].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    # WHen setting nrows = 2, the axs are only 1D arrays, so we need to convert them to 2D
+    axs_xian = np.atleast_2d(axs_xian)
+    axs_ams = np.atleast_2d(axs_ams)
 
-    subfigs[1].legend(['PCN', 'LCN', 'LCN-Redist', 'LCN-Mean'], loc='lower center', ncol=4, bbox_to_anchor=(0.5, -0.15), fontsize=22)
+    
+    axs_xian[0, 0].set_ylabel(ylabel)
+    axs_ams[0, 0].set_ylabel(ylabel)
+    
+    for i, group in enumerate(groups):
+        row_xian, col_xian = divmod(i, ncols)
+        row_ams, col_ams = divmod(i, ncols)
+        
+        axs_xian[row_xian, col_xian].plot(xian_metric[f'PCN_{group}'], label='PCN', linewidth=LINEWIDTH)
+        axs_xian[row_xian, col_xian].plot(xian_metric[f'LCN-nondominated_{group}'], label='LCN_ND', linewidth=LINEWIDTH)
+        axs_xian[row_xian, col_xian].plot(xian_metric[f'LCN-optimal_max_{group}'], label='LCN_OPTMAX', linewidth=LINEWIDTH)
+        axs_xian[row_xian, col_xian].plot(xian_metric[f'LCN-nondominated_mean_{group}'], label='LCN_NDMEAN', linewidth=LINEWIDTH)
+    
+        axs_xian[row_xian, col_xian].set_xlabel('Step')
+        axs_xian[row_xian, col_xian].set_title(f'{group} Objectives')
+        axs_xian[row_xian, col_xian].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    
+        axs_ams[row_ams, col_ams].plot(ams_metric[f'PCN_{group}'], label='PCN', linewidth=LINEWIDTH)
+        axs_ams[row_ams, col_ams].plot(ams_metric[f'LCN-nondominated_{group}'], label='LCN_ND', linewidth=LINEWIDTH)
+        axs_ams[row_ams, col_ams].plot(ams_metric[f'LCN-optimal_max_{group}'], label='LCN_OPTMAX', linewidth=LINEWIDTH)
+        axs_ams[row_ams, col_ams].plot(ams_metric[f'LCN-nondominated_mean_{group}'], label='LCN_NDMEAN', linewidth=LINEWIDTH)
+    
+        axs_ams[row_ams, col_ams].set_xlabel('Step')
+        axs_ams[row_ams, col_ams].set_title(f'{group} Objectives')
+        axs_ams[row_ams, col_ams].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+        
+        #add the y label only to the first column
+        if col_xian == 0:
+            axs_xian[row_xian, col_xian].set_ylabel(ylabel)
+        if col_ams == 0:
+            axs_ams[row_ams, col_ams].set_ylabel(ylabel)
+        
+
+    subfigs[1].legend(['PCN', 'LCN', 'LCN-Redist', 'LCN-Mean'], loc='lower center', ncol=4, bbox_to_anchor=(0.5, -0.1), fontsize=22)
     
     return fig
 
 
 # Plot EUM for 3, 6, 9 objectives
-# eum_lines = plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 6, 10], (19.2, 12), 'EUM')
-# eum_lines.savefig('figures/eum_3_6_10.png', bbox_inches='tight')
-# eum_lines.savefig('figures/eum_3_6_10.pdf', bbox_inches='tight')
+eum_lines = plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 6, 10], (19.2, 12), 'EUM', 2, 3)
+eum_lines.savefig('figures/eum_3_6_10.png', bbox_inches='tight')
+eum_lines.savefig('figures/eum_3_6_10.pdf', bbox_inches='tight')
 # Plot EUM for all objectives
-eum_lines = plot_over_time_results(ams_eum_over_time, xian_eum_over_time, range(2, 11), (64, 12), 'EUM')
+eum_all = plot_over_time_results(ams_eum_over_time, xian_eum_over_time, range(2, 11), (19.2, 24), 'EUM', 6, 3)
+eum_all.savefig('figures/eum_all.png', bbox_inches='tight')
+eum_all.savefig('figures/eum_all.pdf', bbox_inches='tight')
 # plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 10], (15, 8), 'EUM', linewidth=4)
 
 # Plot SW for 3, 6, 9 objectives
 # plot_over_time_results(ams_sw_over_time, xian_sw_over_time, range(2, 11), (50, 15), 'Sen Welfare')
-# sw_lines = plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 6, 10], (19.2, 12), 'Sen Welfare')
-# sw_lines.savefig('figures/sw_3_6_10.png', bbox_inches='tight')
-# sw_lines.savefig('figures/sw_3_6_10.pdf', bbox_inches='tight')
-# plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 10], (15, 8), 'Sen Welfare', linewidth=4, font_size=22)
+sw_lines = plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 6, 10], (19.2, 12), 'Sen Welfare', 2, 3)
+sw_lines.savefig('figures/sw_3_6_10.png', bbox_inches='tight')
+sw_lines.savefig('figures/sw_3_6_10.pdf', bbox_inches='tight')
+sw_all = plot_over_time_results(ams_sw_over_time, xian_sw_over_time, range(2, 11), (19.2, 24), 'Sen Welfare', 6, 3)
+sw_all.savefig('figures/sw_all.png', bbox_inches='tight')
+sw_all.savefig('figures/sw_all.pdf', bbox_inches='tight')
 # %%
 
 fig, ax = plt.subplots(figsize=(7, 6))
@@ -829,7 +854,7 @@ for idx, lambda_value in enumerate(lambdas):
     # Plot parallel coordinates
     parallel_coordinates_plot(ax, fronts, ['Group 1', 'Group 2', 'Group 3'], model_names, plot_average=False, color_map={f'λ={lambda_value}': '#1A85FF'}, line_width=2, avg_line_width=6, opacity=1.0, xaxis_rotation=15)
     ax.set_title(f'λ={lambda_value}')
-    ax.set_ylim(0e-3, 9e-3)  # Set the same y-limits for all subplots
+    # ax.set_ylim(0e-3, 9e-3)  # Set the same y-limits for all subplots
     ax.get_legend().remove()  # Hide the legend
 
     # Remove x-axis labels for the top row
