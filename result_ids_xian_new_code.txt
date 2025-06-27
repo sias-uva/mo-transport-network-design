@@ -1,0 +1,99 @@
+[
+   {
+      "nr_groups": 2,
+      "models": [
+         {"name": "GPI-LS-Xian", "run_ids": ["hwygbjb3", "m8hlo0yt", "rvu834bq", "yz853pnh", "maqmxhml", "egy1kvj4", "g1y46hy7", "nzw2yvfl", "u8vag0sb", "492dbiy8"]},
+         {"name": "PCN-Xian", "run_ids": ["8axl5ut3", "vvsznlmr", "9tfv91yc", "yojsqwco", "xiekvipf", "adjthx8q", "7kbctl3o", "9mj7gmcf", "qv4vpu1u", "0hlu8fte"]},
+         {"name": "LCN-Xian-nondominated","run_ids": ["fb7vexmx", "b6fdyfsv", "p2jsg5f7", "l1s8fl1l", "uer7ekqf", "hfgwitqn", "opu2jv8n", "m0p1l46t", "cd3lo3ir", "avsvi5xr"]},
+         {"name": "LCN-Xian-optimal_max", "run_ids": ["syetlqgo", "vvlr0dq8", "a39j0rng", "etxyv7nw", "5hokjvy3", "0xitg8m0", "hy4vmff7", "0vxsrwaz", "xt3fhozh", "a76hidv9"]},
+         {"name": "LCN-Xian-nondominated_mean", "run_ids": ["51ibjk9w", "73xvm0ik", "qqo70pz0", "nqqnp2yj", "7qqpmgrr",  "0lizgmbo", "s4wniqdn", "z3ek8vhi", "qhhhmi68", "1ttq9f0l"]}
+      ]
+   },
+   {
+   "nr_groups": 3,
+      "models": [
+         {"name": "GPI-LS-Xian", "run_ids": ["m7uy1dnj", "5u4lghv2", "z55l9vp3", "zmhoplce", "ehytzot2", "xcxc2c1r", "gxm3oecp", "kt7h05ll", "of0aenqz", "psii3pu2"]},
+         {"name": "PCN-Xian", "run_ids": ["9tsfo39r", "t1tyzbpc", "lgqm0z60", "4tl73fpg", "aomvr0x9", "s3coamww", "elcia70c", "vdf1lyc7", "xg5comje", "m7d5gzac"]},
+         {"name": "LCN-Xian-nondominated","run_ids": ["nv0wa4rn", "e5r1byr3", "53x2d391", "0qdypru7", "517fwnvv", "nhp5elb0", "ybbj6lfk", "x67mto3b", "gcb72s4w", "4kcp3he3"]},
+         {"name": "LCN-Xian-optimal_max", "run_ids": ["70mqygi9", "kxs6lpta", "gbypsc7l", "tlkzsui1", "unwbh6oa", "w4c31q9q", "t4hk2hcd", "094jl8ll", "216whzu5", "iyz2if7l"]},
+         {"name": "LCN-Xian-nondominated_mean", "run_ids": ["iwqwm2hs", "6k1t08g1", "pkpo4flw", "e39537sy", "11ugcfbn", "d3zemgbn", "l7xd5a5i", "4t312y7g", "talobqyb", "ne1ly6e8"]},
+         {"name": "LCN-Xian-Lambda-0", "run_ids": ["kphowwe8", "g2gzrp53", "0noohtoh", "5y1bys0i", "rjxfbc1j", "azx94ngv", "xtrxvc5s", "7lf7bshs", "h3d22mzu", "f599y8oq"]},
+         {"name": "LCN-Xian-Lambda-0.1", "run_ids": ["eg1g5569", "okqyodc8", "ttodjjjp", "fl0a7ipp", "5e3o6d29", "sycmaoe2", "mvs2fktc", "letpjp6p", "97z4tno1", "o2ff81x1"]},
+         {"name": "LCN-Xian-Lambda-0.2", "run_ids": ["d7uerztu", "21w5q7t4", "1xkesdbi", "d52w5ntp", "tvemb7d5", "avpizmsj", "aevzwh0x", "ywe3qqkf", "btuzpltt", "0ats0cme"]},
+         {"name": "LCN-Xian-Lambda-0.3", "run_ids": ["reif1t9m", "yxmrf9tt", "kpj09yck", "wvh47xt8", "1tvnbzpi", "obslsfsb", "nvw4re3u", "fsjgnvc4", "ngbnqrz4", "mcoaopwq"]},
+         {"name": "LCN-Xian-Lambda-0.4", "run_ids": ["7gb2l0nr", "jhv1rnsh", "kc1iae29", "yjvqg6oo", "mtww9hfa", "v2ptm6c1", "jxu9qxu7", "ea8xduaz", "3glkomls", "9fydznqi"]},
+         {"name": "LCN-Xian-Lambda-0.5", "run_ids": ["hugx6rjd", "whev91w2", "p26bwz5w", "xfgmw37n", "w9m4puf3", "02h99ru1", "zl4u09rn", "l203ynhk", "a83vyc3s", "mje0oz7n"]},
+         {"name": "LCN-Xian-Lambda-0.6", "run_ids": ["gncvz0s9", "un1pptq2", "q4q4as2q", "4syg9zcm", "42eo5l4x", "yekq5mol", "o0jffvcy", "y4qrovda", "tnpnfyd3", "9nrqn1q1"]}, 
+         {"name": "LCN-Xian-Lambda-0.7", "run_ids": ["g20mkozq", "mug9n2vv", "n6dlrkq6", "zubzq7pc", "bye7t7r0", "rdmduu79", "zadolaa8", "gcszwti3", "79u2azrr", "4tiydr7v"]},
+         {"name": "LCN-Xian-Lambda-0.8", "run_ids": ["p2i6crzs", "svo3gcre", "d30gtfmd", "4s3mw83j", "f7578eng", "53utfdhv", "2bg4byvw", "uqj09jvv", "shp5uq6c", "lxcm7glp"]},
+         {"name": "LCN-Xian-Lambda-0.9", "run_ids": ["hofpfh3m", "r996c8bs", "9zpuabx3", "5ubh5s4v", "vkf8u7q1", "rkd93nt1", "pgnsjl1p", "12yturnb", "klsh3q64", "a1wwd44a"]},
+         {"name": "LCN-Xian-Lambda-1", "run_ids": ["mmdi4cew", "kuiop8oy", "gsvdhbrp", "78jzvd8e", "uo7z4cl7", "dwywgjd5", "9a0ujwus", "6wlwdhm6", "ninsgz2b", "nc7rzaty"]}
+      ]
+   },
+   {
+      "nr_groups": 4,
+      "models": [
+         {"name": "GPI-LS-Xian", "run_ids": ["kz2rhuye", "u89lyffk", "zagkw9h3", "pu0b5wpi", "b1pka56z", "dpzu51fh", "igzh2ssm", "jdf3xb0p", "rctklr22", "xsg1p6jy"]},
+         {"name": "PCN-Xian", "run_ids": ["pi0xkjrb", "ny6p9c5j", "44r9kth9", "6geeq7g8", "tzapjtm5", "wdkblsr9", "ker23gwg", "gcs9n2il", "wvsm32s3", "n4lrvqu0"]},
+         {"name": "LCN-Xian-nondominated", "run_ids": ["hr2wqnwu", "niimqoov", "8zpsmgmt", "0yxynfea", "j0m1xehf", "534e4ocy", "w784rocp", "frqtxfpv", "9vfre6w0", "e3ubrn2o"]},
+         {"name": "LCN-Xian-optimal_max", "run_ids": ["rvzr82ep", "shv9izc7", "j28bvr04", "tg54k6ih", "p1boeyau", "luk0d9ac", "w17life2", "4ut2zts0", "beyzgc4c", "wte7x6g6"]},
+         {"name": "LCN-Xian-nondominated_mean", "run_ids": ["k9hj9cvc", "3is9axmj", "ka8495n3", "qcuejft9", "9zddm9zf", "z9tbz7ig", "g2o56r3p", "cbvp498i", "b7jhi4ig", "h7euic99"]}
+      ]
+   },
+   {
+      "nr_groups": 5,
+      "models": [
+         {"name": "GPI-LS-Xian", "run_ids": ["g7xza87d", "y8a09fci", "jvr66tfr", "7iawtyur", "ovs9a36n", "wchazx9h", "z6lv6qjq", "vq4xt90u", "mufkjbmy", "ho4pau38"]},
+         {"name": "PCN-Xian", "run_ids": ["slbf85i7", "k838ono5", "v3q2edri", "rcwm0dmn", "d9cj109k", "02qbo4rc", "sapc5zax", "x4jr3lvp", "k54t5aav", "d120nsm4"]},
+         {"name": "LCN-Xian-nondominated","run_ids": ["kdswmmup", "zf8di330", "h7knnw8i", "zjt3ge07", "u7vcdv6z", "y2pb5936", "vyb6lgzb", "fgravhce", "0mkxwq0f", "c9jb017x"]},
+         {"name": "LCN-Xian-optimal_max", "run_ids": ["9ns37av9", "ty8iwt5r", "y10rgcbj", "lnh9x5or", "txpcrufi", "vdmg6v1o", "orf5d3gl", "2plnnulo", "5mqgdoj8", "nkybbrpe"]},
+         {"name": "LCN-Xian-nondominated_mean", "run_ids": ["j4my19f8", "4y4muku5", "f1djijsh", "u1pm0ubx", "s6uatjwy", "7853j8hb", "s727cljf", "c68j4noe", "t0pgpolz", "01okj4wg"]}
+      ]
+   },
+   {
+      "nr_groups": 6,
+      "models": [
+         {"name": "GPI-LS-Xian", "run_ids": ["ls2n1ypr", "y86owrvt", "vlo1e4ds", "mlv5nl15", "qqrqxqgr", "9u76cuxj", "7jzwof9r", "zjnoa3gm", "5wls5erm", "grz4us42"]},
+         {"name": "PCN-Xian", "run_ids": ["hlxrgsfr", "l03t4x5g", "uy17wux8", "h0lb5ehf", "pibxudau", "cc2ta3ez", "o2h8bjos", "e9r1pzhg", "sunz3gsw", "19vhy9vq"]},
+         {"name": "LCN-Xian-nondominated","run_ids": ["fv80ynu8", "89e9qgic", "q1cjjr33", "5tcc0jew", "6y0uzow7", "4k9yfe6a", "4j3fj9nr", "cjgewexg", "ikcx2yyv", "lk6uvxzr"]},
+         {"name": "LCN-Xian-optimal_max", "run_ids": ["ptdza68s", "5r75ylly", "nl3wci1q", "3kkebqj7", "vdaazbms", "vo41dtiv", "l5q545wa", "bdh0mgux", "29dahczw", "5chm59c5"]},
+         {"name": "LCN-Xian-nondominated_mean", "run_ids": ["kfvglpww", "3ntzud4c", "2jtrqc4t", "i58p8dat", "644sr1tz", "ghoeywma", "pphczx20", "db3rh14r", "8az2puhn", "fyqmeqdr"]}
+      ]
+   },
+   {
+      "nr_groups": 7,
+      "models": [
+         {"name": "PCN-Xian", "run_ids": ["oda8uzgb", "zbchfnm6", "826h6943", "hpyjwpj5", "47qsao00", "j3pndkij", "tood8wla", "17o419ra", "8v87ed1w", "sv1glywu"]},
+         {"name": "LCN-Xian-nondominated","run_ids": ["1iqeyo44", "1m8o4zvk", "hbdiubgw", "h9vtb4ej", "5y8nwnwr", "ibsh7jll", "fdarg1cu", "8qlkwz2o", "sxk2bsqr", "1ti4i3i4"]},
+         {"name": "LCN-Xian-optimal_max", "run_ids": ["xogp2g70", "7cwx719q", "kxl4pqtf", "66i9qys7", "vkfclqkj", "0fwijgl9", "g1wasqge", "hlt7iq00", "67ik0u2q"]},
+         {"name": "LCN-Xian-nondominated_mean", "run_ids": ["q0g4ebhj", "g9kf2mrt", "dfi7kvjm", "9whb90iy", "rhnnnzvw", "ejdh8wq2", "gsysjbgl", "q09gzxew", "g97i4kog", "vzxr5nmq"]}
+      ]
+   },
+   {
+      "nr_groups": 8,
+      "models": [
+         {"name": "PCN-Xian", "run_ids": ["0wver53p", "91z3yapy", "ldl2w78t", "5ue93ybi", "frxqk3bt", "31vp7swa", "ez444kom", "x85udtic", "kzkdj2jw", "okb7v4qk"]},
+         {"name": "LCN-Xian-nondominated","run_ids": ["idbkgrit", "y4m9wmv5", "f9m1tue8", "c2i100k1", "xzm8kc52", "mnu0ch2n", "pog1fxfy", "3p2b8uqg", "3yal4izy", "zk17zn1h"]},
+         {"name": "LCN-Xian-optimal_max", "run_ids": ["dzb1t1us", "6r6cla10", "gcul6nnb", "zfjdq086", "fdcasb5x", "je0lj6i8", "kyi0y6k3", "0odn82w4", "sog2pu7n", "re98m6wo"]},
+         {"name": "LCN-Xian-nondominated_mean", "run_ids": ["gf95mlbg", "2082gum4", "ehkqebc4", "66n9ie88", "7hyyokjz", "bu4sddym", "lpx0sc8q", "sv7ytgtg", "z4akkcfw", "ufd9jmd2"]}
+      ]
+   },
+   {
+      "nr_groups": 9,
+      "models": [
+         {"name": "PCN-Xian", "run_ids": ["7xk6kza9", "i03ra5va", "au1507oj", "wm1qvor4", "vp8yrc9y", "208i7w7b", "ie1hcllh", "96k8aoae", "bfkvzcx1", "dx140t44"]},
+         {"name": "LCN-Xian-nondominated","run_ids": ["r011o0sl", "sdxw7kdp", "crklhuhx", "endxayy3", "2zw7e5vh", "aicnrn53", "vpl9ugyt", "20welmlx", "zmvjukjt", "9jidz5yf"]},
+         {"name": "LCN-Xian-optimal_max", "run_ids": ["1od4p82h", "2nl0aqp6", "qvdagf74", "fr9j5jsw", "yatf96l0", "jzwf0zm6", "0x8q1q8a", "tbx5qx0f", "09vjff57", "3zo1vplj"]},
+         {"name": "LCN-Xian-nondominated_mean", "run_ids": ["k1mhawo4", "zjiypb7o", "vacfggrt", "mtc09gx0", "jp1xsent", "sc6gmsz7", "e3bgvmaz", "6g4hqclx", "q4bm1nma", "0o5smnhg"]}
+      ]
+   },
+   {
+      "nr_groups": 10,
+      "models": [
+         {"name": "PCN-Xian", "run_ids": ["4ixaej7r", "srinbo6y", "c2ohdon8", "1rnmklig", "mltblfyi", "0nq7hgiq", "mkm3w8mp", "e8sznspl", "6qknn0l4", "6zzo5m1k"]},
+         {"name": "LCN-Xian-nondominated","run_ids": ["7sg01gwx", "3mxnx5i8", "ht19m8sl", "q4uelp69", "dzhsbspy", "5vqx272g", "y97tbtg0", "2ihx0h8x", "xc67h65k", "gtbnn271"]},
+         {"name": "LCN-Xian-optimal_max", "run_ids": ["e6exn1ml", "1o6ybzap", "mhxoy2gw", "jwjf6hlu", "rgyjg3wy", "qaqu0kgf", "x3es7su9", "ds8lmjt6", "6xl98yxw", "i7bungu9"]},
+         {"name": "LCN-Xian-nondominated_mean", "run_ids": ["cdyo2w8n", "ii87x2jq", "1yu63eqz", "skocoshx", "yfnv1yb5", "57u8m4pg", "ptseuzhj", "7swqf9lp", "sd7tjsxv", "92t66lfy"]}
+      ]
+   }
+]
