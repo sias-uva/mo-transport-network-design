@@ -4,6 +4,7 @@
       "models": [
          {"name": "GPI-LS-Xian", "run_ids": ["gjrfzpvw", "pcds860c", "vdkzyj3h", "3lgrwlx5", "da09zook"]},
          {"name": "PCN-Xian", "run_ids": ["7wzhvf9t", "zzpa78jn", "mvvv70ov", "cb44f7qd", "j9azmzco"]},
+         {"name": "PCN-Xian-MB", "run_ids": ["sfv8k88q", "chp3tdov", "5q6rlbge", "afm65qtr", "ikx49opj"]},
          {"name": "LCN-Xian-nondominated","run_ids": ["atpb4smj", "z5sd3osj", "6sw1md0e", "mqazqiqs", "ehre3mrs"]},
          {"name": "LCN-Xian-optimal_max", "run_ids": ["zvauxrak", "scfon1cv", "kvol3u8e", "kybt41fh", "pfvb0e0o"]},
          {"name": "LCN-Xian-nondominated_mean", "run_ids": ["ujobkd61", "bvvd6ltl", "66ychddl", "7sf84oey", "zw3nlthx"]}
