@@ -12,6 +12,7 @@ import numpy as np
 import wandb
 import yaml
 from morl_baselines.multi_policy.pcn.pcn_tndp import PCNTNDP, PCNTNDPModel
+from morl_baselines.multi_policy.lcn.lcn import LCNTNDP, LCNTNDPModel
 from train_pcn import main as pcn_main
 from train_lcn import main as lcn_main
 import time
@@ -51,20 +52,38 @@ def train(seed, args, config):
         # Launch the agent training
         print(f"Seed {seed}. Training agent...")
         
-        agent = PCNTNDP(
-            env,
-            scaling_factor=args.scaling_factor,
-            learning_rate=config.learning_rate,
-            batch_size=config.batch_size,
-            nr_layers=config.nr_layers,
-            hidden_dim=config.hidden_dim,
-            project_name="MORL-TNDP",
-            experiment_name=args.experiment_name,
-            log=not args.no_log,
-            seed=args.seed,
-            model_class=PCNTNDPModel,
-            wandb_entity=args.wandb_entity,
-        )
+        if args.model == "PCN":
+            agent = PCNTNDP(
+                env,
+                scaling_factor=args.scaling_factor,
+                learning_rate=config.learning_rate,
+                batch_size=config.batch_size,
+                nr_layers=config.nr_layers,
+                hidden_dim=config.hidden_dim,
+                project_name="MORL-TNDP",
+                experiment_name=args.experiment_name,
+                log=not args.no_log,
+                seed=args.seed,
+                model_class=PCNTNDPModel,
+                wandb_entity=args.wandb_entity,
+            )
+        elif args.model == "LCN":
+            agent = LCNTNDP(
+                env,
+                scaling_factor=args.scaling_factor,
+                learning_rate=config.learning_rate,
+                batch_size=config.batch_size,
+                nr_layers=config.nr_layers,
+                hidden_dim=config.hidden_dim,
+                project_name="MORL-TNDP",
+                experiment_name=args.experiment_name,
+                log=not args.no_log,
+                seed=args.seed,
+                model_class=LCNTNDPModel,
+                distance_ref=args.distance_ref,
+                lcn_lambda=args.lcn_lambda,
+                wandb_entity=args.wandb_entity,
+            )
             
         agent.train(
             total_timesteps=config.total_timesteps,
@@ -114,7 +133,7 @@ if __name__ == "__main__":
     parser.add_argument('--env', default='dilemma', type=str)
     parser.add_argument("--wandb-entity", type=str, help="Wandb entity to use for the sweep", required=False)
     parser.add_argument("--sweep-id", type=str, help="Sweep id to use if it already exists (helpful to parallelize the search)", required=False)
-    parser.add_argument("--sweep-count", type=int, help="Number of trials to do in the sweep worker", default=10)
+    parser.add_argument("--sweep-count", type=int, help="Number of trials to do in the sweep worker", default=100)
     parser.add_argument("--config-path", type=str, help="path of config file.")
     # For amsterdam environment we have different groups files (different nr of objectives)
     parser.add_argument('--nr_groups', default=5, type=int)
