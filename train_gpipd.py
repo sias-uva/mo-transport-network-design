@@ -27,7 +27,8 @@ def main(args):
                         constraints=MetroConstraints(city),
                         nr_stations=args.nr_stations,
                         starting_loc=args.starting_loc,
-                        state_representation='multi_binary')
+                        state_representation='dictionary',
+                        chained_reward=True,)
 
         return env
 

@@ -26,7 +26,8 @@ def main(args):
                         city=city, 
                         constraints=MetroConstraints(city),
                         nr_stations=args.nr_stations,
-                        state_representation='multi_binary')
+                        state_representation='dictionary',
+                        chained_reward=True,)
 
         return env
 
