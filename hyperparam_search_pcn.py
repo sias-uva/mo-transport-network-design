@@ -37,7 +37,6 @@ def train(seed, args, config):
                         city=city, 
                         constraints=MetroConstraints(city),
                         nr_stations=args.nr_stations,
-                        state_representation='dictionary',
                         od_type=args.od_type,
                         chained_reward=args.chained_reward,)
 

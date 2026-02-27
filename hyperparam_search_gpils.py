@@ -62,8 +62,7 @@ def train(seed, args, config):
         env = mo_gym.make(args.gym_env, 
                         city=city, 
                         constraints=MetroConstraints(city),
-                        nr_stations=args.nr_stations,
-                        state_representation='multi_binary')
+                        nr_stations=args.nr_stations)
 
         return env
     # Reset the wandb environment variables
