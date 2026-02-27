@@ -1,7 +1,8 @@
 #%%
 import os
 from typing import List
-from matplotlib import pyplot as plt
+from matplotlib import font_manager, pyplot as plt
+from matplotlib.lines import Line2D
 import pandas as pd
 import numpy as np
 import json
@@ -12,15 +13,20 @@ from pymoo.indicators.hv import HV
 from morl_baselines.common.performance_indicators import hypervolume, expected_utility
 import wandb
 
+
+#  Linux libertine font
+linlib_font_path = "/Users/dimichai/Library/Fonts/LinLibertine_RB.ttf"
+font_manager.fontManager.addfont(linlib_font_path)
+
 plt.rcParams.update({
     'axes.titlesize': 24,
     'axes.labelsize': 20,
     'xtick.labelsize': 18,
     'ytick.labelsize': 18,
     'legend.fontsize': 20,
-    'font.family': 'Georgia',
+    # 'font.family': 'Georgia', # For thesis
+    "font.family":font_manager.FontProperties(fname=linlib_font_path).get_name(), # For JAIR
 })
-
 
 # Fair weights per nr_obectives, to be used to generate the fair-expected-utility metric.
 # fair_weights_dict = np.load('fair_weights_dict.npy', allow_pickle=True).item()
@@ -66,7 +72,38 @@ def average_per_step(hvs_by_seed):
     
     return averages
 
-def load_all_results_from_wadb(all_objectives, env_name=None):
+def average_per_step_with_ci(hvs_by_seed, confidence=0.95):
+    """Calculate mean and confidence interval for each step across seeds"""
+    import scipy.stats as st
+    
+    # Determine the maximum length of the sublists
+    max_length = max(len(sublist) for sublist in hvs_by_seed)
+    
+    # Pad shorter sublists with their last value
+    padded_hvs_by_seed = [sublist + [sublist[-1]] * (max_length - len(sublist)) for sublist in hvs_by_seed]
+    
+    # Convert to numpy array for easier calculations
+    padded_array = np.array(padded_hvs_by_seed)
+    
+    # Calculate mean per step
+    means = np.mean(padded_array, axis=0)
+    
+    # Calculate confidence intervals
+    if len(hvs_by_seed) > 1:  # Need at least 2 samples for CI
+        ci = st.t.interval(confidence, 
+                          len(hvs_by_seed) - 1, 
+                          loc=means, 
+                          scale=st.sem(padded_array, axis=0))
+        lower_ci = ci[0]
+        upper_ci = ci[1]
+    else:
+        # If only one seed, no CI possible
+        lower_ci = means
+        upper_ci = means
+    
+    return means, lower_ci, upper_ci
+
+def load_all_results_from_wandb(all_objectives, env_name=None):
     if env_name == 'DST':
         project_name = 'DST'
     else:
@@ -109,6 +146,7 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
                     
                     run = api.run(f"{project_name}/{model['run_ids'][i]}")
                     
+                    # Sanity check for algo name, so that we don't load wrong results by mistake
                     if 'lcn_lambda' in run.config and run.config['lcn_lambda'] is not None:
                         run_algo = f"{run.config['algo']}-Lambda-{run.config['lcn_lambda']}"
                     elif 'distance_ref' in run.config and run.config['distance_ref'] is not None:
@@ -118,6 +156,7 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
                         
                     if run_algo != model_name:
                         print(f"!ERROR! {model_name} has algo {model_name}, while {run_algo} is required")
+                    ###
                                     
                     front_artifact = api.artifact(f'{project_name}/run-{model["run_ids"][i]}-evalfront:latest')
                     local_path = f'./artifacts/{front_artifact.name}'
@@ -189,16 +228,38 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
                     ###
             model_name_adj = model_name.replace(f'-{env_name}', '')
             if len(hvs_by_seed) > 0:
-                averages = average_per_step(hvs_by_seed)
-                hv_over_time = pd.concat([hv_over_time, pd.DataFrame({f"{model_name_adj}_{nr_groups}": averages})])
-            
+                means, lower_ci, upper_ci = average_per_step_with_ci(hvs_by_seed)
+                # Store all three series in the DataFrame
+                hv_over_time = pd.concat([
+                    hv_over_time, 
+                    pd.DataFrame({
+                        f"{model_name_adj}_{nr_groups}_mean": means,
+                        f"{model_name_adj}_{nr_groups}_lower": lower_ci,
+                        f"{model_name_adj}_{nr_groups}_upper": upper_ci
+                    })
+                ])
+
             if len(eum_by_seed) > 0:
-                averages = average_per_step(eum_by_seed)
-                eum_over_time = pd.concat([eum_over_time, pd.DataFrame({f"{model_name_adj}_{nr_groups}": averages})])
+                means, lower_ci, upper_ci = average_per_step_with_ci(eum_by_seed)
+                eum_over_time = pd.concat([
+                    eum_over_time, 
+                    pd.DataFrame({
+                        f"{model_name_adj}_{nr_groups}_mean": means,
+                        f"{model_name_adj}_{nr_groups}_lower": lower_ci,
+                        f"{model_name_adj}_{nr_groups}_upper": upper_ci
+                    })
+                ])
                 
             if len(sw_by_seed) > 0:
-                averages = average_per_step(sw_by_seed)
-                sw_over_time = pd.concat([sw_over_time, pd.DataFrame({f"{model_name_adj}_{nr_groups}": averages})])
+                means, lower_ci, upper_ci = average_per_step_with_ci(sw_by_seed)
+                sw_over_time = pd.concat([
+                    sw_over_time, 
+                    pd.DataFrame({
+                        f"{model_name_adj}_{nr_groups}_mean": means,
+                        f"{model_name_adj}_{nr_groups}_lower": lower_ci,
+                        f"{model_name_adj}_{nr_groups}_upper": upper_ci
+                    })
+                ])
 
 
                         
@@ -207,27 +268,28 @@ def load_all_results_from_wadb(all_objectives, env_name=None):
         # Convert all_results to a dataframe, with columns 'model', 'metric', 'value', and each row is a different value and not a list
         # results_by_objective = pd.DataFrame([(name, metric, value) for name in results_by_objective.keys() for metric in results_by_objective[name].keys() for value in results_by_objective[name][metric]], columns=['model', 'metric', 'value'])
         # Convert all_results to a dataframe, with columns 'model', 'lambda; 'metric', 'value', and each row is a different value and not a list
-        results_by_objective = pd.DataFrame([(name, model['lambda'] if 'lambda' in model else None, metric, value) for name in results_by_objective.keys() 
+        results_by_objective = pd.DataFrame([(name, model['lambda'] if 'lambda' in model else None, model['cd_threshold'] if 'cd_threshold' in model else 0.2, metric, value) for name in results_by_objective.keys() 
                                             for metric in results_by_objective[name].keys() 
-                                            for value in results_by_objective[name][metric]], columns=['model', 'lambda', 'metric', 'value'])
+                                            for value in results_by_objective[name][metric]], columns=['model', 'lambda', 'cd_threshold', 'metric', 'value'])
         results_by_objective['model'] = results_by_objective['model'].str.replace(f'-{env_name}', '')
         results_by_objective['nr_groups'] = nr_groups
         results_by_objective['lambda'] = results_by_objective[results_by_objective['model'].str.contains('Lambda')]['model'].str.split('-').str[-1].astype(float)
+        results_by_objective['cd_threshold'] = results_by_objective[results_by_objective['model'].str.contains('tau')]['model'].str.split('-').str[-1].astype(float)
         results_by_objective.loc[results_by_objective['model'].str.contains('Lambda'), 'model'] = 'LCN_Lambda'
         all_results = pd.concat([all_results, results_by_objective])
         
     return all_results, hv_over_time, eum_over_time, sw_over_time
 
 # ams_results, ams_hv_over_time, ams_eum_over_time, ams_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_ams.txt'), 'Amsterdam')
-ams_results, ams_hv_over_time, ams_eum_over_time, ams_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_ams_new_code.txt'), 'Amsterdam')
-# xian_results, xian_hv_over_time, xian_eum_over_time, xian_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_xian.txt'), 'Xian')
-xian_results, xian_hv_over_time, xian_eum_over_time, xian_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_xian_new_code.txt'), 'Xian')
+# xian_results, xian_hv_over_time, xian_eum_over_time, xian_sw_over_time = load_all_results_from_wandb(read_json('./result_ids_xian.txt'), 'Xian')
+xian_results, xian_hv_over_time, xian_eum_over_time, xian_sw_over_time = load_all_results_from_wandb(read_json('./result_ids_xian_test.txt'), 'Xian')
 
 # dst_results, dst_hv_over_time, dst_eum_over_time, dst_sw_over_time = load_all_results_from_wadb(read_json('./result_ids_dst.txt'), 'DST')
 #%%
 
 # Change this to the results you want to plot
 results_to_plot = xian_results
+
 
 # Plot Total Efficiency, Gini Index, Sen Welfare for PCN vs LCN (ND, OPTMAX, NDMEAN)
 fig, axs = plt.subplots(5, 1, figsize=(12, 12))
@@ -263,7 +325,7 @@ axs[0].set_ylabel(None)
 axs[0].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
 eum = pcnvlcn[pcnvlcn['metric'] == 'eum']
-# eum['value'] = eum.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
+eum['value'] = eum.groupby('nr_groups')['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
 eum['value'] = eum['value'].fillna(0)
 
 sns.boxplot(data=eum, x="nr_groups", y="value", hue="model", ax=axs[1], legend=False, linewidth=LINEWIDTH)
@@ -301,12 +363,11 @@ axs[4].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 fig.tight_layout()
 
 # %% Show the mean and SE of the values for the table
-# sen_welfare.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
-hv.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
+sen_welfare.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
+# hv.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
 # eff.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
 # gini_.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
-
-
+# eum.groupby(['model', 'nr_groups']).agg({'value': ['mean', lambda x: np.std(x, ddof=1) / np.sqrt(len(x))]}).round(2)
 #%%
 ## Same but only hv and sen_welfare
 fig, axs = plt.subplots(3, 1, figsize=(8, 10))
@@ -564,19 +625,27 @@ def plot_over_time_results(ams_metric, xian_metric, groups, figsize, ylabel, nro
         row_xian, col_xian = divmod(i, ncols)
         row_ams, col_ams = divmod(i, ncols)
         
-        axs_xian[row_xian, col_xian].plot(xian_metric[f'PCN_{group}'], label='PCN', linewidth=LINEWIDTH)
-        axs_xian[row_xian, col_xian].plot(xian_metric[f'LCN-nondominated_{group}'], label='LCN_ND', linewidth=LINEWIDTH)
-        axs_xian[row_xian, col_xian].plot(xian_metric[f'LCN-optimal_max_{group}'], label='LCN_OPTMAX', linewidth=LINEWIDTH)
-        axs_xian[row_xian, col_xian].plot(xian_metric[f'LCN-nondominated_mean_{group}'], label='LCN_NDMEAN', linewidth=LINEWIDTH)
+        axs_xian[row_xian, col_xian].plot(xian_metric[f'PCN_{group}_mean'], label='PCN', linewidth=LINEWIDTH)
+        axs_xian[row_xian, col_xian].fill_between(xian_metric.index, xian_metric[f'PCN_{group}_lower'], xian_metric[f'PCN_{group}_upper'], alpha=0.2, label="_nolegend_")
+        axs_xian[row_xian, col_xian].plot(xian_metric[f'LCN-nondominated_{group}_mean'], label='LCN_ND', linewidth=LINEWIDTH)
+        axs_xian[row_xian, col_xian].fill_between(xian_metric.index, xian_metric[f'LCN-nondominated_{group}_lower'], xian_metric[f'LCN-nondominated_{group}_upper'], alpha=0.2, label="_nolegend_")
+        axs_xian[row_xian, col_xian].plot(xian_metric[f'LCN-optimal_max_{group}_mean'], label='LCN_OPTMAX', linewidth=LINEWIDTH)
+        axs_xian[row_xian, col_xian].fill_between(xian_metric.index, xian_metric[f'LCN-optimal_max_{group}_lower'], xian_metric[f'LCN-optimal_max_{group}_upper'], alpha=0.2, label="_nolegend_")
+        axs_xian[row_xian, col_xian].plot(xian_metric[f'LCN-nondominated_mean_{group}_mean'], label='LCN_NDMEAN', linewidth=LINEWIDTH)
+        axs_xian[row_xian, col_xian].fill_between(xian_metric.index, xian_metric[f'LCN-nondominated_mean_{group}_lower'], xian_metric[f'LCN-nondominated_mean_{group}_upper'], alpha=0.2, label="_nolegend_")
     
         axs_xian[row_xian, col_xian].set_xlabel('Step')
         axs_xian[row_xian, col_xian].set_title(f'{group} Objectives')
         axs_xian[row_xian, col_xian].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     
-        axs_ams[row_ams, col_ams].plot(ams_metric[f'PCN_{group}'], label='PCN', linewidth=LINEWIDTH)
-        axs_ams[row_ams, col_ams].plot(ams_metric[f'LCN-nondominated_{group}'], label='LCN_ND', linewidth=LINEWIDTH)
-        axs_ams[row_ams, col_ams].plot(ams_metric[f'LCN-optimal_max_{group}'], label='LCN_OPTMAX', linewidth=LINEWIDTH)
-        axs_ams[row_ams, col_ams].plot(ams_metric[f'LCN-nondominated_mean_{group}'], label='LCN_NDMEAN', linewidth=LINEWIDTH)
+        axs_ams[row_ams, col_ams].plot(ams_metric[f'PCN_{group}_mean'], label='PCN', linewidth=LINEWIDTH)
+        axs_ams[row_ams, col_ams].fill_between(ams_metric.index, ams_metric[f'PCN_{group}_lower'], ams_metric[f'PCN_{group}_upper'], alpha=0.2, label="_nolegend_")
+        axs_ams[row_ams, col_ams].plot(ams_metric[f'LCN-nondominated_{group}_mean'], label='LCN_ND', linewidth=LINEWIDTH)
+        axs_ams[row_ams, col_ams].fill_between(ams_metric.index, ams_metric[f'LCN-nondominated_{group}_lower'], ams_metric[f'LCN-nondominated_{group}_upper'], alpha=0.2, label="_nolegend_")
+        axs_ams[row_ams, col_ams].plot(ams_metric[f'LCN-optimal_max_{group}_mean'], label='LCN_OPTMAX', linewidth=LINEWIDTH)
+        axs_ams[row_ams, col_ams].fill_between(ams_metric.index, ams_metric[f'LCN-optimal_max_{group}_lower'], ams_metric[f'LCN-optimal_max_{group}_upper'], alpha=0.2, label="_nolegend_")
+        axs_ams[row_ams, col_ams].plot(ams_metric[f'LCN-nondominated_mean_{group}_mean'], label='LCN_NDMEAN', linewidth=LINEWIDTH)
+        axs_ams[row_ams, col_ams].fill_between(ams_metric.index, ams_metric[f'LCN-nondominated_mean_{group}_lower'], ams_metric[f'LCN-nondominated_mean_{group}_upper'], alpha=0.2, label="_nolegend_")
     
         axs_ams[row_ams, col_ams].set_xlabel('Step')
         axs_ams[row_ams, col_ams].set_title(f'{group} Objectives')
@@ -594,22 +663,24 @@ def plot_over_time_results(ams_metric, xian_metric, groups, figsize, ylabel, nro
     return fig
 
 
+LINE_WIDTH_FOR_EUM_SW = 4
+
 # Plot EUM for 3, 6, 9 objectives
-eum_lines = plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 6, 10], (19.2, 12), 'EUM', 2, 3)
+eum_lines = plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 6, 10], (19.2, 12), 'EUM', 2, 3, linewidth=LINE_WIDTH_FOR_EUM_SW)
 eum_lines.savefig('figures/eum_3_6_10.png', bbox_inches='tight')
 eum_lines.savefig('figures/eum_3_6_10.pdf', bbox_inches='tight')
 # Plot EUM for all objectives
-eum_all = plot_over_time_results(ams_eum_over_time, xian_eum_over_time, range(2, 11), (19.2, 24), 'EUM', 6, 3)
+eum_all = plot_over_time_results(ams_eum_over_time, xian_eum_over_time, range(2, 11), (19.2, 24), 'EUM', 6, 3, linewidth=LINE_WIDTH_FOR_EUM_SW)
 eum_all.savefig('figures/eum_all.png', bbox_inches='tight')
 eum_all.savefig('figures/eum_all.pdf', bbox_inches='tight')
-# plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 10], (15, 8), 'EUM', linewidth=4)
+# plot_over_time_results(ams_eum_over_time, xian_eum_over_time, [3, 10], (15, 8), 'EUM', linewidth=LINE_WIDTH_FOR_EUM_SW)
 
 # Plot SW for 3, 6, 9 objectives
 # plot_over_time_results(ams_sw_over_time, xian_sw_over_time, range(2, 11), (50, 15), 'Sen Welfare')
-sw_lines = plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 6, 10], (19.2, 12), 'Sen Welfare', 2, 3)
+sw_lines = plot_over_time_results(ams_sw_over_time, xian_sw_over_time, [3, 6, 10], (19.2, 12), 'Sen Welfare', 2, 3, linewidth=LINE_WIDTH_FOR_EUM_SW)
 sw_lines.savefig('figures/sw_3_6_10.png', bbox_inches='tight')
 sw_lines.savefig('figures/sw_3_6_10.pdf', bbox_inches='tight')
-sw_all = plot_over_time_results(ams_sw_over_time, xian_sw_over_time, range(2, 11), (19.2, 24), 'Sen Welfare', 6, 3)
+sw_all = plot_over_time_results(ams_sw_over_time, xian_sw_over_time, range(2, 11), (19.2, 24), 'Sen Welfare', 6, 3, linewidth=LINE_WIDTH_FOR_EUM_SW)
 sw_all.savefig('figures/sw_all.png', bbox_inches='tight')
 sw_all.savefig('figures/sw_all.pdf', bbox_inches='tight')
 # %%
@@ -627,6 +698,10 @@ from pandas.plotting import parallel_coordinates
 import json
 import os
 from matplotlib.colors import ListedColormap
+import numpy as np
+import seaborn as sns
+from matplotlib.lines import Line2D
+import pandas as pd
 plt.rcParams.update({'font.size': 18})
 
 cm = ListedColormap(["#848181", "#1A85FF"])
@@ -778,63 +853,6 @@ plot_parallel_coordinates(run_ids_ams,
                           model_labels=['PCN', 'LCN'],
                           figtitle='Amsterdam')
 
-# %%
-# import numpy as np
-# from itertools import permutations
-
-# def generate_symmetric_weights(d, range_min=0.4, range_max=0.6):
-#     """
-#     Generate a list of symmetric weight vectors for a given dimension `d`.
-    
-#     Args:
-#     - d (int): The number of dimensions.
-#     - range_min (float): Minimum bound for the first weight.
-#     - range_max (float): Maximum bound for the first weight.
-    
-#     Returns:
-#     - list of numpy arrays: Each array is a weight vector that sums to 1.
-#     """
-#     if d < 2 or d > 10:
-#         raise ValueError("Dimension `d` should be between 2 and 10.")
-    
-#     # Create equally spaced values between range_min and range_max for the first component
-#     first_weights = np.linspace(range_min, range_max, num=d)
-    
-#     # Generate base weight vectors with the first weight varying
-#     weight_vectors = []
-#     for w1 in first_weights:
-#         # Remaining weight after setting the first component
-#         remaining_weight = 1 - w1
-#         # Spread the remaining weight equally across the other components
-#         other_weights = np.full(d - 1, remaining_weight / (d - 1))
-        
-#         # Create the initial weight vector
-#         base_vector = np.concatenate(([w1], other_weights))
-        
-#         # Generate all unique permutations of the base vector for symmetry
-#         for perm in set(permutations(base_vector)):
-#             weight_vectors.append(np.array(perm))
-    
-#     # Add the perfectly equal distribution vector
-#     equal_vector = np.full(d, 1 / d)
-#     weight_vectors.append(equal_vector)
-    
-#     # Remove duplicates and sort for consistency
-#     unique_weight_vectors = []
-#     for vec in weight_vectors:
-#         if not any(np.allclose(vec, uvec) for uvec in unique_weight_vectors):
-#             unique_weight_vectors.append(vec)
-    
-#     return unique_weight_vectors
-
-# weights_dict = {}
-# for d in range(2, 11):
-#     weights = generate_symmetric_weights(d)
-#     weights_dict[d] = weights
-    
-
-# np.save('fair_weights_dict.npy', weights_dict)
-
 #%%
 lambdas = [0.0, 0.2, 0.4, 1.0]
 lambda_lcn_results = results_to_plot[(results_to_plot['model'].isin(['LCN_Lambda'])) & (results_to_plot['lambda'].isin(lambdas))]
@@ -865,4 +883,429 @@ fig.tight_layout()
 fig.savefig('figures/lambda_pc_xian.png', bbox_inches='tight')
 fig.savefig('figures/lambda_pc_xian.pdf', bbox_inches='tight')
 
+#%% Plot Total Efficiency, Gini Index, Sen Welfare for lambda-LCN (0.0-1.0) with CI
+NR_GROUPS_TO_PLOT = 3
+colors = ["#1A85FF", "#E66100", "#D41159", "#BFBFBF"]
+sns.set_palette(sns.color_palette(colors))
+LINEWIDTH = 2
+
+# Get the results for PCN, to compare them to the lambda-LCN results
+pcn_eff = results_to_plot[(results_to_plot['model']=='PCN') & (results_to_plot['nr_groups']==NR_GROUPS_TO_PLOT) & (results_to_plot['metric']=='total_efficiency')]
+pcn_hv = results_to_plot[(results_to_plot['model']=='PCN') & (results_to_plot['nr_groups']==NR_GROUPS_TO_PLOT) & (results_to_plot['metric']=='hv')]
+pcn_gini = results_to_plot[(results_to_plot['model']=='PCN') & (results_to_plot['nr_groups']==NR_GROUPS_TO_PLOT) & (results_to_plot['metric']=='gini')]
+pcn_sen_welfare = results_to_plot[(results_to_plot['model']=='PCN') & (results_to_plot['nr_groups']==NR_GROUPS_TO_PLOT) & (results_to_plot['metric']=='sen_welfare')]
+
+fig, axs = plt.subplots(4, 1, figsize=(12, 14))
+lambda_lcn = results_to_plot[(results_to_plot['model'].isin(['LCN_Lambda'])) & (results_to_plot['lambda'].isin([0.0, 0.2, 0.4, 0.6, 0.8, 1.0]))]
+lambda_lcn = lambda_lcn[lambda_lcn['nr_groups'] == NR_GROUPS_TO_PLOT]
+
+hyperv = lambda_lcn[lambda_lcn['metric'] == 'hv']
+# Plot with confidence intervals
+for idx, lambda_value in enumerate(lambdas):
+    if lambda_value == 0.0:
+        continue  # Skip lambda = 0.0 for this plot
+    row = idx // 2
+    col = idx % 2
+    ax = axs[row, col]
+    fronts = np.array(lambda_lcn_results[(lambda_lcn_results['lambda'] == lambda_value) & (lambda_lcn_results['metric'] == 'fronts') & (lambda_lcn_results['nr_groups'] == 3)]['value'].values.tolist())
+    model_names = [f'λ={lambda_value}'] * len(fronts)
+    
+    # Plot parallel coordinates
+    parallel_coordinates_plot(ax, fronts, ['Group 1', 'Group 2', 'Group 3'], model_names, plot_average=False, color_map={f'λ={lambda_value}': '#1A85FF'}, line_width=2, avg_line_width=6, opacity=1.0, xaxis_rotation=15)
+    ax.set_title(f'λ={lambda_value}')
+    # ax.set_ylim(0e-3, 9e-3)  # Set the same y-limits for all subplots
+    ax.get_legend().remove()  # Hide the legend
+
+    # Remove x-axis labels for the top row
+    if row == 0:
+        ax.set_xticklabels([])
+    
+# Add PCN lines
+for ax in axs:
+    ax.plot(pcn_hv['value'], label='PCN', linestyle='--', color='black', linewidth=LINEWIDTH)
+
+fig.tight_layout()
+fig.savefig('figures/lambda_pc_xian_ci.png', bbox_inches='tight')
+fig.savefig('figures/lambda_pc_xian_ci.pdf', bbox_inches='tight')
+
 # %%
+
+# --- Prepare data ---
+cardinality = (
+    results_to_plot
+    .query("metric == 'cardinality'")
+    .assign(
+        value=lambda x: pd.to_numeric(x['value'], errors='coerce'),
+        nr_groups=lambda x: pd.to_numeric(x['nr_groups'], errors='coerce')
+    )
+    .dropna(subset=['value', 'nr_groups'])
+    .assign(nr_groups=lambda x: x['nr_groups'].astype(int))
+)
+
+cardinality.loc[cardinality['model'] == 'LCN-nondominated', 'model'] = 'LCN'
+cardinality.loc[cardinality['model'] == 'LCN-optimal_max', 'model'] = 'LCN-Redist'
+cardinality.loc[cardinality['model'] == 'LCN-nondominated_mean', 'model'] = 'LCN-Mean'
+
+models_to_show = ['PCN', 'LCN', 'LCN-Redist', 'LCN-Mean']
+base_colors = {"PCN": "#BFBFBF", "LCN": "#1A85FF", "LCN-Redist": "#E66100", "LCN-Mean": "#D41159"}
+
+
+# --- Aggregate stats ---
+grp = (
+    cardinality.groupby(['model', 'nr_groups'])['value']
+    .agg(mean='mean', sem=lambda x: x.std() / np.sqrt(len(x)))
+    .reset_index()
+)
+
+markers = ['o', 's', '^', 'D', 'v'][:len(models_to_show)]
+
+# --- Plot ---
+fig, ax = plt.subplots(figsize=(10, 6))
+all_x = sorted(grp['nr_groups'].unique())
+
+for label, marker in zip(cardinality[cardinality['model'].isin(models_to_show)]['model'].unique(), markers):
+    sub = grp[grp['model'] == label]
+    ax.errorbar(
+        sub['nr_groups'], sub['mean'], yerr=sub['sem'],
+        fmt=f'-{marker}', color=base_colors.get(label, "#848181"),
+        ecolor=base_colors.get(label, "#848181"),
+        mec='black', mfc=base_colors.get(label, "#848181"),
+        capsize=8, linewidth=4, markersize=12, label=label
+    )
+
+ax.set(
+    title=f"Cardinality of Non-Dominated Policies",
+    xlabel="Number of Groups",
+    ylabel="Cardinality"
+)
+ax.set_xticks(all_x)
+ax.legend()
+fig.tight_layout()
+fig.savefig('figures/cardinality_plot.png', bbox_inches='tight')
+fig.savefig('figures/cardinality_plot.pdf', bbox_inches='tight')
+
+#%% Unified crowding penalty sensitivity (choose any two nr_groups)
+def get_non_dominated_mask(points: np.ndarray) -> np.ndarray:
+    """Pareto-efficient mask for MAXIMIZATION."""
+    n = points.shape[0]
+    efficient = np.ones(n, dtype=bool)
+    for i in range(n):
+        if not efficient[i]:
+            continue
+        dominates_i = np.all(points >= points[i], axis=1) & np.any(points > points[i], axis=1)
+        dominates_i[i] = False
+        if np.any(dominates_i):
+            efficient[i] = False
+    return efficient
+
+def crowding_distance(points: np.ndarray) -> np.ndarray:
+    """Crowding distance (larger = less crowded) for MAXIMIZATION."""
+    if points.size == 0:
+        return np.array([])
+    norm = (points - points.min(axis=0)) / (points.ptp(axis=0) + 1e-12)
+    n, m = norm.shape
+    dist = np.zeros(n)
+    for k in range(m):
+        idx = np.argsort(norm[:, k])
+        dist[idx[0]] = np.inf
+        dist[idx[-1]] = np.inf
+        rng = norm[idx[-1], k] - norm[idx[0], k]
+        if rng == 0:
+            continue
+        for i in range(1, n - 1):
+            dist[idx[i]] += (norm[idx[i + 1], k] - norm[idx[i - 1], k]) / rng
+    return dist
+
+def generate_returns(n_points: int, n_obj: int, corr: float = 0.3, lo: float = 0.0, hi: float = 1.0, seed: int = None):
+    if seed is not None:
+        np.random.seed(seed)
+    r = np.random.uniform(lo, hi, size=(n_points, n_obj))
+    for d in range(1, n_obj):
+        r[:, d] += corr * r[:, d - 1]
+    return np.clip(r, lo, hi)
+
+def build_parallel_df(returns: np.ndarray, nd_mask: np.ndarray, max_dominated: int = 60, label_mean='LCN-Mean', label_redist='LCN-Redist'):
+    n_obj = returns.shape[1]
+    cols = [f'Obj{i+1}' for i in range(n_obj)]
+    labels = np.where(nd_mask, 'Non-dominated', 'Dominated')
+    df = pd.DataFrame(returns, columns=cols)
+    df['Label'] = labels
+    dom_df = df[df['Label'] == 'Dominated']
+    if len(dom_df) > max_dominated:
+        dom_df = dom_df.sample(max_dominated, random_state=42)
+    nd_df = df[df['Label'] == 'Non-dominated']
+    mean_vec = nd_df[cols].mean().values
+    redist_vec = returns[returns.sum(axis=1).argmax()]
+    extra = pd.DataFrame([mean_vec, redist_vec], columns=cols)
+    extra['Label'] = [label_mean, label_redist]
+    return pd.concat([dom_df, nd_df, extra], ignore_index=True)
+
+def crowding_penalty_sensitivity(
+    nr_groups_pair=(2, 8),
+    n_points_pair=(100, 120),
+    penalties=(1, 2, 5),
+    threshold=0.2,
+    seed=2314,
+    corr_small=0.5,
+    corr_large=0.3,
+):
+    """
+    Creates one figure (2 rows x 3 cols) for two nr_groups values.
+    Panels: (A,B,C) first nr_groups, (D,E,F) second nr_groups.
+    Uses global rcParams font without resetting.
+    """
+    letters = ['(A)', '(B)', '(C)', '(D)', '(E)', '(F)']
+
+    data_bundle = []
+    for idx, (n_obj, n_pts) in enumerate(zip(nr_groups_pair, n_points_pair)):
+        corr = corr_small if idx == 0 else corr_large
+        returns = generate_returns(n_pts, n_obj, corr=corr, seed=seed + idx)
+        nd_mask = get_non_dominated_mask(returns)
+        nd_points = returns[nd_mask]
+
+        dist_to_nd = np.min(np.linalg.norm(returns[:, None, :] - nd_points[None, :, :], axis=-1), axis=1)
+        base_score = -dist_to_nd
+
+        nd_indices = np.where(nd_mask)[0]
+        _, unique_idx = np.unique(nd_points, axis=0, return_index=True)
+        unique_global_idx = nd_indices[unique_idx]
+        dup_mask = np.ones(len(base_score), dtype=bool)
+        dup_mask[unique_global_idx] = False
+        base_score[dup_mask] -= 1e-5
+
+        crowd_dist = crowding_distance(returns)
+        thresholds = np.linspace(0.0, threshold, 10)
+        proportions = [(np.isfinite(crowd_dist) & (crowd_dist <= t)).mean() for t in thresholds]
+
+        scores_by_penalty = {}
+        penalize_mask = np.isfinite(crowd_dist) & (crowd_dist <= threshold)
+        for p in penalties:
+            s = base_score.copy()
+            s[penalize_mask] *= p
+            scores_by_penalty[p] = s
+
+        data_bundle.append({
+            'n_obj': n_obj,
+            'returns': returns,
+            'nd_mask': nd_mask,
+            'nd_points': nd_points,
+            'crowd_dist': crowd_dist,
+            'thresholds': thresholds,
+            'proportions': proportions,
+            'scores_by_penalty': scores_by_penalty
+        })
+
+    fig, axs = plt.subplots(2, 3, figsize=(19.2, 10))
+
+    for row, info in enumerate(data_bundle):
+        n_obj = info['n_obj']
+        returns = info['returns']
+        nd_mask = info['nd_mask']
+        nd_points = info['nd_points']
+        thresholds = info['thresholds']
+        proportions = info['proportions']
+        scores_by_penalty = info['scores_by_penalty']
+
+    
+
+        # (A/D)
+        ax = axs[row, 0]
+        panel_idx = row * 3 + 0
+        if n_obj == 2:
+            dom = returns[~nd_mask]
+            nd = nd_points
+            ax.scatter(dom[:, 0], dom[:, 1], alpha=0.6, color='#BFBFBF', label='Dominated', s=80)
+            ax.scatter(nd[:, 0], nd[:, 1], alpha=1.0, color='#1A85FF', edgecolors='k', s=110, label='Non-dominated')
+            mean_vec = nd.mean(axis=0)
+            redist_vec = returns[returns.sum(axis=1).argmax()]
+            ax.scatter(mean_vec[0], mean_vec[1], color='#D41159', edgecolors='k', s=110, label='LCN-Mean')
+            ax.scatter(redist_vec[0], redist_vec[1], color='#E66100', edgecolors='k', s=110, label='LCN-Redist')
+            ax.set_xlabel("Objective 1")
+            ax.set_ylabel("Objective 2")
+            ax.legend(loc='upper left')
+        else:
+            pc_df = build_parallel_df(returns, nd_mask)
+            parallel_coordinates(
+                pc_df,
+                'Label',
+                color=['#BFBFBF', '#1A85FF', '#D41159', '#E66100'],
+                ax=ax,
+                linewidth=1.2,
+                alpha=0.55
+            )
+            ax.set_xlabel("Objectives")
+            ax.set_ylabel("Objective value")
+            ax.tick_params(axis='x', rotation=25)
+            # ax.legend(loc='upper left')
+            ax.legend().remove()
+        ax.set_title(f"{letters[panel_idx]} Sample Experiences ({n_obj} Objectives)")
+
+        # (B/E)
+        ax = axs[row, 1]
+        panel_idx = row * 3 + 1
+        ax.plot(thresholds, proportions, lw=3, color='#3845DC')
+        ax.scatter(thresholds, proportions, s=50, color='#3845DC')
+        ax.set_xlabel(r"$\tau_{cd}$")
+        ax.set_ylabel("Penalized experiences (%)")
+        ax.set_title(f"{letters[panel_idx]} Threshold Sensitivity")
+
+        # (C/F)
+        ax = axs[row, 2]
+        panel_idx = row * 3 + 2
+        colors_pen = sns.color_palette("muted", n_colors=len(penalties))
+        for p, c in zip(penalties, colors_pen):
+            data = scores_by_penalty[p]
+            sns.kdeplot(data, fill=True, common_norm=False, alpha=0.35, color=c,
+                        linewidth=2, ax=ax, label=r'$\rho_{pen}=$' + f'{p}')
+            ax.axvline(np.median(data), color=c, linestyle='--', linewidth=1.3)
+        ax.set_xlabel("Penalty-adjusted distance score")
+        ax.set_ylabel("Density")
+        ax.set_title(f"{letters[panel_idx]} Penalty Sensitivity ($\\tau_{{cd}}={threshold}$)")
+        ax.legend()
+
+    return fig
+
+# Example usage
+fig = crowding_penalty_sensitivity(nr_groups_pair=(2, 5))
+fig.tight_layout()
+fig.savefig(f'./figures/crowding_penalty_sensitivity.png', dpi=300)
+fig.savefig(f'./figures/crowding_penalty_sensitivity.pdf', dpi=300)
+#%%
+
+def plot_threshold_lines(df, 
+    nr_groups=2, 
+    model_bases=['LCN-nondominated', 'LCN-optimal_max', 'LCN-nondominated_mean'], 
+    display_names={
+        'LCN-nondominated': 'LCN',
+        'LCN-optimal_max': 'LCN-Redist',
+        'LCN-nondominated_mean': 'LCN-Mean'
+    }, 
+    thresholds=[0.0, 0.05, 0.1, 0.15, 0.2], 
+    colors={
+        'LCN-nondominated': "#1A85FF",
+        'LCN-optimal_max': "#E66100",
+        'LCN-nondominated_mean': "#D41159"
+    },
+    ylabel=None):
+
+    # Assign colors per model_base (generate if not provided)
+    if colors is None:
+        palette = sns.color_palette("tab10", len(model_bases))
+        colors = dict(zip(model_bases, palette))
+
+    alphas = np.linspace(0.35, 1.0, len(thresholds))
+    widths = np.linspace(1.2, 4.0, len(thresholds))
+
+    fig, axs = plt.subplots(1, len(model_bases), figsize=(18, 6), sharey=True)
+    if len(model_bases) == 1:
+        axs = [axs]
+
+    legend_labels, legend_handles = [], []
+    seen_thresholds = set()
+
+    for ax, model_base in zip(axs, model_bases):
+        base_color = colors.get(model_base, "#1A85FF")
+        for thr in thresholds:
+            thr_idx = thresholds.index(thr)
+            model_names = [f"{model_base}-tau-{thr}"]
+
+            for m in model_names:
+                mean_col = f"{m}_{nr_groups}_mean"
+                low_col = f"{m}_{nr_groups}_lower"
+                up_col = f"{m}_{nr_groups}_upper"
+                if mean_col not in df.columns:
+                    continue
+
+                x = df.index
+                y = df[mean_col].astype(float)
+                ax.plot(x, y, color=base_color, alpha=alphas[thr_idx], linewidth=widths[thr_idx])
+
+                if low_col in df.columns and up_col in df.columns:
+                    ax.fill_between(
+                        x,
+                        df[low_col].astype(float),
+                        df[up_col].astype(float),
+                        color=base_color,
+                        alpha=alphas[thr_idx] * 0.25
+                    )
+
+            if thr not in seen_thresholds:
+                # Use a neutral color for threshold legend for clarity
+                legend_handles.append(
+                    Line2D([0], [0], color="black", alpha=alphas[thr_idx], linewidth=widths[thr_idx])
+                )
+                legend_labels.append(r"$\tau$=" + str(thr))
+                seen_thresholds.add(thr)
+
+        ax.set_title(display_names.get(model_base, model_base))
+        ax.set_xlabel("Step")
+        
+    if ylabel is not None:
+        axs[0].set_ylabel(ylabel)
+
+    fig.legend(
+        legend_handles, legend_labels, title=r"$\tau_{cd}$",
+        loc="lower center", ncol=min(8, len(legend_labels)),
+        bbox_to_anchor=(0.5, -0.15)
+    )
+    fig.tight_layout(rect=[0, 0.05, 1, 0.95])
+    return fig
+
+
+fig = plot_threshold_lines(
+    df=xian_hv_over_time[[c for c in xian_hv_over_time.columns if 'tau' in c]],
+    ylabel='Hypervolume',
+)
+
+fig = plot_threshold_lines(
+    df=xian_eum_over_time[[c for c in xian_eum_over_time.columns if 'tau' in c]],    
+    ylabel='EUM',
+)
+
+fig = plot_threshold_lines(
+    df=xian_sw_over_time[[c for c in xian_sw_over_time.columns if 'tau' in c]],    
+    ylabel='Sen Welfare',
+)
+    
+
+# %%
+fig, axs = plt.subplots(2, 1, figsize=(12, 6))
+tauplots = results_to_plot[(results_to_plot['model'].str.contains('tau')) & (results_to_plot['nr_groups'] == 2)]
+tauplots.loc[tauplots['model'].str.contains('LCN-nondominated_mean'), 'model'] = 'LCN-Mean'
+tauplots.loc[tauplots['model'].str.contains('LCN-nondominated'), 'model'] = 'LCN'
+tauplots.loc[tauplots['model'].str.contains('LCN-optimal_max'), 'model'] = 'LCN-Redist'
+
+palette = {
+    0.0: "#f1eef6",
+    0.05: "#bdc9e1",
+    0.1: "#74a9cf",
+    0.2: "#0570b0",
+}
+
+LINEWIDTH = 1.5
+
+hv = tauplots[tauplots['metric'] == 'hv']
+hv['value'] = hv.groupby(['nr_groups'])['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
+hv['value'] = hv['value'].fillna(0)
+
+hvboxplot = sns.boxplot(data=hv, x="model", y="value", hue="cd_threshold", palette=palette, ax=axs[0], linewidth=LINEWIDTH)
+hvboxplot.legend_.set_title(r'$\tau_{cd}$')
+axs[0].legend(ncol=4)
+# hvboxplot.legend(fontsize=12)
+
+axs[0].set_title('Normalized Hypervolume')
+axs[0].set_xlabel(None)
+axs[0].set_ylabel(None)
+axs[0].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+
+sw = tauplots[tauplots['metric'] == 'sen_welfare']
+sw['value'] = sw.groupby(['nr_groups'])['value'].transform(lambda x: (x - x.min()) / (x.max() - x.min()))
+sw['value'] = sw['value'].fillna(0)
+swboxplot = sns.boxplot(data=sw, x="model", y="value", hue="cd_threshold", palette=palette, ax=axs[1], legend=None, linewidth=LINEWIDTH)
+# swboxplot.legend_.set_title(None)
+axs[1].set_title('Normalized Sen Welfare')
+axs[1].set_xlabel(None)
+axs[1].set_ylabel(None)
+axs[1].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+
+fig.tight_layout()
