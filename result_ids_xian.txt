@@ -21,7 +21,7 @@
          {"name": "LCN-Xian-nondominated_mean-tau-0.0", "run_ids": ["ztxvips6"]},
          {"name": "LCN-Xian-nondominated_mean-tau-0.05", "run_ids": ["7n5pfhhd"]},
          {"name": "LCN-Xian-nondominated_mean-tau-0.1", "run_ids": ["z3f2jame"]},
-         {"name": "LCN-Xian-nondominated_mean-tau-0.2", "run_ids": ["hry79jmx"]},
+         {"name": "LCN-Xian-nondominated_mean-tau-0.2", "run_ids": ["hry79jmx"]}
       ]
    },
    {
